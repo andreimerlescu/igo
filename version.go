@@ -18,31 +18,35 @@ import (
 	"github.com/fatih/color"
 )
 
+// Version stores the paths of the tarball and extract paths for a given version
 type Version struct {
-	Major, Minor, Patch int
-	DownloadToPath      string
-	Version             string
-	ExtractToPath       string
+	// DownloadName is the tar.gz file of the Version
+	DownloadName string
+	// ExtractPath is the output destination of extracting the tar.gz file
+	ExtractPath string
+	// Version captures the version of go in the Major.Minor.Patch format
+	Version string
 }
 
+// downloadURL will take the DownloadName and acquire the tar.gz file
 func (v *Version) downloadURL(ctx context.Context) (err error) {
-	color.Blue("Starting download of %s", v.DownloadToPath)
+	color.Blue("Starting download of %s", v.DownloadName)
 	startTime := time.Now()
 	defer func() {
 		duration := time.Since(startTime)
 		if err != nil {
-			color.Red("Failed to download %s in %v: %v", v.DownloadToPath, duration, err)
+			color.Red("Failed to download %s in %v: %v", v.DownloadName, duration, err)
 		} else {
-			color.Green("Downloaded %s in %v", v.DownloadToPath, duration)
+			color.Green("Downloaded %s in %v", v.DownloadName, duration)
 		}
 	}()
 
-	if err = checkfs.File(v.DownloadToPath, file.Options{Exists: true}); err == nil {
-		color.Yellow("Skipping %s: file already exists", v.DownloadToPath)
+	if err = checkfs.File(v.DownloadName, file.Options{Exists: true}); err == nil {
+		color.Yellow("Skipping %s: file already exists", v.DownloadName)
 		return nil
 	}
 
-	fullURL := strings.Clone(v.DownloadToPath)
+	fullURL := "https://go.dev/dl/" + strings.Clone(v.DownloadName)
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, fullURL, nil)
 	capture(err)
@@ -56,7 +60,7 @@ func (v *Version) downloadURL(ctx context.Context) (err error) {
 		return fmt.Errorf("HTTP status %d", resp.StatusCode)
 	}
 
-	out, err := os.Create(v.ExtractToPath)
+	out, err := os.Create(v.ExtractPath)
 	capture(err)
 	defer capture(out.Close())
 
@@ -65,9 +69,10 @@ func (v *Version) downloadURL(ctx context.Context) (err error) {
 	return nil
 }
 
+// extractTarGz will take the ExtractPath and expand the DownloadName there
 func (v *Version) extractTarGz() error {
 	// Open the .tar.gz tarFile
-	tarFile, err := os.Open(v.DownloadToPath)
+	tarFile, err := os.Open(v.DownloadName)
 	if err != nil {
 		return fmt.Errorf("error opening tar.gz tarFile: %v", err)
 	}
@@ -84,13 +89,13 @@ func (v *Version) extractTarGz() error {
 	tarReader := tar.NewReader(gzReader)
 
 	// Ensure destination directory exists
-	capture(checkfs.Directory(v.ExtractToPath, directory.Options{
+	capture(checkfs.Directory(v.ExtractPath, directory.Options{
 		Exists:     true,
 		WillCreate: true,
 		Create: directory.Create{
 			Kind:     directory.IfNotExists,
 			FileMode: 0755,
-			Path:     v.ExtractToPath,
+			Path:     v.ExtractPath,
 		},
 	}))
 
@@ -105,7 +110,7 @@ func (v *Version) extractTarGz() error {
 		}
 
 		// Get the target path for this tarFile
-		target := filepath.Join(v.ExtractToPath, header.Name)
+		target := filepath.Join(v.ExtractPath, header.Name)
 
 		// Check the tarFile type
 		switch header.Typeflag {
