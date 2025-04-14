@@ -1,10 +1,7 @@
 package main
 
 import (
-	"context"
 	"embed"
-	"github.com/andreimerlescu/figtree/v2"
-	"os"
 	"strings"
 )
 
@@ -60,6 +57,9 @@ const (
 	// kGoArch defines -goarch in the CLI that allows you to define these values
 	// without requiring you to set ENV variables first
 	kGoArch string = "goarch"
+
+	kDebug   string = "debug"
+	kVerbose string = "verbose"
 )
 
 // packages are installed after a new version of Go is installed
@@ -67,19 +67,7 @@ var packages = map[string]string{
 	"gotop":                "github.com/cjbassi/gotop",
 	"go-generate-password": "github.com/m1/go-generate-password/cmd/go-generate-password",
 	"bombardier":           "github.com/codesenberg/bombardier",
-}
-
-type Application struct {
-	ctx         context.Context
-	figs        figtree.Fruit
-	userHomeDir string
-}
-
-func NewApp() *Application {
-	userHomeDir, err := os.UserHomeDir()
-	capture(err)
-	return &Application{
-		ctx:         context.Background(),
-		userHomeDir: userHomeDir,
-	}
+	"summarize":            "github.com/andreimerlescu/summarize",
+	"counter":              "github.com/andreimerlescu/counter",
+	"cli-gematria":         "github.com/andreimerlescu/cli-gematria",
 }

@@ -19,6 +19,8 @@ func main() {
 	app.figs = figtree.New()
 	app.figs.NewBool(kVersion, false, "Display current version")
 	app.figs.NewBool(kSystem, false, "Install for system-wide usage (ignore USER HOME directory)")
+	app.figs.NewBool(kDebug, false, "Enable debug mode")
+	app.figs.NewBool(kVerbose, false, "Enable verbose mode")
 	app.figs.NewString(kGoDir, filepath.Join(app.userHomeDir, "go"), "Path where you want multiple go versions installed")
 	app.figs.NewString(kCommand, "", "Command to run: install uninstall use list")
 	app.figs.NewString(kGoVersion, "1.24.2", "Go Version")
@@ -52,9 +54,9 @@ func main() {
 	case "uninstall":
 		go uninstall(ctx, wg, errCh, *app.figs.String(kGoVersion))
 	case "l":
-		go list(ctx, wg, errCh)
+		go list(app, ctx, wg, errCh)
 	case "list":
-		go list(ctx, wg, errCh)
+		go list(app, ctx, wg, errCh)
 	case "u":
 		go use(ctx, wg, errCh, *app.figs.String(kGoVersion))
 	case "use":
