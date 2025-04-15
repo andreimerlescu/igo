@@ -10,9 +10,6 @@ import (
 	"strings"
 	"sync"
 
-	check "github.com/andreimerlescu/checkfs"
-	"github.com/andreimerlescu/checkfs/directory"
-	"github.com/andreimerlescu/checkfs/file"
 	"github.com/olekukonko/tablewriter"
 )
 
@@ -33,8 +30,31 @@ func uninstall(ctx context.Context, wg *sync.WaitGroup, errCh chan error, versio
 
 func list(app *Application, ctx context.Context, wg *sync.WaitGroup, errCh chan<- error) {
 	defer wg.Done()
+	verbose, debug := *app.figs.Bool(kVerbose), *app.figs.Bool(kDebug)
+	onlyVerbose, onlyDebug := verbose && !debug, !verbose && debug
+
+	if verbose {
+		color.Green("VERBOSE MODE ENABLED")
+	}
+
+	if debug {
+		color.Red("DEBUG MODE ENABLED")
+	}
+
+	workspace := app.Workspace()
+	_, dirErr := os.Stat(workspace)
+	if os.IsNotExist(dirErr) {
+		color.Red("No go versions installed.")
+		return
+	}
 	versions, err := app.findGoVersions()
 	if err != nil {
+		if onlyVerbose {
+			color.Red(err.Error())
+		}
+		if debug {
+			color.Red(err.Error())
+		}
 		errCh <- err
 		return
 	}
@@ -43,10 +63,13 @@ func list(app *Application, ctx context.Context, wg *sync.WaitGroup, errCh chan<
 	currentVersion, _ := app.activatedVersion()
 	var data [][]string
 	for _, version := range versions {
-		info, infoErr := os.Stat(filepath.Join(app.Workspace(), "versions", version))
+		info, infoErr := os.Stat(filepath.Join(workspace, "versions", version))
 		if os.IsNotExist(infoErr) {
-			errCh <- infoErr
-			return
+			if onlyDebug {
+				errCh <- infoErr
+				return
+			}
+			continue
 		}
 		a := ""
 		if strings.EqualFold(version, currentVersion) {
@@ -80,7 +103,7 @@ func install(app *Application, wg *sync.WaitGroup, errCh chan error, version str
 	defer wg.Done()
 
 	verbose, debug := *app.figs.Bool(kVerbose), *app.figs.Bool(kDebug)
-	onlyVerbose, onlyDebug := verbose && !debug, !verbose && debug
+	// onlyVerbose, onlyDebug := verbose && !debug, !verbose && debug
 
 	if verbose {
 		color.Green("VERBOSE MODE ENABLED")
@@ -95,7 +118,22 @@ func install(app *Application, wg *sync.WaitGroup, errCh chan error, version str
 		color.Green("Using workspace: %v", workspace)
 	}
 
+	_, workspaceErr := os.Stat(workspace)
+	if os.IsNotExist(workspaceErr) {
+		capture(os.MkdirAll(workspace, 0755))
+		if verbose {
+			color.Green("Create workspace directory: %v", workspace)
+		}
+	}
+
 	shimDir := filepath.Join(workspace, "shims")
+	_, shimsErr := os.Stat(shimDir)
+	if os.IsNotExist(shimsErr) {
+		capture(os.MkdirAll(shimDir, 0755))
+		if verbose {
+			color.Green("Create shim directory: %v", shimDir)
+		}
+	}
 	binDir := filepath.Join(workspace, "bin")
 	pathDir := filepath.Join(workspace, "path")
 	rootDir := filepath.Join(workspace, "root")
@@ -126,33 +164,29 @@ func install(app *Application, wg *sync.WaitGroup, errCh chan error, version str
 	}
 
 	// this file protects the runtime of the igo install func - when its present, the script aborts
-	if err := check.File(installerLockFile, file.Options{Exists: false}); err != nil {
-		// lock file exists
-		if onlyVerbose {
-			color.Red("ERROR: igo is already running")
-		}
-		if debug {
-			color.Red("Received error: %v", err)
-		}
-		errCh <- err
-	}
-
-	// this file protects an installed version of go from getting replaced by this func
-	if err := check.File(versionLockFile, file.Options{Exists: false}); err != nil {
-		// lock file exists
-		if onlyVerbose {
-			color.Red("ERROR: igo is already running")
-		}
-		e := fmt.Errorf("%s is already installed", version)
-		if onlyDebug {
-			color.Red("Received error: %v", e)
-		}
-		errCh <- e
+	_, err := os.Stat(installerLockFile) // check igo runtime installer.lock
+	defer capture(os.Remove(installerLockFile))
+	if os.IsExist(err) { // installer.lock exists
+		errCh <- fmt.Errorf("huh igo is already running")
 		return
 	}
 
+	_, err = os.Stat(versionLockFile)
+	if os.IsExist(err) {
+		errCh <- fmt.Errorf("version is already installed")
+		return
+	}
+	defer capture(os.Remove(versionLockFile))
+
 	// lock the igo installer
-	lockFileHandler := captureOpenFile(installerLockFile, os.O_CREATE|os.O_EXCL|os.O_RDWR|os.O_TRUNC, 0600) // mode
+	lockFileHandler, err := os.OpenFile(installerLockFile, os.O_RDWR|os.O_CREATE|os.O_TRUNC|os.O_EXCL, 0600)
+	if err != nil {
+		if verbose {
+			color.Red(err.Error())
+		}
+		errCh <- err
+		return
+	}
 	defer capture(lockFileHandler.Close())
 
 	// write the current version to the lockFile
@@ -162,16 +196,12 @@ func install(app *Application, wg *sync.WaitGroup, errCh chan error, version str
 	}
 
 	// create the downloads directory
-	capture(check.Directory(downloadsDir, directory.Options{
-		Exists:     true, // require this directory
-		WillCreate: true, // tell checkfs to use directory.Create{}
-		Create: directory.Create{
-			FileMode: 0755,                  // set new mode
-			Kind:     directory.IfNotExists, // only mkdir if it isn't there
-		},
-	}))
-	if verbose {
-		color.Green("Created directory %s", downloadsDir)
+	_, err = os.Stat(downloadsDir)
+	if os.IsNotExist(err) {
+		capture(os.MkdirAll(downloadsDir, 0755))
+		if verbose {
+			color.Green("Created directory %s", downloadsDir)
+		}
 	}
 
 	// check if the download exists
@@ -185,14 +215,12 @@ func install(app *Application, wg *sync.WaitGroup, errCh chan error, version str
 	}
 
 	// create if not exists the version extract destination
-	capture(check.Directory(versionData.ExtractPath, directory.Options{
-		WillCreate: true,
-		Create: directory.Create{
-			Kind:     directory.IfNotExists,
-			FileMode: 0755,
-		}}))
-	if verbose {
-		color.Green("Created directory %s", versionData.ExtractPath)
+	_, err = os.Stat(versionData.ExtractPath)
+	if os.IsNotExist(err) {
+		capture(os.MkdirAll(versionData.ExtractPath, 0755))
+		if verbose {
+			color.Green("Created directory %s", versionData.ExtractPath)
+		}
 	}
 
 	// extract the tar.gz into the destination

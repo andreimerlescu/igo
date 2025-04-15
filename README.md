@@ -70,6 +70,9 @@ into the `uninstall()` func. Currently, I've migrated over `install` and `list`.
 
 ## TODO
 
+- [ ] Implement `-cmd homebrew` to migrate a `brew install go` to `igo` compatible syntax
+- [ ] Implement a check that verifies if go is installed with `~/go/bin` and `~/go/pkg` to integrate support
+- [ ] Implement `-cmd env` to debug environment
 - [ ] Implement `-cmd uninstall`
 - [ ] Implement `-cmd fix`
 - [ ] Implement `-cmd use`
