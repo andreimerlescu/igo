@@ -152,14 +152,15 @@ func install(app *Application, wg *sync.WaitGroup, errCh chan error, version str
 
 	installerLockFile := filepath.Join(workspace, "installer.lock")
 	versionLockFile := filepath.Join(versionDir, "installer.lock")
-	tarball := fmt.Sprintf("go%s.%s-%s.tar.gz", envs["GOOS"], envs["GOARCH"], envs["GOBIN"])
+	tarball := fmt.Sprintf("go%s.%s-%s.tar.gz", version, envs["GOOS"], envs["GOARCH"])
 	downloadsDir := filepath.Join(workspace, "downloads")
 	versionsDir := filepath.Join(workspace, "versions")
 
 	// create a new version struct to download the assets into the location needed
 	versionData := Version{
 		Version:      version,
-		DownloadName: filepath.Join(downloadsDir, tarball),
+		DownloadName: tarball,
+		TarPath:      filepath.Join(downloadsDir, tarball),
 		ExtractPath:  filepath.Join(versionsDir, version),
 	}
 
@@ -176,21 +177,9 @@ func install(app *Application, wg *sync.WaitGroup, errCh chan error, version str
 		errCh <- fmt.Errorf("version is already installed")
 		return
 	}
-	defer capture(os.Remove(versionLockFile))
-
-	// lock the igo installer
-	lockFileHandler, err := os.OpenFile(installerLockFile, os.O_RDWR|os.O_CREATE|os.O_TRUNC|os.O_EXCL, 0600)
-	if err != nil {
-		if verbose {
-			color.Red(err.Error())
-		}
-		errCh <- err
-		return
-	}
-	defer capture(lockFileHandler.Close())
 
 	// write the current version to the lockFile
-	captureInt(lockFileHandler.Write([]byte(version)))
+	capture(os.WriteFile(installerLockFile, []byte(version), 0644))
 	if verbose {
 		color.Green("Created igo lockfile at %v", installerLockFile)
 	}
@@ -208,7 +197,7 @@ func install(app *Application, wg *sync.WaitGroup, errCh chan error, version str
 	_, tarErr := os.Stat(filepath.Join(downloadsDir, tarball))
 	if os.IsNotExist(tarErr) {
 		// download the tar.gz
-		capture(versionData.downloadURL(app.ctx))
+		capture(versionData.downloadURL(app))
 		if verbose {
 			color.Green("Download file %s to %s", tarball, downloadsDir)
 		}
@@ -224,7 +213,7 @@ func install(app *Application, wg *sync.WaitGroup, errCh chan error, version str
 	}
 
 	// extract the tar.gz into the destination
-	capture(versionData.extractTarGz())
+	capture(versionData.extractTarGz(app))
 	if verbose {
 		color.Green("Extracted %s to %s", versionData.DownloadName, versionData.ExtractPath)
 	}

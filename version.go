@@ -3,7 +3,7 @@ package main
 import (
 	"archive/tar"
 	"compress/gzip"
-	"context"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -12,9 +12,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/andreimerlescu/checkfs"
-	"github.com/andreimerlescu/checkfs/directory"
-	"github.com/andreimerlescu/checkfs/file"
 	"github.com/fatih/color"
 )
 
@@ -24,13 +21,26 @@ type Version struct {
 	DownloadName string
 	// ExtractPath is the output destination of extracting the tar.gz file
 	ExtractPath string
+	// TarPath is the locally saved tarball
+	TarPath string
 	// Version captures the version of go in the Major.Minor.Patch format
 	Version string
 }
 
+func (v *Version) String() string {
+	out := strings.Builder{}
+	out.WriteString(color.GreenString("Version %s {", v.Version) + "\n")
+	out.WriteString(color.GreenString("   Download Name: %s", v.DownloadName) + "\n")
+	out.WriteString(color.GreenString("    Extract Path: %s", v.ExtractPath) + "\n")
+	out.WriteString(color.GreenString("        Tar Path: %s", v.TarPath) + "\n")
+	out.WriteString(color.GreenString("}"))
+	return out.String()
+}
+
 // downloadURL will take the DownloadName and acquire the tar.gz file
-func (v *Version) downloadURL(ctx context.Context) (err error) {
+func (v *Version) downloadURL(app *Application) (err error) {
 	color.Blue("Starting download of %s", v.DownloadName)
+	verbose, debug := *app.figs.Bool(kVerbose), *app.figs.Bool(kDebug)
 	startTime := time.Now()
 	defer func() {
 		duration := time.Since(startTime)
@@ -41,42 +51,62 @@ func (v *Version) downloadURL(ctx context.Context) (err error) {
 		}
 	}()
 
-	if err = checkfs.File(v.DownloadName, file.Options{Exists: true}); err == nil {
+	if verbose {
+		fmt.Println(v)
+	}
+
+	_, err = os.Stat(v.TarPath)
+	if os.IsExist(err) {
 		color.Yellow("Skipping %s: file already exists", v.DownloadName)
 		return nil
 	}
 
 	fullURL := "https://go.dev/dl/" + strings.Clone(v.DownloadName)
+	if verbose {
+		color.Green("Downloading %s", fullURL)
+	}
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, fullURL, nil)
-	capture(err)
+	resp, err := http.Get(fullURL)
+	if err != nil {
+		color.Red("Failed to download %s: %v", v.DownloadName, err)
+		return err
+	}
 
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	capture(err)
-	defer capture(resp.Body.Close())
+	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("HTTP status %d", resp.StatusCode)
 	}
 
-	out, err := os.Create(v.ExtractPath)
-	capture(err)
-	defer capture(out.Close())
+	out, err := os.Create(v.TarPath)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
 
-	_, err = io.Copy(out, resp.Body)
-	capture(err)
+	total := int64(0)
+	total, err = io.Copy(out, resp.Body)
+	if err != nil {
+		return err
+	}
+	if debug {
+		color.Green("Downloaded %d bytes of %s in %v", total, v.ExtractPath, time.Since(startTime))
+	}
 	return nil
 }
 
 // extractTarGz will take the ExtractPath and expand the DownloadName there
-func (v *Version) extractTarGz() error {
+func (v *Version) extractTarGz(app *Application) error {
+	verbose, debug := *app.figs.Bool(kVerbose), *app.figs.Bool(kDebug)
+	if verbose {
+		fmt.Println(v)
+	}
 	// Open the .tar.gz tarFile
-	tarFile, err := os.Open(v.DownloadName)
+	tarFile, err := os.Open(v.TarPath)
 	if err != nil {
 		return fmt.Errorf("error opening tar.gz tarFile: %v", err)
 	}
-	defer capture(tarFile.Close())
+	defer tarFile.Close()
 
 	// Create gzip reader
 	gzReader, err := gzip.NewReader(tarFile)
@@ -89,20 +119,23 @@ func (v *Version) extractTarGz() error {
 	tarReader := tar.NewReader(gzReader)
 
 	// Ensure destination directory exists
-	capture(checkfs.Directory(v.ExtractPath, directory.Options{
-		Exists:     true,
-		WillCreate: true,
-		Create: directory.Create{
-			Kind:     directory.IfNotExists,
-			FileMode: 0755,
-			Path:     v.ExtractPath,
-		},
-	}))
+	_, err = os.Stat(v.ExtractPath)
+	if os.IsNotExist(err) {
+		err2 := os.MkdirAll(v.ExtractPath, 0755)
+		if err2 != nil {
+			return fmt.Errorf("error creating extract dir: %v", errors.Join(err, err2))
+		}
+	} else if err != nil && !os.IsNotExist(err) {
+		return fmt.Errorf("error creating extract dir: %v", err)
+	}
 
 	// Iterate through the files in the archive
 	for {
 		header, err := tarReader.Next()
 		if err == io.EOF {
+			if verbose {
+				color.Green("Reached end of the .tar.gz file!")
+			}
 			break // End of archive
 		}
 		if err != nil {
@@ -111,27 +144,42 @@ func (v *Version) extractTarGz() error {
 
 		// Get the target path for this tarFile
 		target := filepath.Join(v.ExtractPath, header.Name)
+		if debug || verbose {
+			color.Green("Extracting %s to %s", target, v.ExtractPath)
+		}
 
 		// Check the tarFile type
 		switch header.Typeflag {
 		case tar.TypeDir:
+			if debug || verbose {
+				color.Green("Creating directory %s", target)
+			}
 			// Create directory
 			if err := os.MkdirAll(target, os.FileMode(header.Mode)); err != nil {
 				return fmt.Errorf("error creating directory %s: %v", target, err)
 			}
 
 		case tar.TypeReg:
+			if debug || verbose {
+				color.Green("Extracting %s to %s", target, v.ExtractPath)
+			}
 			// Create directories for the tarFile if they don't exist
 			if err := os.MkdirAll(filepath.Dir(target), 0755); err != nil {
 				return fmt.Errorf("error creating directory for tarFile %s: %v", target, err)
 			}
 
 			// Create and write to the tarFile
-			outFile := captureOpenFile(target, os.O_CREATE|os.O_RDWR, os.FileMode(header.Mode))
+			outFile := captureOpenFile(target, os.O_CREATE|os.O_RDWR|os.O_TRUNC, os.FileMode(header.Mode))
 
 			// Copy the tarFile contents
+			if debug || verbose {
+				color.Green("Copying tarReader into outFile")
+			}
 			if _, err := io.Copy(outFile, tarReader); err != nil {
-				capture(outFile.Close())
+				if debug {
+					color.Red(err.Error())
+				}
+				_ = outFile.Close()
 				return fmt.Errorf("error writing to tarFile %s: %v", target, err)
 			}
 			capture(outFile.Close())
