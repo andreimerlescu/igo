@@ -64,6 +64,9 @@ func captureOpenFile(path string, flag int, perm os.FileMode) *os.File {
 func backupIfNotSymlink(path string) error {
 	fileInfo, err := os.Lstat(path) // Lstat to not follow symlinks
 	if err != nil {
+		if os.IsNotExist(err) {
+			return nil
+		}
 		return fmt.Errorf("failed to stat path %s: %w", path, err)
 	}
 

@@ -144,14 +144,14 @@ func (v *Version) extractTarGz(app *Application) error {
 
 		// Get the target path for this tarFile
 		target := filepath.Join(v.ExtractPath, header.Name)
-		if debug || verbose {
+		if verbose {
 			color.Green("Extracting %s to %s", target, v.ExtractPath)
 		}
 
 		// Check the tarFile type
 		switch header.Typeflag {
 		case tar.TypeDir:
-			if debug || verbose {
+			if verbose {
 				color.Green("Creating directory %s", target)
 			}
 			// Create directory
@@ -160,7 +160,7 @@ func (v *Version) extractTarGz(app *Application) error {
 			}
 
 		case tar.TypeReg:
-			if debug || verbose {
+			if verbose {
 				color.Green("Extracting %s to %s", target, v.ExtractPath)
 			}
 			// Create directories for the tarFile if they don't exist
@@ -172,7 +172,7 @@ func (v *Version) extractTarGz(app *Application) error {
 			outFile := captureOpenFile(target, os.O_CREATE|os.O_RDWR|os.O_TRUNC, os.FileMode(header.Mode))
 
 			// Copy the tarFile contents
-			if debug || verbose {
+			if verbose {
 				color.Green("Copying tarReader into outFile")
 			}
 			if _, err := io.Copy(outFile, tarReader); err != nil {

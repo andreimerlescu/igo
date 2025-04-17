@@ -250,28 +250,33 @@ func install(app *Application, wg *sync.WaitGroup, errCh chan error, version str
 		color.Green("Created symlink %s to %s", src, tar)
 	}
 
+	// if GOROOT is a directory, move it to root.bak in the app.Workspace()
+	capture(backupIfNotSymlink(rootDir))
+
 	// symlink for GOROOT to version go directory
 	src = filepath.Join(versionDir, "go")
-	tar = filepath.Join(workspace, "root")
+	tar = rootDir
 	capture(os.Symlink(src, tar))
 	if verbose {
 		color.Green("Created symlink %s to %s", src, tar)
 	}
 
-	// if GOBIN is a directory, move it to bin.bak in the igoWorkspace()
-	capture(backupIfNotSymlink(filepath.Join(workspace, "bin")))
+	// if GOBIN is a directory, move it to bin.bak in the app.Workspace()
+	capture(backupIfNotSymlink(binDir))
 
 	// symlink for GOBIN to version go directory
 	src = filepath.Join(versionDir, "go", "bin")
-	tar = filepath.Join(workspace, "bin")
+	tar = binDir
 	capture(os.Symlink(src, tar))
 	if verbose {
 		color.Green("Created symlink %s -> %s", src, tar)
 	}
 
+	capture(backupIfNotSymlink(pathDir))
+
 	// symlink for GOPATH to version go directory
 	src = strings.Clone(versionDir)
-	tar = filepath.Join(workspace, "path")
+	tar = pathDir
 	capture(os.Symlink(src, tar))
 	if verbose {
 		color.Green("Created symlink %s -> %s", src, tar)
@@ -279,19 +284,22 @@ func install(app *Application, wg *sync.WaitGroup, errCh chan error, version str
 
 	// add GOBIN/GOROOT/GOOS/GOARCH/GOPATH to ~/.zshrc or ~/.bashrc
 	capture(app.injectEnvVarsToShellConfig(envs))
-	if verbose {
+	if verbose || debug {
 		color.Green("Patched igo variables in ENV")
+		for name, value := range envs {
+			color.Green("   %s=%s\n", name, value)
+		}
 	}
 
 	// update PATH in ~/.zshrc and ~/.bashrc to use GOSHIMS and GOBIN directories before PATH
 	capture(app.patchShellConfigPath(envs))
-	if verbose {
+	if verbose || debug {
 		color.Green("Patched PATH in shell configs!")
 	}
 
 	// read the text printed in the "go version" for this version
 	dataInVersionFile := app.runVersionCheck(envs, version)
-	if verbose {
+	if verbose || debug {
 		color.Green("Found data in version file response: %v", dataInVersionFile)
 	}
 
