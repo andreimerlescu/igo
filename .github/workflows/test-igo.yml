@@ -152,13 +152,10 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Set up Docker
-        uses: docker/setup-buildx-action@v2
-
       - name: Run test script
         run: |
-          chmod +x ./test.sh
-          ./test.sh
+          chmod +x ./tester.sh
+          ./tester.sh
         shell: bash
 
   test-macos:
@@ -185,15 +182,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Set up Docker
-        run: |
-          brew install docker
-          brew install colima
-          colima start
-        shell: bash
-
       - name: Run test script
         run: |
-          chmod +x ./test.sh
-          ./test.sh
+          chmod +x ./tester.sh
+          ./tester.sh
         shell: bash
