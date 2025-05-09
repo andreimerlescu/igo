@@ -168,8 +168,7 @@ jobs:
         run: |
           go build -o igo
           chmod +x igo
-          ME=$(realpath igo)
-          export PATH=$PATH:$ME
+          export PATH=$PATH:$(pwd)
           echo "export PATH=$PATH:$ME" >> $GITHUB_ENV
         shell: bash
 
@@ -219,8 +218,7 @@ jobs:
         run: |
           go build -o igo
           chmod +x igo
-          ME=$(realpath igo)
-          export PATH=$PATH:$ME
+          export PATH=$PATH:$(pwd)
           echo "export PATH=$PATH:$ME" >> $GITHUB_ENV
         shell: bash
 
