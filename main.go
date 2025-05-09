@@ -37,13 +37,12 @@ func main() {
 	defer cancel()
 	wg := &sync.WaitGroup{}
 	errCh := make(chan error)
+	wg.Add(1)
 	go func() {
-		wg.Wait()
 		for err := range errCh {
 			capture(err)
 		}
 	}()
-	wg.Add(1)
 	switch *app.figs.String(kCommand) {
 	case "ins":
 		go install(app, wg, errCh, *app.figs.String(kGoVersion))

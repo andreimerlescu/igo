@@ -109,10 +109,9 @@ func (app *Application) patchShellConfigPath(envs map[string]string) error {
 		envs["GOSCRIPTS"],
 	}
 
-	shellFiles := []string{
-		filepath.Join(app.userHomeDir, ".bashrc"),
-		filepath.Join(app.userHomeDir, ".zshrc"),
-	}
+	bashrc := filepath.Join(app.userHomeDir, ".bashrc")
+	zshrc := filepath.Join(app.userHomeDir, ".zshrc")
+	shellFiles := []string{bashrc, zshrc}
 
 	var targetFile string
 	for _, shellFile := range shellFiles {
@@ -122,11 +121,18 @@ func (app *Application) patchShellConfigPath(envs map[string]string) error {
 		}
 	}
 	if targetFile == "" {
-		return fmt.Errorf("no shell config file found (.bashrc or .zshrc)")
+		contents := fmt.Sprintf("export PATH=%s:%s:%s:$PATH\n",
+			envs["GOSHIMS"], envs["GOSCRIPTS"], envs["GOBIN"])
+		return os.WriteFile(zshrc, []byte(contents), 0644)
 	}
 
 	content, err := os.ReadFile(targetFile)
-	capture(err)
+	if err != nil {
+		return fmt.Errorf("130 failed to read file %s: %w", targetFile, err)
+	}
+	if *app.figs.Bool(kVerbose) {
+		color.Green("Contents of %s is: \n%s\n", targetFile, content)
+	}
 	lines := strings.Split(string(content), "\n")
 
 	// Look for the export PATH line
@@ -148,7 +154,7 @@ func (app *Application) patchShellConfigPath(envs map[string]string) error {
 		var missingPaths []string
 		for _, reqPath := range requiredPaths {
 			if reqPath == "" {
-				return fmt.Errorf("required PATH component is empty in envs")
+				return fmt.Errorf("156 required PATH component is empty in envs")
 			}
 			found := false
 			for _, part := range pathParts {
@@ -166,7 +172,10 @@ func (app *Application) patchShellConfigPath(envs map[string]string) error {
 			newPathValue := strings.Join(append(missingPaths, pathValue), ":")
 			newPathLine := fmt.Sprintf("export PATH=%s", newPathValue)
 			lines[pathLineIndex] = newPathLine
-			capture(os.WriteFile(targetFile, []byte(strings.Join(lines, "\n")), 0644))
+			err := os.WriteFile(targetFile, []byte(strings.Join(lines, "\n")), 0644)
+			if err != nil {
+				return fmt.Errorf("176 failed to write file %s: %w", targetFile, err)
+			}
 			fmt.Printf("Updated PATH in %s with missing paths: %v\n", targetFile, missingPaths)
 		} else {
 			fmt.Printf("PATH in %s already contains all required paths\n", targetFile)
@@ -175,16 +184,24 @@ func (app *Application) patchShellConfigPath(envs map[string]string) error {
 	}
 
 	newPathLine := fmt.Sprintf("export PATH=%s:%s:%s:$PATH", envs["GOSHIMS"], envs["GOBIN"], envs["GOSCRIPTS"])
-	targetHandler := captureOpenFile(targetFile, os.O_APPEND|os.O_WRONLY, 0644)
-	defer capture(targetHandler.Close())
-
-	if len(content) > 0 && content[len(content)-1] != '\n' {
-		captureInt(targetHandler.WriteString("\n"))
+	targetHandler, err := os.OpenFile(targetFile, os.O_APPEND|os.O_WRONLY, 0644)
+	if err != nil {
+		return fmt.Errorf("188 could not open target file: %w", err)
 	}
 
-	captureInt(targetHandler.WriteString(newPathLine + "\n"))
+	if len(content) > 0 && content[len(content)-1] != '\n' {
+		_, err = targetHandler.WriteString("\n")
+		if err != nil {
+			return fmt.Errorf("194 could not write to target file: %w", err)
+		}
+	}
 
-	return nil
+	_, err = targetHandler.WriteString(newPathLine + "\n")
+	if err != nil {
+		return fmt.Errorf("200 could not write to target file: %w", err)
+	}
+
+	return targetHandler.Close()
 }
 
 // findGoVersions returns installed versions of Go in the igoWorkspace()
@@ -245,13 +262,13 @@ func (app *Application) injectEnvVarsToShellConfig(envs map[string]string) error
 		}
 	}
 	if targetFile == "" {
-		return fmt.Errorf("no shell config file found (.bashrc or .zshrc)")
+		return fmt.Errorf("264 no shell config file found (.bashrc or .zshrc)")
 	}
 
 	// Read the existing content of the target file
 	content, err := os.ReadFile(targetFile)
 	if err != nil {
-		return fmt.Errorf("failed to read %s: %w", targetFile, err)
+		return fmt.Errorf("270 failed to read %s: %w", targetFile, err)
 	}
 	existingLines := strings.Split(string(content), "\n")
 
@@ -280,27 +297,28 @@ func (app *Application) injectEnvVarsToShellConfig(envs map[string]string) error
 	// If there are new lines to append, write them to the file
 	if len(newLines) > 0 {
 		// Open the file in append mode
-		file, err := os.OpenFile(targetFile, os.O_APPEND|os.O_WRONLY, 0644)
+		shellProfileFile, err := os.OpenFile(targetFile, os.O_APPEND|os.O_WRONLY, 0644)
 		if err != nil {
-			return fmt.Errorf("failed to open %s for appending: %w", targetFile, err)
+			return fmt.Errorf("300 failed to open %s for appending: %w", targetFile, err)
 		}
-		defer capture(file.Close())
 
 		// Add a newline before appending if the file doesn't end with one
 		if len(content) > 0 && content[len(content)-1] != '\n' {
-			if _, err := file.WriteString("\n"); err != nil {
-				return fmt.Errorf("failed to write newline to %s: %w", targetFile, err)
+			if _, err := shellProfileFile.WriteString("\n"); err != nil {
+				return fmt.Errorf("307 failed to write newline to %s: %w", targetFile, err)
 			}
 		}
 
 		// Write the new export lines
 		for _, line := range newLines {
-			if _, err := file.WriteString(line + "\n"); err != nil {
-				return fmt.Errorf("failed to write to %s: %w", targetFile, err)
+			if _, err := shellProfileFile.WriteString(line + "\n"); err != nil {
+				return fmt.Errorf("314 failed to write to %s: %w", targetFile, err)
 			}
 		}
 
 		fmt.Printf("Updated %s with %d new environment variables\n", targetFile, len(newLines))
+
+		return shellProfileFile.Close()
 	} else {
 		fmt.Printf("No new environment variables to add to %s\n", targetFile)
 	}
