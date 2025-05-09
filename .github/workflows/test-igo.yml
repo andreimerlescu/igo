@@ -1,0 +1,197 @@
+name: Test IGO
+
+on:
+  push:
+    branches:
+      - master
+      - develop
+      - 'release/**'
+      - 'feature/**'
+      - 'hotfix/**'
+  pull_request:
+    branches: [ master, develop, 'release/**' ]
+  workflow_dispatch:
+    inputs:
+      run_macos_tests:
+        description: 'Run macOS tests'
+        required: false
+        type: boolean
+        default: false
+      create_release:
+        description: 'Create release branch from develop'
+        required: false
+        type: boolean
+        default: false
+      promote_to_master:
+        description: 'Promote release to master'
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  version-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # This fetches all history and tags
+
+      - name: Check VERSION is greater than latest tag
+        run: |
+          chmod +x .github/workflows/scripts/check_version.sh
+          source .github/workflows/scripts/check_version.sh
+        shell: bash
+
+  release-check:
+    if: startsWith(github.ref, 'refs/heads/release/') || inputs.create_release || inputs.promote_to_master
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Extract version from VERSION file
+        id: version
+        run: |
+          VERSION=$(cat VERSION | tr -d '\n')
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "Version extracted: $VERSION"
+
+      # Additional release validation steps
+      - name: Validate release requirements
+        run: |
+          # Add any additional validation for releases
+          # For example, verify changelog entries, documentation, etc.
+          echo "Validating release requirements for $VERSION"
+          # Add your validation logic here
+          exit 0
+
+  create-release-branch:
+    if: inputs.create_release == true
+    needs: [version-check]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          ref: develop
+
+      - name: Extract version from VERSION file
+        id: extract_version
+        run: |
+          VERSION=$(cat VERSION | tr -d '\n')
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "Version extracted: $VERSION"
+
+      - name: Create release branch
+        run: |
+          git config --global user.name "GitHub Actions Bot"
+          git config --global user.email "actions@github.com"
+          git checkout -b release/$VERSION
+          git push origin release/$VERSION
+
+      - name: Create PR from release to master
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          base: master
+          head: release/${{ env.VERSION }}
+          title: "Release ${{ env.VERSION }}"
+          body: |
+            ## Release ${{ env.VERSION }}
+            
+            This PR is automatically created to merge the release branch into master.
+            Please review and approve to proceed with the release.
+            
+            Release notes:
+            - [Add release notes here]
+
+  promote-to-master:
+    if: inputs.promote_to_master == true && startsWith(github.ref, 'refs/heads/release/')
+    needs: [version-check, release-check, test-linux, test-macos]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          ref: ${{ github.ref }}
+
+      - name: Extract version
+        run: |
+          VERSION=$(cat VERSION | tr -d '\n')
+          RELEASE_BRANCH=${GITHUB_REF#refs/heads/}
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "RELEASE_BRANCH=$RELEASE_BRANCH" >> $GITHUB_ENV
+
+      - name: Merge to master
+        run: |
+          git config --global user.name "GitHub Actions Bot"
+          git config --global user.email "actions@github.com"
+          git checkout master
+          git merge --no-ff $RELEASE_BRANCH -m "Merge release $VERSION to master"
+          git tag -a $VERSION -m "Release $VERSION"
+          git push origin master
+          git push origin $VERSION
+
+
+  test-linux:
+    needs: version-check
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [
+          ubuntu-22.04,
+          ubuntu-24.04,
+          ubuntu-24.04-arm,
+          ubuntu-22.04-arm
+        ]
+        include:
+          - os: ubuntu-latest
+            platform: linux
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Docker
+        uses: docker/setup-buildx-action@v2
+
+      - name: Run test script
+        run: |
+          chmod +x ./test.sh
+          ./test.sh
+        shell: bash
+
+  test-macos:
+    needs: version-check
+    if: github.ref == 'refs/heads/master' ||
+      github.event_name == 'pull_request' ||
+      startsWith(github.ref, 'refs/heads/hotfix/') ||
+      startsWith(github.ref, 'refs/heads/release/') ||
+      inputs.run_macos_tests == true
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [
+          macos-15,
+          macos-14,
+          macos-13
+        ]
+        include:
+          - os: macos-latest
+            platform: darwin
+          - os: macos-13
+            platform: darwin-arm64
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Docker
+        run: |
+          brew install docker
+          colima start
+
+      - name: Run test script
+        run: |
+          chmod +x ./test.sh
+          ./test.sh
+        shell: bash
