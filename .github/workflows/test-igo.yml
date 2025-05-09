@@ -169,11 +169,6 @@ jobs:
           go build -o igo
           chmod +x igo
           export PATH=$PATH:$(pwd)
-          echo "export PATH=$PATH:$ME" >> $GITHUB_ENV
-        shell: bash
-
-      - name: Run test script
-        run: |
           chmod +x ./tester.sh
           ./tester.sh
         shell: bash
@@ -219,11 +214,6 @@ jobs:
           go build -o igo
           chmod +x igo
           export PATH=$PATH:$(pwd)
-          echo "export PATH=$PATH:$ME" >> $GITHUB_ENV
-        shell: bash
-
-      - name: Run test script
-        run: |
           chmod +x ./tester.sh
           ./tester.sh
         shell: bash
