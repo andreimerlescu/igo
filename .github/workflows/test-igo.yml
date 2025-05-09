@@ -188,7 +188,7 @@ jobs:
       - name: Set up Docker
         run: |
           brew install docker
-          brew services start docker
+          brew services docker start
 
       - name: Run test script
         run: |
