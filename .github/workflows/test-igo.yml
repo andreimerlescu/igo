@@ -168,7 +168,9 @@ jobs:
         run: |
           go build -o igo
           chmod +x igo
-          mv igo /bin/igo
+          ME=$(realpath igo)
+          export PATH=$PATH:$ME
+          echo "export PATH=$PATH:$ME" >> $GITHUB_ENV
         shell: bash
 
       - name: Run test script
@@ -217,7 +219,9 @@ jobs:
         run: |
           go build -o igo
           chmod +x igo
-          mv igo /bin/igo
+          ME=$(realpath igo)
+          export PATH=$PATH:$ME
+          echo "export PATH=$PATH:$ME" >> $GITHUB_ENV
         shell: bash
 
       - name: Run test script
