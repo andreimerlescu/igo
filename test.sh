@@ -11,5 +11,5 @@ docker build -t "igo:${VERSION}" . || { echo "Docker build failed"; exit 1; }
 chmod +x tester.sh
 
 echo "Running tests in container..."
-docker $DEBUG run --rm -it --entrypoint "/home/tester/tester.sh" "igo:$VERSION"
+docker $DEBUG run --rm --entrypoint "/home/tester/tester.sh" "igo:$VERSION"
 echo "Tests completed successfully!"
