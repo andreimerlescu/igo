@@ -188,7 +188,9 @@ jobs:
       - name: Set up Docker
         run: |
           brew install docker
-          brew services docker start
+          brew install colima
+          colima start
+        shell: bash
 
       - name: Run test script
         run: |
