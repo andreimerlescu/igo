@@ -15,7 +15,7 @@ import (
 
 type Application struct {
 	ctx         context.Context
-	figs        figtree.Fruit
+	figs        figtree.Plant
 	userHomeDir string
 }
 
@@ -83,6 +83,9 @@ func (app *Application) installExtraPackages(envs map[string]string, version str
 		fmt.Sprintf("GOOS=%s", envs["GOOS"]),
 		fmt.Sprintf("GOARCH=%s", envs["GOARCH"]),
 	}
+	p := app.figs.Fig(kExtraPackages).ToString()
+	color.Green("Installing extra packages: %s", p)
+
 	for pkg, modulePath := range packages {
 		cmd := exec.Command(goBinPath, "install", fmt.Sprintf("%s@latest", modulePath))
 		cmd.Env = append(os.Environ(), cmdEnv...) // Include existing env vars plus custom ones
@@ -109,21 +112,23 @@ func (app *Application) patchShellConfigPath(envs map[string]string) error {
 		envs["GOSCRIPTS"],
 	}
 
-	bashrc := filepath.Join(app.userHomeDir, ".bashrc")
-	zshrc := filepath.Join(app.userHomeDir, ".zshrc")
+	bashrc := filepath.Join(app.userHomeDir, ".profile")
+	zshrc := filepath.Join(app.userHomeDir, ".zshrc.local")
 	shellFiles := []string{bashrc, zshrc}
 
 	var targetFile string
 	for _, shellFile := range shellFiles {
-		if _, err := os.Stat(shellFile); err == nil {
+		if _, err := os.Stat(shellFile); !os.IsNotExist(err) && !os.IsPermission(err) {
+			color.Green("Found %s", shellFile)
 			targetFile = shellFile
 			break
 		}
 	}
 	if targetFile == "" {
-		contents := fmt.Sprintf("export PATH=%s:%s:%s:$PATH\n",
-			envs["GOSHIMS"], envs["GOSCRIPTS"], envs["GOBIN"])
-		return os.WriteFile(zshrc, []byte(contents), 0644)
+		contents := fmt.Sprintf("export PATH=%s:%s:%s:%s\n",
+			envs["GOSHIMS"], envs["GOSCRIPTS"], envs["GOBIN"], os.Getenv("PATH"))
+		capture(os.WriteFile(zshrc, []byte(contents), 0644))
+		return os.WriteFile(bashrc, []byte(contents), 0644)
 	}
 
 	content, err := os.ReadFile(targetFile)
@@ -183,7 +188,7 @@ func (app *Application) patchShellConfigPath(envs map[string]string) error {
 		return nil
 	}
 
-	newPathLine := fmt.Sprintf("export PATH=%s:%s:%s:$PATH", envs["GOSHIMS"], envs["GOBIN"], envs["GOSCRIPTS"])
+	newPathLine := fmt.Sprintf("export PATH=%s:%s:%s:%s", envs["GOSHIMS"], envs["GOBIN"], envs["GOSCRIPTS"], os.Getenv("PATH"))
 	targetHandler, err := os.OpenFile(targetFile, os.O_APPEND|os.O_WRONLY, 0644)
 	if err != nil {
 		return fmt.Errorf("188 could not open target file: %w", err)

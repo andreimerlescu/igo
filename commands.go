@@ -137,17 +137,19 @@ func install(app *Application, wg *sync.WaitGroup, errCh chan error, version str
 	binDir := filepath.Join(workspace, "bin")
 	pathDir := filepath.Join(workspace, "path")
 	rootDir := filepath.Join(workspace, "root")
+	scriptsDir := filepath.Join(workspace, "scripts")
 
 	versionDir := filepath.Join(workspace, "versions", version)
 
 	// define the environment that igo requires
 	envs := map[string]string{
-		"GOOS":    *app.figs.String(kGoos),
-		"GOARCH":  *app.figs.String(kGoArch),
-		"GOSHIMS": shimDir,
-		"GOBIN":   binDir,
-		"GOROOT":  rootDir,
-		"GOPATH":  pathDir,
+		"GOOS":      *app.figs.String(kGoos),
+		"GOARCH":    *app.figs.String(kGoArch),
+		"GOSCRIPTS": scriptsDir,
+		"GOSHIMS":   shimDir,
+		"GOBIN":     binDir,
+		"GOROOT":    rootDir,
+		"GOPATH":    pathDir,
 	}
 
 	installerLockFile := filepath.Join(workspace, "installer.lock")
@@ -166,7 +168,19 @@ func install(app *Application, wg *sync.WaitGroup, errCh chan error, version str
 
 	// this file protects the runtime of the igo install func - when its present, the script aborts
 	_, err := os.Stat(installerLockFile) // check igo runtime installer.lock
-	defer capture(os.Remove(installerLockFile))
+	defer func() {
+		_, err = os.Stat(installerLockFile)
+		if os.IsNotExist(err) {
+			return
+		}
+		if os.IsPermission(err) {
+			capture(err)
+		}
+		err = os.Remove(installerLockFile)
+		if err != nil {
+			capture(err)
+		}
+	}()
 	if os.IsExist(err) { // installer.lock exists
 		errCh <- fmt.Errorf("huh igo is already running")
 		return
@@ -304,7 +318,7 @@ func install(app *Application, wg *sync.WaitGroup, errCh chan error, version str
 	}
 
 	// validate the format matches
-	if !strings.EqualFold(strings.TrimSpace(dataInVersionFile), version) {
+	if !strings.Contains(strings.TrimSpace(dataInVersionFile), version) {
 		e := fmt.Errorf("failed check - mismatched versions got = %s ; wanted = %s", dataInVersionFile, version)
 		if verbose || debug {
 			color.Red("Received Err: %v", e)
@@ -317,9 +331,9 @@ func install(app *Application, wg *sync.WaitGroup, errCh chan error, version str
 	}
 
 	// open the version file
-	fileHandler := captureOpenFile(installerLockFile, os.O_CREATE|os.O_EXCL|os.O_RDWR|os.O_TRUNC, 0600)
+	fileHandler := captureOpenFile(versionLockFile, os.O_CREATE|os.O_EXCL|os.O_RDWR|os.O_TRUNC, 0600)
 	if verbose {
-		color.Green("Opened the %v", installerLockFile)
+		color.Green("Opened the %v", versionLockFile)
 	}
 
 	// write the current version
@@ -337,7 +351,7 @@ func install(app *Application, wg *sync.WaitGroup, errCh chan error, version str
 	capture(fileHandler.Close())
 
 	// install extra packages on the system
-	capture(app.installExtraPackages(envs, dataInVersionFile))
+	capture(app.installExtraPackages(envs, version))
 	if verbose {
 		color.Green("Installed extra packages successfully!")
 	}

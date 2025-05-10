@@ -67,6 +67,9 @@ func backupIfNotSymlink(path string) error {
 		if os.IsNotExist(err) {
 			return nil
 		}
+		if os.IsPermission(err) {
+			return fmt.Errorf("permission denied to stat path %s: %w", path, err)
+		}
 		return fmt.Errorf("failed to stat path %s: %w", path, err)
 	}
 
