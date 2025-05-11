@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"embed"
 	"fmt"
 	"io/fs"
 	"os"
@@ -12,6 +13,12 @@ import (
 	"github.com/andreimerlescu/figtree/v2"
 	"github.com/fatih/color"
 )
+
+//go:embed bundled/shim.go.sh
+var bundledShimsGoBytes embed.FS
+
+//go:embed bundled/shim.gofmt.sh
+var bundledShimsGofmtBytes embed.FS
 
 type Application struct {
 	ctx         context.Context
@@ -34,6 +41,32 @@ func (app *Application) Workspace() string {
 		return filepath.Join("/", "usr", "go")
 	}
 	return filepath.Join(app.userHomeDir, "go")
+}
+
+func (app *Application) CreateShims() error {
+	workspace := app.Workspace()
+	shimsDir := filepath.Join(workspace, "shims")
+	goShim := filepath.Join(shimsDir, "go")
+	gofmtShim := filepath.Join(shimsDir, "gofmt")
+	shimGoBytes, err := bundledShimsGoBytes.ReadFile("bundled/shim.go.sh")
+	if err != nil {
+		return fmt.Errorf("failed to read bundled shim.go.sh: %v", err)
+	}
+	err = os.WriteFile(goShim, shimGoBytes, 0755)
+	if err != nil {
+		return fmt.Errorf("failed to write shim.go.sh: %v", err)
+	}
+	shimGofmtBytes, err := bundledShimsGofmtBytes.ReadFile("bundled/shim.gofmt.sh")
+	if err != nil {
+		return fmt.Errorf("failed to read bundled shim.go.sh: %v", err)
+	}
+	err = os.WriteFile(gofmtShim, shimGofmtBytes, 0755)
+	if err != nil {
+		return fmt.Errorf("failed to write shim.gofmt.sh: %v", err)
+	}
+	capture(os.Chmod(goShim, 0755))
+	capture(os.Chmod(gofmtShim, 0755))
+	return nil
 }
 
 // runVersionCheck executes "go version" with specified environment variables and returns the output.
@@ -254,8 +287,8 @@ func (app *Application) activatedVersion() (string, error) {
 func (app *Application) injectEnvVarsToShellConfig(envs map[string]string) error {
 	// Possible shell config files to check
 	shellFiles := []string{
-		filepath.Join(app.userHomeDir, ".bashrc"),
-		filepath.Join(app.userHomeDir, ".zshrc"),
+		filepath.Join(app.userHomeDir, ".profile"),
+		filepath.Join(app.userHomeDir, ".zshrc.local"),
 	}
 
 	// Find the first existing shell config file

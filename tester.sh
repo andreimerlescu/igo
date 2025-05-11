@@ -2,23 +2,31 @@
 set -e
 echo "Starting igo test script..."
 
+function test_took() {
+  echo "Test took $SECONDS seconds"
+  echo
+}
+
 # Initial setup
 export PATH=/bin:$PATH
 
 # Display igo version
 echo "=== IGO VERSION ==="
+SECONDS=0
 igo -version || exit 1
-echo
+test_took
 
 # List installed versions (should be empty)
 echo "=== INITIAL LIST (Should be empty) ==="
+SECONDS=0
 igo -cmd list || exit 1
-echo
+test_took
 
 # Install Go 1.24.2
 echo "=== INSTALLING GO 1.24.2 ==="
+SECONDS=0
 igo -cmd install -gover 1.24.2 --debug || exit 1
-echo
+test_took
 
 echo "=== LISTING FILES ==="
 tree -L 3 || exit 1
@@ -30,9 +38,10 @@ echo
 
 USERNAME=$(whoami | tr -d '\n')
 
-source ~/.profile || { echo "Failed to source $USERNAME shell config"; exit 1; }
-source ~/.bashrc || { echo "Failed to source $USERNAME shell config"; exit 1; }
-
+echo "=== RELOADING SHELL CONFIG ==="
+{ [ -f ~/.profile ] && source ~/.profile; echo "Loaded ~/.profile into shell..."; } || { echo "Failed to source $USERNAME shell config"; exit 1; }
+{ [ -f ~/.bashrc ] && source ~/.zshrc.local; echo "Loaded ~/.zshrc.local"; } || { echo "Failed to source $USERNAME shell config"; exit 1; }
+echo
 
 echo "=== BASH PROFILE ==="
 cat ~/.profile || exit 1
@@ -62,26 +71,78 @@ ID=$(genwordpass)
 TEST_ID="$TESTS-$ID"
 echo "TEST_ID: $TEST_ID"
 TESTS=$(test_completed) # genwordpass was successfully consumed
+echo
 
 # List installed versions (should see both with 1.24.2 activated)
 echo "=== LISTING GO VERSIONS ==="
+SECONDS=0
 igo -cmd list || exit 1
 TESTS=$(test_completed)
-echo
-
-exit 0
+test_took
 
 # Install Go 1.24.3
 echo "=== INSTALLING GO 1.24.3 ==="
-igo -cmd install -gover 1.24.3 $DEBUG $VERBOSE || exit 1
+SECONDS=0
+igo -cmd install -gover 1.24.3 "$DEBUG" "$VERBOSE" || exit 1
+TESTS=$(test_completed)
+test_took
+
+echo "=== RELOADING ENVIRONMENT ==="
+{ [ -f ~/.profile ] && source ~/.profile; echo "Loaded ~/.profile into shell..."; } || { echo "Failed to source $USERNAME shell config"; exit 1; }
+{ [ -f ~/.zshrc.local ] && source ~/.zshrc.local; echo "Loaded ~/.zshrc.local in to shell..."; } || { echo "Failed to source $USERNAME shell config"; exit 1; }
+TESTS=$(test_completed)
 echo
 
-exit 0
+echo "=== LISTING ~/go FILES ==="
+ls -la ~/go || exit 1
+ls -la "$(realpath ~/go/bin)" || exit 1
+ls -la "$(realpath ~/go/shims)" || exit 1
+TESTS=$(test_completed)
+echo
+
+echo "=== ENVIRONMENT VARIABLES ==="
+env | sort || exit 1
+TESTS=$(test_completed)
+echo
+
+echo "=== PATH ==="
+echo "$PATH"
+TESTS=$(test_completed)
+echo
+
+echo "=== VERIFYING INSTALLATION ==="
+{ go version | grep "go1.24.3" && echo "Go 1.24.3 verified!"; } || { echo "FAIL: Go 1.24.3 not active"; exit 1; }
+TESTS=$(test_completed)
+echo
+
+# List installed versions
+echo "=== LISTING GO VERSIONS ==="
+SECONDS=0
+igo -cmd list "$DEBUG" "$VERBOSE" || exit 1
+TESTS=$(test_completed)
+test_took
 
 # Switch to Go 1.24.3
-echo "=== SWITCHING TO GO 1.24.3 ==="
-igo -cmd use -gover 1.24.3
+echo "=== SWITCHING TO GO 1.24.2 ==="
+SECONDS=0
+igo -cmd use -gover 1.24.2 "$DEBUG" "$VERBOSE" || exit 1
+TESTS=$(test_completed)
+test_took
+
+# List installed versions
+echo "=== LISTING GO VERSIONS ==="
+SECONDS=0
+igo -cmd list "$DEBUG" "$VERBOSE" || exit 1
+TESTS=$(test_completed)
+test_took
+
+echo "=== VERIFYING INSTALLATION ==="
+v=$(go version)
+{ go version | grep "go1.24.2" && echo "Go $v verified!"; } || { echo "FAIL: Go 1.24.2 not active; got $v"; exit 1; }
+unset v
+TESTS=$(test_completed)
 echo
+
 
 exit 0
 
@@ -108,23 +169,27 @@ echo
 
 # Remove Go 1.24.2
 echo "=== REMOVING GO 1.24.2 ==="
-igo -cmd uninstall -gover 1.24.2
-echo
+SECONDS=0
+igo -cmd uninstall -gover 1.24.2 || exit 1
+test_took
 
 # List installed versions
 echo "=== LISTING GO VERSIONS (After removing 1.24.2) ==="
-igo -cmd list
-echo
+SECONDS=0
+igo -cmd list || exit 1
+test_took
 
 # Remove Go 1.24.3
 echo "=== REMOVING GO 1.24.3 ==="
-igo -cmd uninstall -gover 1.24.3
-echo
+SECONDS=0
+igo -cmd uninstall -gover 1.24.3 || exit 1
+test_took
 
 # List installed versions (should be empty)
 echo "=== LISTING GO VERSIONS (Should be empty) ==="
-igo -cmd list
-echo
+SECONDS=0
+igo -cmd list || exit 1
+test_took
 
 # Verify summarize command fails
 echo "=== VERIFYING SUMMARIZE COMMAND FAILS ==="
@@ -135,4 +200,4 @@ else
 fi
 echo
 
-echo "All tests completed!"
+echo "Completed $TESTS tests in $SECONDS seconds!"

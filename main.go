@@ -63,9 +63,9 @@ func main() {
 	case "list":
 		go list(app, ctx, wg, errCh)
 	case "u":
-		go use(ctx, wg, errCh, *app.figs.String(kGoVersion))
+		go use(app, ctx, wg, errCh, *app.figs.String(kGoVersion))
 	case "use":
-		go use(ctx, wg, errCh, *app.figs.String(kGoVersion))
+		go use(app, ctx, wg, errCh, *app.figs.String(kGoVersion))
 	case "f":
 		go fix(ctx, wg, errCh, *app.figs.String(kGoVersion))
 	case "fix":

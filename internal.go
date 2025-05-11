@@ -59,31 +59,39 @@ func captureOpenFile(path string, flag int, perm os.FileMode) *os.File {
 	return f
 }
 
-// backupIfNotSymlink checks if the given path is a symlink and deletes it if it is not.
+// removeSymlinkOrBackupPath checks if the given path is a symlink and deletes it if it is not.
 // Returns an error if the check or deletion fails.
-func backupIfNotSymlink(path string) error {
-	fileInfo, err := os.Lstat(path) // Lstat to not follow symlinks
-	if err != nil {
-		if os.IsNotExist(err) {
-			return nil
-		}
-		if os.IsPermission(err) {
-			return fmt.Errorf("permission denied to stat path %s: %w", path, err)
-		}
-		return fmt.Errorf("failed to stat path %s: %w", path, err)
+func removeSymlinkOrBackupPath(path string) error {
+	if !PathExists(path) {
+		return nil
 	}
-
-	if fileInfo.Mode()&os.ModeSymlink != 0 { // validate if symlink
-		fmt.Printf("%s is a symlink, skipping deletion\n", path)
+	if isSymlink(path) {
+		err := os.Remove(path)
+		if err != nil {
+			return fmt.Errorf("failed to remove symlink %s: %w", path, err)
+		}
 		return nil
 	}
 
-	err = os.Rename(path, path+".bak") // path isn't symlink, so move it to .bak
+	err := os.Rename(path, path+".bak") // path isn't symlink, so move it to .bak
 	if err != nil {
 		return fmt.Errorf("failed to delete non-symlink path %s: %w", path, err)
 	}
 
 	return nil
+}
+
+func PathExists(path string) bool {
+	_, err := os.Lstat(path)
+	return !os.IsNotExist(err) && !os.IsPermission(err)
+}
+
+func isSymlink(path string) bool {
+	fileInfo, err := os.Lstat(path) // Lstat to not follow symlinks
+	if err != nil {
+		return false
+	}
+	return fileInfo.Mode()&os.ModeSymlink != 0
 }
 
 // touch creates a new empty file or updates the modification time of an existing file at the given path.

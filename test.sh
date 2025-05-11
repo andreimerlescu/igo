@@ -3,31 +3,52 @@
 SECONDS=0
 VERSION="$(cat VERSION)"
 
+# Define command line arguments
 declare -A params=()
 params[build]="true"
 params[rm]=""
 params[debug]="false"
 params[verbose]="false"
 
-
+# Define documentation for each parameter
 declare -A documentation=()
 documentation[build]="Build the Docker image"
 documentation[rm]="Remove the Docker image"
+documentation[debug]="Enable debug mode"
+documentation[verbose]="Enable verbose mode"
 
+# Include params helper
 source params.sh
+
+# Parse command line arguments
 parse_arguments "$@"
 
+# Parse debug mode
 DEBUG="${params[debug]}"
-if [[ -n "$DEBUG" ]]; then
+if [[ -n "$DEBUG" ]] && [[ "${DEBUG}" != "false" ]]; then
   DEBUG="--debug"
 fi
+[[ "${DEBUG}" == "false"  ]] && DEBUG=""
 
+# Parse verbose mode
+VERBOSE="${params[verbose]}"
+if [[ -n "$VERBOSE" ]] && [[ "${VERSION}" != "false" ]]; then
+  VERBOSE="--verbose"
+fi
+[[ "${VERBOSE}" == "false"  ]] && VERBOSE=""
+
+# Parse branch name
 BRANCH=$(git rev-parse --abbrev-ref HEAD)
 echo "Branch: $BRANCH"
 BRANCH="$(echo "$BRANCH" | tr '/' '-')"
-TEST_ID="${VERSION}q$(counter -name "igo-tests-${BRANCH}" -add)"
+
+# Prepare the counter
+COUNTER_NAME="igo-tests-${BRANCH}"
+echo "Using counter name: $COUNTER_NAME"
+TEST_ID="${VERSION}q$(counter -name "${COUNTER_NAME}" -add)"
 echo "Test ID: $TEST_ID"
 
+# Remove old images and containers
 echo "Docker Image: igo:${TEST_ID}"
 if [[ "${params[rm]}" == "true" ]]; then
   echo "Removing all igo:${VERSION}q* images..."
@@ -40,15 +61,18 @@ if [[ "${params[rm]}" == "true" ]]; then
   docker rmi "igo:${VERSION}" || echo "can not remove non-existent igo:${VERSION}"
 fi
 
+# Build the Docker image
 if [[ "${params[build]}" == "true" ]]; then
   docker build -t "igo:${VERSION}" . || { echo "Docker build failed"; exit 1; }
 fi
 docker tag "igo:${VERSION}" "igo:${TEST_ID}" || { echo "Docker tag failed"; exit 1; }
 
+# Ensure tester is executable
 chmod +x tester.sh
 
-echo "Running tests in container..."
-if ! docker $DEBUG run --rm --env=TEST_ID=$TEST_ID --env=BRANCH=$BRANCH --env=VERSION=$VERSION --env=DEBUG=$DEBUG --entrypoint "/home/tester/tester.sh" "igo:$TEST_ID"; then
+# Run the tests
+echo "Running tests in container '${DEBUG}'..."
+if ! docker $DEBUG run --rm --env=TEST_ID=$TEST_ID --env=BRANCH=$BRANCH --env=VERSION=$VERSION --env=DEBUG=$DEBUG --env=VERBOSE=$VERBOSE --entrypoint "/home/tester/tester.sh" "igo:$TEST_ID"; then
   echo "Tests failed - took $SECONDS seconds"
   exit 1
 else

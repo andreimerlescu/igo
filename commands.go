@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/fatih/color"
 	"os"
@@ -18,9 +19,122 @@ func fix(ctx context.Context, wg *sync.WaitGroup, errCh chan<- error, version st
 	panic("not implemented")
 }
 
-func use(ctx context.Context, wg *sync.WaitGroup, errCh chan<- error, version string) {
+func use(app *Application, ctx context.Context, wg *sync.WaitGroup, errCh chan<- error, version string) {
 	defer wg.Done()
-	panic("not implemented")
+	verbose, debug := *app.figs.Bool(kVerbose), *app.figs.Bool(kDebug)
+	onlyVerbose := verbose && !debug
+
+	if verbose {
+		color.Green("VERBOSE MODE ENABLED")
+	}
+
+	if debug {
+		color.Red("DEBUG MODE ENABLED")
+	}
+
+	workspace := app.Workspace()
+	_, dirErr := os.Stat(workspace)
+	if os.IsNotExist(dirErr) {
+		color.Red("No go versions installed.")
+		return
+	}
+	currentVersion, err := app.activatedVersion()
+	if err != nil {
+		if debug || onlyVerbose {
+			color.Red(err.Error())
+		}
+		errCh <- err
+		return
+	}
+	if strings.Contains(currentVersion, version) {
+		color.Green("Already using version %v", currentVersion)
+		return
+	}
+	binDir := filepath.Join(workspace, "bin")
+	pathDir := filepath.Join(workspace, "path")
+	rootDir := filepath.Join(workspace, "root")
+	shimDir := filepath.Join(workspace, "shims")
+	scriptsDir := filepath.Join(workspace, "scripts")
+	versionDir := filepath.Join(workspace, "versions", version)
+	versionFile := filepath.Join(workspace, "version")
+
+	// define the environment that igo requires
+	envs := map[string]string{
+		"GOOS":      *app.figs.String(kGoos),
+		"GOARCH":    *app.figs.String(kGoArch),
+		"GOSCRIPTS": scriptsDir,
+		"GOSHIMS":   shimDir,
+		"GOBIN":     binDir,
+		"GOROOT":    rootDir,
+		"GOPATH":    pathDir,
+	}
+
+	_, err = os.Stat(versionDir)
+	if os.IsNotExist(err) {
+		if debug || onlyVerbose {
+			color.Red("No go version installed.")
+		}
+		errCh <- err
+		return
+	}
+
+	var paths = map[string]string{
+		filepath.Join(versionDir):              pathDir,
+		filepath.Join(versionDir, "go"):        rootDir,
+		filepath.Join(versionDir, "go", "bin"): binDir,
+	}
+	for source, target := range paths {
+		if debug {
+			color.Green("Linking %v -> %v", target, source)
+		}
+		err = removeSymlinkOrBackupPath(target)
+		if err != nil {
+			if debug || onlyVerbose {
+				color.Red("Failed to link %v -> %v due to err: %s", target, source, err)
+			}
+			errCh <- err
+			return
+		}
+
+		if err := os.Symlink(source, target); err != nil {
+			if debug || verbose {
+				color.Red("Failed to link %v -> %v due to err: %s", source, target, err)
+			}
+			errCh <- err
+			return
+		}
+	}
+
+	// replace VERSION file of go
+	err = os.Remove(versionFile)
+	if err != nil {
+		if debug || onlyVerbose {
+			color.Red("Failed to remove version file due to err: %s", err)
+		}
+		errCh <- err
+		return
+	}
+	err = os.WriteFile(versionFile, []byte(version), 0644)
+	if err != nil {
+		if debug || onlyVerbose {
+			color.Red("Failed to write version file due to err: %s", err)
+		}
+		errCh <- err
+		return
+	}
+
+	if debug {
+		versionFound := app.runVersionCheck(envs, version)
+		if !strings.Contains(versionFound, version) {
+			color.Red("Mismatched go version %v and found %v", version, versionFound)
+			errCh <- errors.New("mismatching go versions for switch indicates failure")
+			return
+		}
+	}
+
+	if debug || onlyVerbose {
+		color.Green("Set go version %v", version)
+	}
 }
 
 func uninstall(ctx context.Context, wg *sync.WaitGroup, errCh chan error, version string) {
@@ -126,7 +240,14 @@ func install(app *Application, wg *sync.WaitGroup, errCh chan error, version str
 		}
 	}
 
-	shimDir := filepath.Join(workspace, "shims")
+	var (
+		binDir     = filepath.Join(workspace, "bin")
+		pathDir    = filepath.Join(workspace, "path")
+		rootDir    = filepath.Join(workspace, "root")
+		shimDir    = filepath.Join(workspace, "shims")
+		scriptsDir = filepath.Join(workspace, "scripts")
+		versionDir = filepath.Join(workspace, "versions", version)
+	)
 	_, shimsErr := os.Stat(shimDir)
 	if os.IsNotExist(shimsErr) {
 		capture(os.MkdirAll(shimDir, 0755))
@@ -134,12 +255,6 @@ func install(app *Application, wg *sync.WaitGroup, errCh chan error, version str
 			color.Green("Create shim directory: %v", shimDir)
 		}
 	}
-	binDir := filepath.Join(workspace, "bin")
-	pathDir := filepath.Join(workspace, "path")
-	rootDir := filepath.Join(workspace, "root")
-	scriptsDir := filepath.Join(workspace, "scripts")
-
-	versionDir := filepath.Join(workspace, "versions", version)
 
 	// define the environment that igo requires
 	envs := map[string]string{
@@ -249,34 +364,25 @@ func install(app *Application, wg *sync.WaitGroup, errCh chan error, version str
 	}
 
 	// create a symlink in version dir to shim go
-	src := filepath.Join(workspace, "shims", "go")
-	tar := filepath.Join(versionDir, "go", "bin", "go")
-	capture(os.Symlink(src, tar))
-	if verbose {
-		color.Green("Created symlink %s to %s", src, tar)
-	}
-
-	// create a symlink in the version dir to shim gofmt
-	src = filepath.Join(workspace, "shims", "gofmt")
-	tar = filepath.Join(versionDir, "go", "bin", "gofmt")
-	capture(os.Symlink(src, tar))
-	if verbose {
-		color.Green("Created symlink %s to %s", src, tar)
+	err = app.CreateShims()
+	if err != nil {
+		errCh <- err
+		return
 	}
 
 	// if GOROOT is a directory, move it to root.bak in the app.Workspace()
-	capture(backupIfNotSymlink(rootDir))
+	capture(removeSymlinkOrBackupPath(rootDir))
 
 	// symlink for GOROOT to version go directory
-	src = filepath.Join(versionDir, "go")
-	tar = rootDir
+	src := filepath.Join(versionDir, "go")
+	tar := rootDir
 	capture(os.Symlink(src, tar))
 	if verbose {
 		color.Green("Created symlink %s to %s", src, tar)
 	}
 
 	// if GOBIN is a directory, move it to bin.bak in the app.Workspace()
-	capture(backupIfNotSymlink(binDir))
+	capture(removeSymlinkOrBackupPath(binDir))
 
 	// symlink for GOBIN to version go directory
 	src = filepath.Join(versionDir, "go", "bin")
@@ -286,7 +392,7 @@ func install(app *Application, wg *sync.WaitGroup, errCh chan error, version str
 		color.Green("Created symlink %s -> %s", src, tar)
 	}
 
-	capture(backupIfNotSymlink(pathDir))
+	capture(removeSymlinkOrBackupPath(pathDir))
 
 	// symlink for GOPATH to version go directory
 	src = strings.Clone(versionDir)
@@ -331,15 +437,16 @@ func install(app *Application, wg *sync.WaitGroup, errCh chan error, version str
 	}
 
 	// open the version file
-	fileHandler := captureOpenFile(versionLockFile, os.O_CREATE|os.O_EXCL|os.O_RDWR|os.O_TRUNC, 0600)
+	versionFile := filepath.Join(workspace, "version")
+	fileHandler := captureOpenFile(versionFile, os.O_CREATE|os.O_RDWR|os.O_TRUNC, 0644)
 	if verbose {
-		color.Green("Opened the %v", versionLockFile)
+		color.Green("Opened the %v", versionFile)
 	}
 
 	// write the current version
 	captureInt(fileHandler.Write([]byte(version)))
 	if verbose {
-		color.Green("Wrote %s to %s", version, installerLockFile)
+		color.Green("Wrote '%s' to %s", version, versionFile)
 	}
 
 	// report back to the user
