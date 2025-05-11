@@ -93,13 +93,12 @@ func (app *Application) runVersionCheck(envs map[string]string, version string) 
 	if err != nil {
 		capture(fmt.Errorf("failed to execute 'go version' with %s: %v\nOutput: %s", goBinPath, err, string(output)))
 	}
-
+	gover := strings.TrimSpace(string(output))
 	if *app.figs.Bool(kVerbose) {
-		color.Green("Received terminal output: ")
-		fmt.Println(string(output))
+		color.Green("Received terminal output: %s", gover)
 	}
 
-	return strings.TrimSpace(string(output))
+	return gover
 }
 
 // installExtraPackages installs additional Go packages using the specified environment and version.

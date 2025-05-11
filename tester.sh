@@ -3,7 +3,7 @@ set -e
 echo "Starting igo test script..."
 
 function test_took() {
-  echo "Test took $SECONDS seconds"
+  echo "Test $TESTS took $SECONDS seconds"
   echo
 }
 
@@ -122,7 +122,6 @@ igo -cmd list "$DEBUG" "$VERBOSE" || exit 1
 TESTS=$(test_completed)
 test_took
 
-# Switch to Go 1.24.3
 echo "=== SWITCHING TO GO 1.24.2 ==="
 SECONDS=0
 igo -cmd use -gover 1.24.2 "$DEBUG" "$VERBOSE" || exit 1
@@ -143,6 +142,25 @@ unset v
 TESTS=$(test_completed)
 echo
 
+echo "=== SWITCHING TO GO 1.24.3 ==="
+SECONDS=0
+igo -cmd use -gover 1.24.3 "$DEBUG" "$VERBOSE" || exit 1
+TESTS=$(test_completed)
+test_took
+
+# List installed versions
+echo "=== LISTING GO VERSIONS ==="
+SECONDS=0
+igo -cmd list "$DEBUG" "$VERBOSE" || exit 1
+TESTS=$(test_completed)
+test_took
+
+echo "=== VERIFYING INSTALLATION ==="
+v=$(go version)
+{ go version | grep "go1.24.3" && echo "Go $v verified!"; } || { echo "FAIL: Go 1.24.3 not active; got $v"; exit 1; }
+unset v
+TESTS=$(test_completed)
+echo
 
 exit 0
 

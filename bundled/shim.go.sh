@@ -23,7 +23,6 @@ get_go_binary_path_for_version() {
     if [ ! -f "${GODIR}/versions/${version}/go/bin/go.${version}" ]; then
       local GOVERSION=""
       [ -f "$PWD/.go_version" ] && GOVERSION="$(cat "$PWD/.go_version")"
-
     else
       echo "${GODIR}/versions/${version}/go/bin/go.${version}"
     fi
