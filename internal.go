@@ -180,6 +180,66 @@ func removeSetuidSetgidBits(path string) error {
 	return nil
 }
 
+// FindSymlinks scans the provided directory path and returns a slice
+// of full paths to any symlinks found in the root directory only.
+// It does not recurse into subdirectories.
+func FindSymlinks(dirPath string) ([]string, error) {
+	dir, err := os.Open(dirPath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to open directory: %w", err)
+	}
+	defer dir.Close()
+	entries, err := dir.ReadDir(-1) // -1 to read all entries
+	if err != nil {
+		return nil, fmt.Errorf("failed to read directory entries: %w", err)
+	}
+	var symlinks []string
+	for _, entry := range entries {
+		if entry.Type()&os.ModeSymlink != 0 {
+			fullPath := filepath.Join(dirPath, entry.Name())
+			symlinks = append(symlinks, fullPath)
+		}
+	}
+	return symlinks, nil
+}
+
+// ReadSymlink reads the target of a symlink
+func ReadSymlink(path string) (string, error) {
+	target, err := os.Readlink(path)
+	if err != nil {
+		return "", fmt.Errorf("failed to read symlink %s: %w", path, err)
+	}
+
+	// If the symlink target is relative, make it absolute
+	if !filepath.IsAbs(target) {
+		symlinkDir := filepath.Dir(path)
+		target = filepath.Join(symlinkDir, target)
+	}
+
+	return target, nil
+}
+
+// VerifyLink checks if a symlink correctly resolves to its expected target
+// and returns the appropriate status emoji (✅ for success, ❌ for failure)
+func VerifyLink(link, expectedTarget string) string {
+	actualTarget, err := ReadSymlink(link)
+	if err != nil {
+		return "❌" // Error reading the symlink
+	}
+
+	// Clean both paths to ensure consistent comparison
+	// This normalizes paths by removing redundant separators, dots, etc.
+	cleanExpected := filepath.Clean(expectedTarget)
+	cleanActual := filepath.Clean(actualTarget)
+
+	// Compare the cleaned paths
+	if cleanActual == cleanExpected {
+		return "✅" // Link correctly points to expected target
+	}
+
+	return "❌" // Link points to a different target
+}
+
 func IsDirectory(path string) bool {
 	fileInfo, err := os.Lstat(path)
 	if err != nil {

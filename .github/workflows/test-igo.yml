@@ -216,5 +216,6 @@ jobs:
           chmod +x igo
           export PATH=$PATH:$(pwd)
           chmod +x ./tester.sh
+          touch ~/.profile
           ./tester.sh
         shell: bash

@@ -19,6 +19,70 @@ func fix(ctx context.Context, wg *sync.WaitGroup, errCh chan<- error, version st
 	panic("not implemented")
 }
 
+func env(app *Application, ctx context.Context, wg *sync.WaitGroup, errCh chan<- error) {
+	defer wg.Done()
+	verbose, debug := *app.figs.Bool(kVerbose), *app.figs.Bool(kDebug)
+	onlyVerbose := verbose && !debug
+
+	if verbose {
+		color.Green("VERBOSE MODE ENABLED")
+	}
+
+	if debug {
+		color.Red("DEBUG MODE ENABLED")
+	}
+
+	workspace := app.Workspace()
+	_, dirErr := os.Stat(workspace)
+	if os.IsNotExist(dirErr) {
+		color.Red("No go versions installed.")
+		return
+	}
+	currentVersion, err := app.activatedVersion()
+	if err != nil {
+		if debug || onlyVerbose {
+			color.Red(err.Error())
+		}
+		if !os.IsNotExist(err) {
+			errCh <- err
+			return
+		}
+	}
+	color.Green("Current version: %v", currentVersion)
+	color.Green("│   ENV:")
+	env := os.Environ()
+	slices.Sort(env)
+	for _, val := range env {
+		parts := strings.SplitN(val, "=", 2)
+		if len(parts) != 2 || !strings.HasPrefix(parts[0], "GO") {
+			continue
+		}
+		color.Green("│   ├── %v=%v", parts[0], parts[1])
+	}
+	links, err := FindSymlinks(workspace)
+	slices.Sort(links)
+	if err != nil {
+		if debug || onlyVerbose {
+			color.Red(err.Error())
+		}
+		errCh <- err
+		return
+	}
+	color.Green("└── LINKS:")
+	for _, link := range links {
+		to, err := ReadSymlink(link)
+		if err != nil {
+			if debug || onlyVerbose {
+				color.Red(err.Error())
+			}
+			continue
+		}
+		color.Green("    ├── %v -> %v %s  ", link, to, VerifyLink(link, to))
+	}
+
+	return
+}
+
 func uninstall(app *Application, ctx context.Context, wg *sync.WaitGroup, errCh chan error, version string) {
 	defer wg.Done()
 	verbose, debug := *app.figs.Bool(kVerbose), *app.figs.Bool(kDebug)

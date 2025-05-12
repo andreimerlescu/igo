@@ -165,7 +165,7 @@ func (app *Application) patchShellConfigPath(envs map[string]string) error {
 
 	content, err := os.ReadFile(targetFile)
 	if err != nil {
-		return fmt.Errorf("130 failed to read file %s: %w", targetFile, err)
+		return fmt.Errorf("168 failed to read file %s: %w", targetFile, err)
 	}
 	if *app.figs.Bool(kVerbose) {
 		color.Green("Contents of %s is: \n%s\n", targetFile, content)
@@ -191,7 +191,7 @@ func (app *Application) patchShellConfigPath(envs map[string]string) error {
 		var missingPaths []string
 		for _, reqPath := range requiredPaths {
 			if reqPath == "" {
-				return fmt.Errorf("156 required PATH component is empty in envs")
+				return fmt.Errorf("194 required PATH component is empty in envs")
 			}
 			found := false
 			for _, part := range pathParts {
@@ -211,7 +211,7 @@ func (app *Application) patchShellConfigPath(envs map[string]string) error {
 			lines[pathLineIndex] = newPathLine
 			err := os.WriteFile(targetFile, []byte(strings.Join(lines, "\n")), 0644)
 			if err != nil {
-				return fmt.Errorf("176 failed to write file %s: %w", targetFile, err)
+				return fmt.Errorf("214 failed to write file %s: %w", targetFile, err)
 			}
 			fmt.Printf("Updated PATH in %s with missing paths: %v\n", targetFile, missingPaths)
 		} else {
@@ -223,19 +223,19 @@ func (app *Application) patchShellConfigPath(envs map[string]string) error {
 	newPathLine := fmt.Sprintf("export PATH=%s:%s:%s:%s", envs["GOSHIMS"], envs["GOBIN"], envs["GOSCRIPTS"], os.Getenv("PATH"))
 	targetHandler, err := os.OpenFile(targetFile, os.O_APPEND|os.O_WRONLY, 0644)
 	if err != nil {
-		return fmt.Errorf("188 could not open target file: %w", err)
+		return fmt.Errorf("226 could not open target file: %w", err)
 	}
 
 	if len(content) > 0 && content[len(content)-1] != '\n' {
 		_, err = targetHandler.WriteString("\n")
 		if err != nil {
-			return fmt.Errorf("194 could not write to target file: %w", err)
+			return fmt.Errorf("232 could not write to target file: %w", err)
 		}
 	}
 
 	_, err = targetHandler.WriteString(newPathLine + "\n")
 	if err != nil {
-		return fmt.Errorf("200 could not write to target file: %w", err)
+		return fmt.Errorf("238 could not write to target file: %w", err)
 	}
 
 	return targetHandler.Close()
@@ -299,13 +299,17 @@ func (app *Application) injectEnvVarsToShellConfig(envs map[string]string) error
 		}
 	}
 	if targetFile == "" {
-		return fmt.Errorf("264 no shell config file found (.bashrc or .zshrc)")
+		targetFile = filepath.Join(app.userHomeDir, ".profile")
+		err := os.WriteFile(targetFile, []byte(""), 0644)
+		if err != nil {
+			return fmt.Errorf("305 failed to write %s: %w", targetFile, err)
+		}
 	}
 
 	// Read the existing content of the target file
 	content, err := os.ReadFile(targetFile)
 	if err != nil {
-		return fmt.Errorf("270 failed to read %s: %w", targetFile, err)
+		return fmt.Errorf("312 failed to read %s: %w", targetFile, err)
 	}
 	existingLines := strings.Split(string(content), "\n")
 
@@ -336,20 +340,20 @@ func (app *Application) injectEnvVarsToShellConfig(envs map[string]string) error
 		// Open the file in append mode
 		shellProfileFile, err := os.OpenFile(targetFile, os.O_APPEND|os.O_WRONLY, 0644)
 		if err != nil {
-			return fmt.Errorf("300 failed to open %s for appending: %w", targetFile, err)
+			return fmt.Errorf("343 failed to open %s for appending: %w", targetFile, err)
 		}
 
 		// Add a newline before appending if the file doesn't end with one
 		if len(content) > 0 && content[len(content)-1] != '\n' {
 			if _, err := shellProfileFile.WriteString("\n"); err != nil {
-				return fmt.Errorf("307 failed to write newline to %s: %w", targetFile, err)
+				return fmt.Errorf("349 failed to write newline to %s: %w", targetFile, err)
 			}
 		}
 
 		// Write the new export lines
 		for _, line := range newLines {
 			if _, err := shellProfileFile.WriteString(line + "\n"); err != nil {
-				return fmt.Errorf("314 failed to write to %s: %w", targetFile, err)
+				return fmt.Errorf("356 failed to write to %s: %w", targetFile, err)
 			}
 		}
 

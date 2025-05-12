@@ -50,6 +50,8 @@ func main() {
 		}
 	}()
 	switch *app.figs.String(kCommand) {
+	case "env":
+		go env(app, ctx, wg, errCh)
 	case "ins":
 		go install(app, wg, errCh, *app.figs.String(kGoVersion))
 	case "install":

@@ -9,6 +9,7 @@ params[build]="true"
 params[rm]=""
 params[debug]="false"
 params[verbose]="false"
+params[clear]="true"
 
 # Define documentation for each parameter
 declare -A documentation=()
@@ -16,12 +17,18 @@ documentation[build]="Build the Docker image"
 documentation[rm]="Remove the Docker image"
 documentation[debug]="Enable debug mode"
 documentation[verbose]="Enable verbose mode"
+documentation[clear]="Clear console before starting"
 
 # Include params helper
 source params.sh
 
 # Parse command line arguments
 parse_arguments "$@"
+
+CLEAR="${params[clear]}"
+if [[ -n "$CLEAR" ]] && [[ "${CLEAR}" != "false" ]]; then
+  clear
+fi
 
 # Parse debug mode
 DEBUG="${params[debug]}"
