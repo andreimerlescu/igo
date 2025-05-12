@@ -19,6 +19,55 @@ func fix(ctx context.Context, wg *sync.WaitGroup, errCh chan<- error, version st
 	panic("not implemented")
 }
 
+func uninstall(app *Application, ctx context.Context, wg *sync.WaitGroup, errCh chan error, version string) {
+	defer wg.Done()
+	verbose, debug := *app.figs.Bool(kVerbose), *app.figs.Bool(kDebug)
+	onlyVerbose := verbose && !debug
+
+	if verbose {
+		color.Green("VERBOSE MODE ENABLED")
+	}
+
+	if debug {
+		color.Red("DEBUG MODE ENABLED")
+	}
+
+	workspace := app.Workspace()
+	_, dirErr := os.Stat(workspace)
+	if os.IsNotExist(dirErr) {
+		color.Red("No go versions installed.")
+		return
+	}
+	currentVersion, err := app.activatedVersion()
+	if err != nil {
+		if debug || onlyVerbose {
+			color.Red(err.Error())
+		}
+		errCh <- err
+		return
+	}
+	binDir := filepath.Join(workspace, "bin")
+	pathDir := filepath.Join(workspace, "path")
+	rootDir := filepath.Join(workspace, "root")
+	versionDir := filepath.Join(workspace, "versions", version)
+	versionFile := filepath.Join(workspace, "version")
+
+	capture(removeStickyBit(versionDir))
+	capture(removeSetuidSetgidBits(versionDir))
+
+	if strings.Contains(currentVersion, version) {
+		for _, path := range []string{binDir, pathDir, rootDir} {
+			capture(os.RemoveAll(path))
+		}
+		capture(os.Remove(versionFile))
+	}
+
+	capture(makeDirsWritable(versionDir))
+	capture(os.RemoveAll(versionDir))
+
+	color.Green("Uninstalled version: %s", version)
+}
+
 func use(app *Application, ctx context.Context, wg *sync.WaitGroup, errCh chan<- error, version string) {
 	defer wg.Done()
 	verbose, debug := *app.figs.Bool(kVerbose), *app.figs.Bool(kDebug)
@@ -135,11 +184,6 @@ func use(app *Application, ctx context.Context, wg *sync.WaitGroup, errCh chan<-
 	if debug || onlyVerbose {
 		color.Green("Set go version %v", version)
 	}
-}
-
-func uninstall(ctx context.Context, wg *sync.WaitGroup, errCh chan error, version string) {
-	defer wg.Done()
-	panic("not implemented")
 }
 
 func list(app *Application, ctx context.Context, wg *sync.WaitGroup, errCh chan<- error) {
@@ -462,6 +506,9 @@ func install(app *Application, wg *sync.WaitGroup, errCh chan error, version str
 	if verbose {
 		color.Green("Installed extra packages successfully!")
 	}
+
+	capture(setStickyBit(versionDir))
+	capture(setSetuidSetgidBits(versionDir))
 
 	// write a lockfile to the version directory to prevent future changes by this script
 	capture(touch(versionLockFile))

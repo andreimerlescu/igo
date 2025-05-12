@@ -25,7 +25,7 @@ test_took
 # Install Go 1.24.2
 echo "=== INSTALLING GO 1.24.2 ==="
 SECONDS=0
-igo -cmd install -gover 1.24.2 --debug || exit 1
+igo -cmd install -gover 1.24.2 "${DEBUG}" "${VERBOSE}" || exit 1
 test_took
 
 echo "=== LISTING FILES ==="
@@ -76,7 +76,7 @@ echo
 # List installed versions (should see both with 1.24.2 activated)
 echo "=== LISTING GO VERSIONS ==="
 SECONDS=0
-igo -cmd list || exit 1
+igo -cmd list "${DEBUG}" "${VERBOSE}" || exit 1
 TESTS=$(test_completed)
 test_took
 
@@ -162,60 +162,28 @@ unset v
 TESTS=$(test_completed)
 echo
 
-exit 0
-
-# Verify Go version is 1.24.3
-echo "=== VERIFYING GO 1.24.3 ==="
-source ~/.bashrc || source ~/.zshrc || echo "Failed to source shell config"
-go version | grep "go1.24.3" && echo "Go 1.24.3 verified!" || echo "FAIL: Go 1.24.3 not active"
-echo
-
-# Run summarize on GODIR
-echo "=== RUNNING SUMMARIZE ON GODIR ==="
-summarize ~/go
-echo
-
-# Check the summary files
-echo "=== CHECKING SUMMARY FILES ==="
-find ~/go/summaries -name "*.md" -exec cat {} \;
-echo
-
-# List directory structure
-echo "=== LISTING DIRECTORY STRUCTURE ==="
-find ~/go -type d | sort
-echo
-
 # Remove Go 1.24.2
 echo "=== REMOVING GO 1.24.2 ==="
 SECONDS=0
-igo -cmd uninstall -gover 1.24.2 || exit 1
+igo -cmd uninstall -gover 1.24.2 "${DEBUG}" "${VERBOSE}" || exit 1
 test_took
 
 # List installed versions
 echo "=== LISTING GO VERSIONS (After removing 1.24.2) ==="
 SECONDS=0
-igo -cmd list || exit 1
+igo -cmd list "${DEBUG}" "${VERBOSE}" || exit 1
 test_took
 
 # Remove Go 1.24.3
 echo "=== REMOVING GO 1.24.3 ==="
 SECONDS=0
-igo -cmd uninstall -gover 1.24.3 || exit 1
+igo -cmd uninstall -gover 1.24.3 "${DEBUG}" "${VERBOSE}" || exit 1
 test_took
 
 # List installed versions (should be empty)
 echo "=== LISTING GO VERSIONS (Should be empty) ==="
 SECONDS=0
-igo -cmd list || exit 1
+igo -cmd list "${DEBUG}" "${VERBOSE}" || exit 1
 test_took
-
-# Verify summarize command fails
-echo "=== VERIFYING SUMMARIZE COMMAND FAILS ==="
-if summarize ~/go 2>/dev/null; then
-  echo "FAIL: Summarize still working after Go removal"
-else
-  echo "SUCCESS: Summarize command failed as expected"
-fi
-echo
 
 echo "Completed $TESTS tests in $SECONDS seconds!"

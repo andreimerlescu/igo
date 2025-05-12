@@ -3,6 +3,9 @@ package main
 import (
 	"fmt"
 	"os"
+	"os/exec"
+	"path/filepath"
+	"runtime"
 	"strings"
 	"time"
 )
@@ -79,6 +82,110 @@ func removeSymlinkOrBackupPath(path string) error {
 	}
 
 	return nil
+}
+
+func makeDirsWritable(path string) error {
+	return filepath.WalkDir(path, func(p string, d os.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if !d.IsDir() {
+			return nil
+		}
+
+		info, err := d.Info()
+		if err != nil {
+			return err
+		}
+
+		mode := info.Mode()
+		if mode&0200 == 0 { // Owner write permission is not set
+			newMode := mode | 0200
+			if err := os.Chmod(p, newMode); err != nil {
+				return fmt.Errorf("failed to chmod u+w on %s: %w", p, err)
+			}
+		}
+		return nil
+	})
+}
+
+func setStickyBit(path string) error {
+	if !IsDirectory(path) {
+		return fmt.Errorf("setting sticky bits from files do nothing: %s", path)
+	}
+	var cmd *exec.Cmd
+	switch runtime.GOOS {
+	case "linux", "darwin":
+		cmd = exec.Command("sh", "-c", fmt.Sprintf("chmod +t %s", path))
+	default:
+		return fmt.Errorf("unsupported OS: %s", runtime.GOOS)
+	}
+	cmd.Stderr = os.Stderr
+	cmd.Stdout = os.Stdout
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("failed to set sticky bit: %w", err)
+	}
+	return nil
+}
+
+func setSetuidSetgidBits(path string) error {
+	var cmd *exec.Cmd
+	switch runtime.GOOS {
+	case "linux", "darwin":
+		cmd = exec.Command("sh", "-c", fmt.Sprintf("chmod -R a+s %s", path))
+	default:
+		return fmt.Errorf("unsupported OS: %s", runtime.GOOS)
+	}
+	cmd.Stderr = os.Stderr
+	cmd.Stdout = os.Stdout
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("failed to set setuid/setgid bits: %w", err)
+	}
+	return nil
+}
+
+func removeStickyBit(path string) error {
+	if !IsDirectory(path) {
+		return fmt.Errorf("remove sticky bits from files do nothing: %s", path)
+	}
+	var cmd *exec.Cmd
+	switch runtime.GOOS {
+	case "linux", "darwin":
+		cmd = exec.Command("sh", "-c", fmt.Sprintf("chmod -t %s", path))
+	default:
+		return fmt.Errorf("unsupported OS: %s", runtime.GOOS)
+	}
+
+	cmd.Stderr = os.Stderr
+	cmd.Stdout = os.Stdout
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("failed to remove sticky bit: %w", err)
+	}
+	return nil
+}
+
+func removeSetuidSetgidBits(path string) error {
+	var cmd *exec.Cmd
+	switch runtime.GOOS {
+	case "linux", "darwin":
+		cmd = exec.Command("sh", "-c", fmt.Sprintf("chmod -R a-s %s", path))
+	default:
+		return fmt.Errorf("unsupported OS: %s", runtime.GOOS)
+	}
+	cmd.Stderr = os.Stderr
+	cmd.Stdout = os.Stdout
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("failed to remove setuid/setgid bits: %w", err)
+	}
+	return nil
+}
+
+func IsDirectory(path string) bool {
+	fileInfo, err := os.Lstat(path)
+	if err != nil {
+		return false
+	}
+	return fileInfo.IsDir()
 }
 
 func PathExists(path string) bool {

@@ -55,9 +55,9 @@ func main() {
 	case "install":
 		go install(app, wg, errCh, *app.figs.String(kGoVersion))
 	case "uni":
-		go uninstall(ctx, wg, errCh, *app.figs.String(kGoVersion))
+		go uninstall(app, ctx, wg, errCh, *app.figs.String(kGoVersion))
 	case "uninstall":
-		go uninstall(ctx, wg, errCh, *app.figs.String(kGoVersion))
+		go uninstall(app, ctx, wg, errCh, *app.figs.String(kGoVersion))
 	case "l":
 		go list(app, ctx, wg, errCh)
 	case "list":

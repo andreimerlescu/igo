@@ -63,6 +63,7 @@ jobs:
           # Add your validation logic here
           exit 0
 
+
   create-release-branch:
     if: inputs.create_release == true
     needs: [version-check]
@@ -103,6 +104,7 @@ jobs:
             Release notes:
             - [Add release notes here]
 
+
   promote-to-master:
     if: inputs.promote_to_master == true && startsWith(github.ref, 'refs/heads/release/')
     needs: [version-check, release-check, test-linux, test-macos]
@@ -129,6 +131,7 @@ jobs:
           git tag -a $VERSION -m "Release $VERSION"
           git push origin master
           git push origin $VERSION
+
 
 
   test-linux:
@@ -176,7 +179,7 @@ jobs:
     if: (github.ref == 'refs/heads/master' ||
       github.event_name == 'pull_request' ||
       startsWith(github.ref, 'refs/heads/hotfix/') ||
-      startsWith(github.ref, 'refs/heads/release/') ) &&
+      startsWith(github.ref, 'refs/heads/release/') ) ||
       inputs.run_macos_tests == true
     runs-on: ${{ matrix.os }}
     strategy:
