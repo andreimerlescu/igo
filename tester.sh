@@ -65,7 +65,7 @@ USERNAME=$(whoami | tr -d '\n')
 
 echo "=== RELOADING SHELL CONFIG ==="
 { [ -f ~/.profile ] && source ~/.profile; echo "Loaded ~/.profile into shell..."; } || { echo "Failed to source $USERNAME shell config"; exit 1; }
-{ [ -f ~/.bashrc ] && source ~/.zshrc.local; echo "Loaded ~/.zshrc.local"; } || { echo "Failed to source $USERNAME shell config"; exit 1; }
+{ [ -f ~/.zshrc.local ] && source ~/.zshrc.local; echo "Loaded ~/.zshrc.local"; } || { echo "Failed to source $USERNAME shell config"; exit 1; }
 TESTS=$((TESTS + 1))
 echo
 
@@ -261,8 +261,6 @@ igo -cmd list "${DEBUG}" "${VERBOSE}" || exit 1
 TESTS=$(test_completed)
 test_took
 echo
-
-cp "$(find "${HOME}/go" -type f -name 'counter' -exec realpath {} \;)" ~/counter || exit 1
 
 # Remove Go 1.24.3
 echo "=== REMOVING GO 1.24.3 ==="

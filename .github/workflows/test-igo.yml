@@ -218,5 +218,5 @@ jobs:
           export PATH=$PATH:$(pwd)
           chmod +x ./tester.sh
           touch ~/.profile
-          ./tester.sh
+          ./tester.sh --verbose true --debug true
         shell: bash
