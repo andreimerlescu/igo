@@ -1,0 +1,2 @@
+*.log binary
+test_results/*.log binary

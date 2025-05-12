@@ -16,7 +16,11 @@ func main() {
 		panic("windows not supported, please use Go's MSI installers instead")
 	}
 	app := NewApp()
-	app.figs = figtree.New()
+	app.figs = figtree.With(figtree.Options{
+		ConfigFile: filepath.Join(app.userHomeDir, ".igo.config.yml"),
+		Germinate:  true,
+		Harvest:    0,
+	})
 	app.figs.NewBool(kVersion, false, "Display current version")
 	app.figs.NewBool(kSystem, false, "Install for system-wide usage (ignore USER HOME directory)")
 	app.figs.NewBool(kDebug, false, "Enable debug mode")
@@ -26,6 +30,8 @@ func main() {
 	app.figs.NewString(kGoVersion, "1.24.2", "Go Version")
 	app.figs.NewString(kGoos, runtime.GOOS, "Go OS")
 	app.figs.NewString(kGoArch, runtime.GOARCH, "Go Architecture")
+	app.figs.NewBool(kExtras, true, "Install extra packages")
+	app.figs.NewMap(kExtraPackages, packages, "Extra packages to install")
 	capture(app.figs.Parse())
 	if *app.figs.Bool(kVersion) {
 		fmt.Println(BinaryVersion())
@@ -44,22 +50,24 @@ func main() {
 		}
 	}()
 	switch *app.figs.String(kCommand) {
+	case "env":
+		go env(app, ctx, wg, errCh)
 	case "ins":
 		go install(app, wg, errCh, *app.figs.String(kGoVersion))
 	case "install":
 		go install(app, wg, errCh, *app.figs.String(kGoVersion))
 	case "uni":
-		go uninstall(ctx, wg, errCh, *app.figs.String(kGoVersion))
+		go uninstall(app, ctx, wg, errCh, *app.figs.String(kGoVersion))
 	case "uninstall":
-		go uninstall(ctx, wg, errCh, *app.figs.String(kGoVersion))
+		go uninstall(app, ctx, wg, errCh, *app.figs.String(kGoVersion))
 	case "l":
 		go list(app, ctx, wg, errCh)
 	case "list":
 		go list(app, ctx, wg, errCh)
 	case "u":
-		go use(ctx, wg, errCh, *app.figs.String(kGoVersion))
+		go use(app, ctx, wg, errCh, *app.figs.String(kGoVersion))
 	case "use":
-		go use(ctx, wg, errCh, *app.figs.String(kGoVersion))
+		go use(app, ctx, wg, errCh, *app.figs.String(kGoVersion))
 	case "f":
 		go fix(ctx, wg, errCh, *app.figs.String(kGoVersion))
 	case "fix":

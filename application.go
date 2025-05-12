@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"embed"
 	"fmt"
 	"io/fs"
 	"os"
@@ -13,9 +14,15 @@ import (
 	"github.com/fatih/color"
 )
 
+//go:embed bundled/shim.go.sh
+var bundledShimsGoBytes embed.FS
+
+//go:embed bundled/shim.gofmt.sh
+var bundledShimsGofmtBytes embed.FS
+
 type Application struct {
 	ctx         context.Context
-	figs        figtree.Fruit
+	figs        figtree.Plant
 	userHomeDir string
 }
 
@@ -34,6 +41,32 @@ func (app *Application) Workspace() string {
 		return filepath.Join("/", "usr", "go")
 	}
 	return filepath.Join(app.userHomeDir, "go")
+}
+
+func (app *Application) CreateShims() error {
+	workspace := app.Workspace()
+	shimsDir := filepath.Join(workspace, "shims")
+	goShim := filepath.Join(shimsDir, "go")
+	gofmtShim := filepath.Join(shimsDir, "gofmt")
+	shimGoBytes, err := bundledShimsGoBytes.ReadFile("bundled/shim.go.sh")
+	if err != nil {
+		return fmt.Errorf("failed to read bundled shim.go.sh: %v", err)
+	}
+	err = os.WriteFile(goShim, shimGoBytes, 0755)
+	if err != nil {
+		return fmt.Errorf("failed to write shim.go.sh: %v", err)
+	}
+	shimGofmtBytes, err := bundledShimsGofmtBytes.ReadFile("bundled/shim.gofmt.sh")
+	if err != nil {
+		return fmt.Errorf("failed to read bundled shim.go.sh: %v", err)
+	}
+	err = os.WriteFile(gofmtShim, shimGofmtBytes, 0755)
+	if err != nil {
+		return fmt.Errorf("failed to write shim.gofmt.sh: %v", err)
+	}
+	capture(os.Chmod(goShim, 0755))
+	capture(os.Chmod(gofmtShim, 0755))
+	return nil
 }
 
 // runVersionCheck executes "go version" with specified environment variables and returns the output.
@@ -60,13 +93,12 @@ func (app *Application) runVersionCheck(envs map[string]string, version string) 
 	if err != nil {
 		capture(fmt.Errorf("failed to execute 'go version' with %s: %v\nOutput: %s", goBinPath, err, string(output)))
 	}
-
+	gover := strings.TrimSpace(string(output))
 	if *app.figs.Bool(kVerbose) {
-		color.Green("Received terminal output: ")
-		fmt.Println(string(output))
+		color.Green("Received terminal output: %s", gover)
 	}
 
-	return strings.TrimSpace(string(output))
+	return gover
 }
 
 // installExtraPackages installs additional Go packages using the specified environment and version.
@@ -83,6 +115,9 @@ func (app *Application) installExtraPackages(envs map[string]string, version str
 		fmt.Sprintf("GOOS=%s", envs["GOOS"]),
 		fmt.Sprintf("GOARCH=%s", envs["GOARCH"]),
 	}
+	p := app.figs.Fig(kExtraPackages).ToString()
+	color.Green("Installing extra packages: %s", p)
+
 	for pkg, modulePath := range packages {
 		cmd := exec.Command(goBinPath, "install", fmt.Sprintf("%s@latest", modulePath))
 		cmd.Env = append(os.Environ(), cmdEnv...) // Include existing env vars plus custom ones
@@ -109,26 +144,28 @@ func (app *Application) patchShellConfigPath(envs map[string]string) error {
 		envs["GOSCRIPTS"],
 	}
 
-	bashrc := filepath.Join(app.userHomeDir, ".bashrc")
-	zshrc := filepath.Join(app.userHomeDir, ".zshrc")
+	bashrc := filepath.Join(app.userHomeDir, ".profile")
+	zshrc := filepath.Join(app.userHomeDir, ".zshrc.local")
 	shellFiles := []string{bashrc, zshrc}
 
 	var targetFile string
 	for _, shellFile := range shellFiles {
-		if _, err := os.Stat(shellFile); err == nil {
+		if _, err := os.Stat(shellFile); !os.IsNotExist(err) && !os.IsPermission(err) {
+			color.Green("Found %s", shellFile)
 			targetFile = shellFile
 			break
 		}
 	}
 	if targetFile == "" {
-		contents := fmt.Sprintf("export PATH=%s:%s:%s:$PATH\n",
-			envs["GOSHIMS"], envs["GOSCRIPTS"], envs["GOBIN"])
-		return os.WriteFile(zshrc, []byte(contents), 0644)
+		contents := fmt.Sprintf("export PATH=%s:%s:%s:%s\n",
+			envs["GOSHIMS"], envs["GOSCRIPTS"], envs["GOBIN"], os.Getenv("PATH"))
+		capture(os.WriteFile(zshrc, []byte(contents), 0644))
+		return os.WriteFile(bashrc, []byte(contents), 0644)
 	}
 
 	content, err := os.ReadFile(targetFile)
 	if err != nil {
-		return fmt.Errorf("130 failed to read file %s: %w", targetFile, err)
+		return fmt.Errorf("168 failed to read file %s: %w", targetFile, err)
 	}
 	if *app.figs.Bool(kVerbose) {
 		color.Green("Contents of %s is: \n%s\n", targetFile, content)
@@ -154,7 +191,7 @@ func (app *Application) patchShellConfigPath(envs map[string]string) error {
 		var missingPaths []string
 		for _, reqPath := range requiredPaths {
 			if reqPath == "" {
-				return fmt.Errorf("156 required PATH component is empty in envs")
+				return fmt.Errorf("194 required PATH component is empty in envs")
 			}
 			found := false
 			for _, part := range pathParts {
@@ -174,7 +211,7 @@ func (app *Application) patchShellConfigPath(envs map[string]string) error {
 			lines[pathLineIndex] = newPathLine
 			err := os.WriteFile(targetFile, []byte(strings.Join(lines, "\n")), 0644)
 			if err != nil {
-				return fmt.Errorf("176 failed to write file %s: %w", targetFile, err)
+				return fmt.Errorf("214 failed to write file %s: %w", targetFile, err)
 			}
 			fmt.Printf("Updated PATH in %s with missing paths: %v\n", targetFile, missingPaths)
 		} else {
@@ -183,22 +220,22 @@ func (app *Application) patchShellConfigPath(envs map[string]string) error {
 		return nil
 	}
 
-	newPathLine := fmt.Sprintf("export PATH=%s:%s:%s:$PATH", envs["GOSHIMS"], envs["GOBIN"], envs["GOSCRIPTS"])
+	newPathLine := fmt.Sprintf("export PATH=%s:%s:%s:%s", envs["GOSHIMS"], envs["GOBIN"], envs["GOSCRIPTS"], os.Getenv("PATH"))
 	targetHandler, err := os.OpenFile(targetFile, os.O_APPEND|os.O_WRONLY, 0644)
 	if err != nil {
-		return fmt.Errorf("188 could not open target file: %w", err)
+		return fmt.Errorf("226 could not open target file: %w", err)
 	}
 
 	if len(content) > 0 && content[len(content)-1] != '\n' {
 		_, err = targetHandler.WriteString("\n")
 		if err != nil {
-			return fmt.Errorf("194 could not write to target file: %w", err)
+			return fmt.Errorf("232 could not write to target file: %w", err)
 		}
 	}
 
 	_, err = targetHandler.WriteString(newPathLine + "\n")
 	if err != nil {
-		return fmt.Errorf("200 could not write to target file: %w", err)
+		return fmt.Errorf("238 could not write to target file: %w", err)
 	}
 
 	return targetHandler.Close()
@@ -249,8 +286,8 @@ func (app *Application) activatedVersion() (string, error) {
 func (app *Application) injectEnvVarsToShellConfig(envs map[string]string) error {
 	// Possible shell config files to check
 	shellFiles := []string{
-		filepath.Join(app.userHomeDir, ".bashrc"),
-		filepath.Join(app.userHomeDir, ".zshrc"),
+		filepath.Join(app.userHomeDir, ".profile"),
+		filepath.Join(app.userHomeDir, ".zshrc.local"),
 	}
 
 	// Find the first existing shell config file
@@ -262,13 +299,17 @@ func (app *Application) injectEnvVarsToShellConfig(envs map[string]string) error
 		}
 	}
 	if targetFile == "" {
-		return fmt.Errorf("264 no shell config file found (.bashrc or .zshrc)")
+		targetFile = filepath.Join(app.userHomeDir, ".profile")
+		err := os.WriteFile(targetFile, []byte(""), 0644)
+		if err != nil {
+			return fmt.Errorf("305 failed to write %s: %w", targetFile, err)
+		}
 	}
 
 	// Read the existing content of the target file
 	content, err := os.ReadFile(targetFile)
 	if err != nil {
-		return fmt.Errorf("270 failed to read %s: %w", targetFile, err)
+		return fmt.Errorf("312 failed to read %s: %w", targetFile, err)
 	}
 	existingLines := strings.Split(string(content), "\n")
 
@@ -299,20 +340,20 @@ func (app *Application) injectEnvVarsToShellConfig(envs map[string]string) error
 		// Open the file in append mode
 		shellProfileFile, err := os.OpenFile(targetFile, os.O_APPEND|os.O_WRONLY, 0644)
 		if err != nil {
-			return fmt.Errorf("300 failed to open %s for appending: %w", targetFile, err)
+			return fmt.Errorf("343 failed to open %s for appending: %w", targetFile, err)
 		}
 
 		// Add a newline before appending if the file doesn't end with one
 		if len(content) > 0 && content[len(content)-1] != '\n' {
 			if _, err := shellProfileFile.WriteString("\n"); err != nil {
-				return fmt.Errorf("307 failed to write newline to %s: %w", targetFile, err)
+				return fmt.Errorf("349 failed to write newline to %s: %w", targetFile, err)
 			}
 		}
 
 		// Write the new export lines
 		for _, line := range newLines {
 			if _, err := shellProfileFile.WriteString(line + "\n"); err != nil {
-				return fmt.Errorf("314 failed to write to %s: %w", targetFile, err)
+				return fmt.Errorf("356 failed to write to %s: %w", targetFile, err)
 			}
 		}
 
