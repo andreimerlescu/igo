@@ -5,6 +5,8 @@ echo "Starting igo test script..."
 declare -i TESTS
 declare COUNTER_DIR
 
+START_TIME=$(date +%s.%N)
+
 function test_took() {
   echo "Test $TESTS took $SECONDS seconds"
   echo
@@ -17,12 +19,12 @@ export PATH=/bin:$PATH
 echo "=== IGO VERSION ==="
 SECONDS=0
 igo -version || exit 1
-TESTS=1
+TESTS=$(( TESTS + 1 ))
 test_took
 
 echo "=== IGO ENVIRONMENT ==="
 igo -cmd env "${DEBUG}" "${VERBOSE}" || exit 1
-TESTS=2
+TESTS=$((TESTS + 1))
 test_took
 echo
 
@@ -30,31 +32,33 @@ echo
 echo "=== INITIAL LIST (Should be empty) ==="
 SECONDS=0
 igo -cmd list || exit 1
-TESTS=3
+TESTS=$((TESTS + 1))
 test_took
 
 # Install Go 1.24.2
 echo "=== INSTALLING GO 1.24.2 ==="
 SECONDS=0
 igo -cmd install -gover 1.24.2 "${DEBUG}" "${VERBOSE}" || exit 1
-TESTS=4
+TESTS=$((TESTS + 1))
 test_took
 
 echo "=== IGO ENVIRONMENT ==="
 SECONDS=0
 igo -cmd env "${DEBUG}" "${VERBOSE}" || exit 1
-TESTS=5
+TESTS=$((TESTS + 1))
 test_took
 echo
 
-echo "=== LISTING FILES ==="
-tree -L 3 || exit 1
-TESTS=6
-echo
+if command -v tree 2>&1; then
+  echo "=== LISTING FILES ==="
+  tree -L 3 || exit 1
+  TESTS=$((TESTS + 1))
+  echo
+fi
 
 echo "=== ENVIRONMENT VARIABLES ==="
 env | sort || exit 1
-TESTS=7
+TESTS=$((TESTS + 1))
 echo
 
 USERNAME=$(whoami | tr -d '\n')
@@ -62,17 +66,17 @@ USERNAME=$(whoami | tr -d '\n')
 echo "=== RELOADING SHELL CONFIG ==="
 { [ -f ~/.profile ] && source ~/.profile; echo "Loaded ~/.profile into shell..."; } || { echo "Failed to source $USERNAME shell config"; exit 1; }
 { [ -f ~/.bashrc ] && source ~/.zshrc.local; echo "Loaded ~/.zshrc.local"; } || { echo "Failed to source $USERNAME shell config"; exit 1; }
-TESTS=8
+TESTS=$((TESTS + 1))
 echo
 
 echo "=== BASH PROFILE ==="
 cat ~/.profile || exit 1
-TESTS=9
+TESTS=$((TESTS + 1))
 echo
 
 echo "=== PATH ==="
 echo "$PATH"
-TESTS=10
+TESTS=$((TESTS + 1))
 echo
 
 # counter was installed alongside go version 1.24.2
@@ -283,4 +287,6 @@ TESTS=$((TESTS + 1))
 test_took
 echo
 
-echo "Completed $TESTS tests in $SECONDS seconds!"
+END_TIME=$(date +%s.%N)
+DURATION=$(echo "$END_TIME - $START_TIME" | bc)
+echo "Completed $TESTS tests in $DURATION seconds!"

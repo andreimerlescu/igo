@@ -1,5 +1,6 @@
 #!/bin/bash
 # shellcheck disable=SC2086
+START_TIME=$(date +%s.%N)
 SECONDS=0
 VERSION="$(cat VERSION)"
 
@@ -80,9 +81,13 @@ chmod +x tester.sh
 # Run the tests
 echo "Running tests in container '${DEBUG}'..."
 if ! docker $DEBUG run --rm --env=TEST_ID=$TEST_ID --env=BRANCH=$BRANCH --env=VERSION=$VERSION --env=DEBUG=$DEBUG --env=VERBOSE=$VERBOSE --entrypoint "/home/tester/tester.sh" "igo:$TEST_ID"; then
-  echo "Tests failed - took $SECONDS seconds"
+  END_TIME=$(date +%s.%N)
+  DURATION=$(echo "$END_TIME - $START_TIME" | bc)
+  echo "Tests failed - took $DURATION seconds"
   exit 1
 else
-  echo "Tests completed successfully in $SECONDS seconds!"
+  END_TIME=$(date +%s.%N)
+  DURATION=$(echo "$END_TIME - $START_TIME" | bc)
+  echo "Tests completed successfully in $DURATION seconds!"
   exit 0
 fi

@@ -8,7 +8,7 @@ RUN CGO_ENABLED=0 go build -o /bin/igo
 
 FROM debian:bookworm-slim
 
-RUN apt-get update && apt-get install -y git ca-certificates bash curl sudo tree
+RUN apt-get update && apt-get install -y git ca-certificates bash curl sudo tree bc
 
 # Create tester user
 RUN useradd -m -d /home/tester tester
