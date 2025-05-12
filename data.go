@@ -54,6 +54,12 @@ const (
 	// requiring you to set ENV variables first
 	kGoos string = "goos"
 
+	// kExtras defines -extras in the CLI that allows you to install extra packages
+	kExtras string = "extras"
+
+	// kExtraPackages defines -extra-packages in the CLI that allows you to install extra packages
+	kExtraPackages string = "extra-packages"
+
 	// kGoArch defines -goarch in the CLI that allows you to define these values
 	// without requiring you to set ENV variables first
 	kGoArch string = "goarch"
@@ -64,10 +70,11 @@ const (
 
 // packages are installed after a new version of Go is installed
 var packages = map[string]string{
-	"gotop":                "github.com/cjbassi/gotop",
-	"go-generate-password": "github.com/m1/go-generate-password/cmd/go-generate-password",
-	"bombardier":           "github.com/codesenberg/bombardier",
-	"summarize":            "github.com/andreimerlescu/summarize",
-	"counter":              "github.com/andreimerlescu/counter",
-	"cli-gematria":         "github.com/andreimerlescu/cli-gematria",
+	"genwordpass": "github.com/ProjectApario/genwordpass",
+	"summarize":   "github.com/andreimerlescu/summarize",
+	"counter":     "github.com/andreimerlescu/counter",
+	// "gotop":                "github.com/cjbassi/gotop",
+	// "go-generate-password": "github.com/m1/go-generate-password/cmd/go-generate-password",
+	// "bombardier":           "github.com/codesenberg/bombardier",
+	// "cli-gematria":         "github.com/andreimerlescu/cli-gematria",
 }
