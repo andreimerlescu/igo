@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"github.com/fatih/color"
+	"github.com/olekukonko/tablewriter/renderer"
+	"github.com/olekukonko/tablewriter/tw"
 	"os"
 	"path/filepath"
 	"slices"
@@ -303,21 +305,85 @@ func list(app *Application, ctx context.Context, wg *sync.WaitGroup, errCh chan<
 			a,
 		})
 	}
-	fmt.Println(about())
-	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"Version", "Creation", "Status"})
-	table.SetBorder(true) // Set Border to false
+	color.Magenta(about())
 
-	table.SetHeaderColor(tablewriter.Colors{tablewriter.Bold, tablewriter.FgHiBlueColor},
-		tablewriter.Colors{tablewriter.Bold, tablewriter.FgYellowColor},
-		tablewriter.Colors{tablewriter.Bold, tablewriter.FgRedColor})
+	symbols := tw.NewSymbolCustom("Nature").
+		WithRow("~").
+		WithColumn("|").
+		WithTopLeft("🌱").
+		WithTopMid("🌿").
+		WithTopRight("🌱").
+		WithMidLeft("🍃").
+		WithCenter("❀").
+		WithMidRight("🍃").
+		WithBottomLeft("🌻").
+		WithBottomMid("🌾").
+		WithBottomRight("🌻")
 
-	table.SetColumnColor(tablewriter.Colors{tablewriter.Bold, tablewriter.FgHiBlueColor},
-		tablewriter.Colors{tablewriter.FgYellowColor},
-		tablewriter.Colors{tablewriter.Bold, tablewriter.FgRedColor})
+	colorCfg := renderer.ColorizedConfig{
+		Header: renderer.Tint{
+			FG: renderer.Colors{color.FgGreen, color.Bold}, // Green bold headers
+			Columns: []renderer.Tint{
+				{FG: renderer.Colors{color.FgHiRed, color.Bold}},
+				{FG: renderer.Colors{color.FgHiWhite, color.Bold}},
+				{FG: renderer.Colors{color.FgHiBlue, color.Bold}},
+			},
+			BG: renderer.Colors{color.BgHiWhite},
+		},
+		Column: renderer.Tint{
+			FG: renderer.Colors{color.FgWhite},
+			Columns: []renderer.Tint{
+				{FG: renderer.Colors{color.FgHiRed}},
+				{FG: renderer.Colors{color.FgHiWhite}},
+				{FG: renderer.Colors{color.FgHiBlue}},
+			},
+		},
+		Footer: renderer.Tint{
+			FG: renderer.Colors{color.FgHiMagenta}, // Yellow bold footer
+			Columns: []renderer.Tint{
+				{},                                      // Inherit default
+				{FG: renderer.Colors{color.FgHiYellow}}, // High-intensity yellow for column 1
+				{},                                      // Inherit default
+			},
+		},
+		Border:    renderer.Tint{FG: renderer.Colors{color.FgWhite}},
+		Separator: renderer.Tint{FG: renderer.Colors{color.FgWhite}},
+	}
 
-	table.AppendBulk(data)
-	table.Render()
+	table := tablewriter.NewTable(os.Stdout,
+		tablewriter.WithRenderer(renderer.NewBlueprint(tw.Rendition{Symbols: symbols})),
+		tablewriter.WithRenderer(renderer.NewColorized(colorCfg)),
+		tablewriter.WithConfig(tablewriter.Config{
+			Row: tw.CellConfig{
+				Formatting: tw.CellFormatting{
+					AutoWrap:  tw.WrapNormal,
+					Alignment: tw.AlignLeft,
+				},
+			},
+			Footer: tw.CellConfig{
+				Formatting: tw.CellFormatting{Alignment: tw.AlignCenter},
+			},
+		}),
+	)
+
+	table.Header([]string{"Version", "Creation", "Status"})
+	table.Footer([]string{"I ❤ YOU!", "Made In America", "Be Inspired"})
+	err = table.Bulk(data)
+	if err != nil {
+		if debug || onlyVerbose {
+			color.Red(err.Error())
+		}
+		errCh <- err
+		return
+	}
+	err = table.Render()
+	if err != nil {
+		if debug || onlyVerbose {
+			color.Red(err.Error())
+		}
+		errCh <- err
+		return
+	}
 
 }
 
