@@ -2,6 +2,7 @@
 # shellcheck disable=SC2086
 START_TIME=$(date +%s.%N)
 SECONDS=0
+echo "=== START TEST.SH ==="
 VERSION="$(cat VERSION)"
 
 # Define command line arguments
@@ -36,14 +37,14 @@ DEBUG="${params[debug]}"
 if [[ -n "$DEBUG" ]] && [[ "${DEBUG}" != "false" ]]; then
   DEBUG="--debug"
 fi
-[[ "${DEBUG}" == "false"  ]] && DEBUG=""
+[[ "${DEBUG}" != "true"  ]] && DEBUG=""
 
 # Parse verbose mode
 VERBOSE="${params[verbose]}"
 if [[ -n "$VERBOSE" ]] && [[ "${VERSION}" != "false" ]]; then
   VERBOSE="--verbose"
 fi
-[[ "${VERBOSE}" == "false"  ]] && VERBOSE=""
+[[ "${VERBOSE}" != "true"  ]] && VERBOSE=""
 
 # Parse branch name
 BRANCH=$(git rev-parse --abbrev-ref HEAD)
@@ -79,15 +80,19 @@ docker tag "igo:${VERSION}" "igo:${TEST_ID}" || { echo "Docker tag failed"; exit
 chmod +x tester.sh
 
 # Run the tests
+declare -i code=1 # default to error
 echo "Running tests in container '${DEBUG}'..."
 if ! docker $DEBUG run --rm --env=TEST_ID=$TEST_ID --env=BRANCH=$BRANCH --env=VERSION=$VERSION --env=DEBUG=$DEBUG --env=VERBOSE=$VERBOSE --entrypoint "/home/tester/tester.sh" "igo:$TEST_ID"; then
   END_TIME=$(date +%s.%N)
   DURATION=$(echo "$END_TIME - $START_TIME" | bc)
   echo "Tests failed - took $DURATION seconds"
-  exit 1
 else
   END_TIME=$(date +%s.%N)
   DURATION=$(echo "$END_TIME - $START_TIME" | bc)
   echo "Tests completed successfully in $DURATION seconds!"
-  exit 0
+  code=0
 fi
+
+echo "=== END TEST.SH ==="
+
+exit $code

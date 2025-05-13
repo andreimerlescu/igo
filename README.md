@@ -77,8 +77,8 @@ into the `uninstall()` func. Currently, I've migrated over `install` and `list`.
 - [X] Implement `-cmd use`
 - [X] Implement `-cmd env` to debug environment
 - [X] Add GitHub Actions Workflow
-- [ ] Implement a check that verifies if go is installed with `~/go/bin` and `~/go/pkg` to integrate support
-- [ ] Implement `-cmd fix`
+- [ ] Implement `-cmd check` which is a check that verifies if go is installed with `~/go/bin` and `~/go/pkg` to integrate support
+- [X] Implement `-cmd fix`
 - [ ] Upload compiled binaries to release
 - [ ] Update README with new installation instructions
 - [ ] Add `igo` to `yum install igo` to `epel-release` yum repository.

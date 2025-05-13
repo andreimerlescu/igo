@@ -16,11 +16,89 @@ import (
 	"github.com/olekukonko/tablewriter"
 )
 
-func fix(ctx context.Context, wg *sync.WaitGroup, errCh chan<- error, version string) {
+// fix fixes the go version
+func fix(app *Application, ctx context.Context, wg *sync.WaitGroup, errCh chan<- error, version string) {
 	defer wg.Done()
-	panic("not implemented")
+	verbose, debug := *app.figs.Bool(kVerbose), *app.figs.Bool(kDebug)
+	onlyVerbose := verbose && !debug
+
+	if verbose {
+		color.Green("VERBOSE MODE ENABLED")
+	}
+	if debug {
+		color.Red("DEBUG MODE ENABLED")
+	}
+	workspace := app.Workspace()
+	symlinks, err := FindSymlinks(workspace)
+	if err != nil {
+		if debug || onlyVerbose {
+			color.Red(err.Error())
+		}
+		errCh <- err
+		return
+	}
+	if len(symlinks) == 0 {
+		color.Red("No go versions installed.")
+		return
+	}
+	activeVersion, err := app.activatedVersion()
+	if err != nil {
+		if debug || onlyVerbose {
+			color.Red(err.Error())
+		}
+		errCh <- fmt.Errorf("No active Go version found.")
+		return
+	}
+	if debug || onlyVerbose {
+		color.Green("Active Go version: %v", activeVersion)
+	}
+	files, err := os.ReadDir(workspace)
+	if err != nil {
+		if debug || onlyVerbose {
+			color.Red(err.Error())
+		}
+		errCh <- err
+		return
+	}
+	results := map[string]string{
+		"GOBIN":   "",
+		"GOPATH":  "",
+		"GOROOT":  "",
+		"version": "",
+	}
+	for _, dirEntry := range files {
+		if dirEntry.Name() == "bin" {
+			results["GOBIN"] = filepath.Join(workspace, dirEntry.Name())
+		}
+		if dirEntry.Name() == "path" {
+			results["GOPATH"] = filepath.Join(workspace, dirEntry.Name())
+		}
+		if dirEntry.Name() == "root" {
+			results["GOROOT"] = filepath.Join(workspace, dirEntry.Name())
+		}
+		if dirEntry.Name() == "version" {
+			results["version"] = filepath.Join(workspace, dirEntry.Name())
+		}
+	}
+	for _, dirEntry := range files {
+		n := fmt.Sprintf("GO%s", strings.ToUpper(dirEntry.Name()))
+		if x, exists := results[n]; exists && len(x) > 0 {
+			if dirEntry.Type()&os.ModeSymlink == 0 {
+				color.Red("ERROR: file %s is NOT a symlink", dirEntry.Name())
+			}
+		}
+	}
+
+	for name, path := range results {
+		if len(path) > 0 {
+			color.Green("%s: %s", name, path)
+		} else {
+			color.Red("ERROR NOT FOUND = %s: %s", name, path)
+		}
+	}
 }
 
+// env prints the environment variables for the current go version
 func env(app *Application, ctx context.Context, wg *sync.WaitGroup, errCh chan<- error) {
 	defer wg.Done()
 	verbose, debug := *app.figs.Bool(kVerbose), *app.figs.Bool(kDebug)
@@ -85,6 +163,7 @@ func env(app *Application, ctx context.Context, wg *sync.WaitGroup, errCh chan<-
 	return
 }
 
+// uninstall removes a version of go.
 func uninstall(app *Application, ctx context.Context, wg *sync.WaitGroup, errCh chan error, version string) {
 	defer wg.Done()
 	verbose, debug := *app.figs.Bool(kVerbose), *app.figs.Bool(kDebug)
@@ -134,6 +213,7 @@ func uninstall(app *Application, ctx context.Context, wg *sync.WaitGroup, errCh 
 	color.Green("Uninstalled version: %s", version)
 }
 
+// use sets the version of go to use.
 func use(app *Application, ctx context.Context, wg *sync.WaitGroup, errCh chan<- error, version string) {
 	defer wg.Done()
 	verbose, debug := *app.figs.Bool(kVerbose), *app.figs.Bool(kDebug)
@@ -252,6 +332,7 @@ func use(app *Application, ctx context.Context, wg *sync.WaitGroup, errCh chan<-
 	}
 }
 
+// list lists all installed go versions
 func list(app *Application, ctx context.Context, wg *sync.WaitGroup, errCh chan<- error) {
 	defer wg.Done()
 	verbose, debug := *app.figs.Bool(kVerbose), *app.figs.Bool(kDebug)
@@ -387,6 +468,7 @@ func list(app *Application, ctx context.Context, wg *sync.WaitGroup, errCh chan<
 
 }
 
+// install installs a go version
 func install(app *Application, wg *sync.WaitGroup, errCh chan error, version string) {
 	defer wg.Done()
 
