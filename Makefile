@@ -15,7 +15,7 @@ $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
 
 # Build for all platforms
-all: mac-intel mac-silicon windows linux linux-arm
+all: mac-intel mac-silicon linux linux-arm
 
 # Build for macOS Intel (amd64)
 mac-intel: $(BUILD_DIR)
