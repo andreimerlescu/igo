@@ -87,7 +87,6 @@ var packages = map[string]string{
 	"summarize":            "github.com/andreimerlescu/summarize",
 	"counter":              "github.com/andreimerlescu/counter",
 	"govulncheck":          "golang.org/x/vuln/cmd/govulncheck",
-	"gotop":                "github.com/cjbassi/gotop",
 	"go-generate-password": "github.com/m1/go-generate-password/cmd/go-generate-password",
 	"cli-gematria":         "github.com/andreimerlescu/cli-gematria",
 }
