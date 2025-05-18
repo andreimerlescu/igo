@@ -15,6 +15,9 @@ import (
 	"github.com/fatih/color"
 )
 
+var httpGet = http.Get
+var httpHead = http.Head
+
 // Version stores the paths of the tarball and extract paths for a given version
 type Version struct {
 	// DownloadName is the tar.gz file of the Version
@@ -66,7 +69,7 @@ func (v *Version) downloadURL(app *Application) (err error) {
 		color.Green("Downloading %s", fullURL)
 	}
 
-	resp, err := http.Get(fullURL)
+	resp, err := httpGet(fullURL)
 	if err != nil {
 		color.Red("Failed to download %s: %v", v.DownloadName, err)
 		return err

@@ -18,12 +18,8 @@ GODIR="${HOME:-"/home/$(whoami)"}/go"
 
 get_go_binary_path_for_version() {
     local version="$1"
-    if [ ! -f "${GODIR}/versions/${version}/go/bin/gofmt.${version}" ]; then
-      local GOVERSION=""
-      [ -f "$PWD/.go_version" ] && GOVERSION="$(cat "$PWD/.go_version")"
-    else
-      echo "${GODIR}/versions/${version}/go/bin/gofmt.${version}"
-    fi
+    local binary="${GODIR}/versions/${version}/go/bin/gofmt.${version}"
+    [ -f "$binary" ] && echo "$binary" || safe_exit "Gofmt binary for version ${version} not found at ${binary}"
 }
 
 find_version() {
@@ -38,7 +34,7 @@ find_version() {
 
     if [[ -f "$dir/go.mod" ]]; then
       local gomod_version
-      gomod_version=$(grep -E "^go [0-9]+\.[0-9]+(\.[0-9]+)?" "$dir/go.mod" | awk '{print $2}')
+      gomod_version=$(grep -E "^go [0-9]+\.[0-9]+(\.[0-9]+|[a-zA-Z0-9]+)?" "$dir/go.mod" | awk '{print $2}')
       if [[ -n "$gomod_version" ]]; then
         if [[ "$gomod_version" =~ ^[0-9]+\.[0-9]+$ ]]; then
           echo "${gomod_version}.0"

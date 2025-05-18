@@ -5,9 +5,12 @@ import (
 	"embed"
 	"fmt"
 	"io/fs"
+	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
+	"runtime"
 	"strings"
 
 	"github.com/andreimerlescu/figtree/v2"
@@ -24,23 +27,90 @@ type Application struct {
 	ctx         context.Context
 	figs        figtree.Plant
 	userHomeDir string
+	Workspace   func() string
 }
 
+var UserHomeDir = os.UserHomeDir
+
 func NewApp() *Application {
-	userHomeDir, err := os.UserHomeDir()
+	userHomeDir, err := UserHomeDir()
 	capture(err)
-	return &Application{
+	app := &Application{
 		ctx:         context.Background(),
 		userHomeDir: userHomeDir,
 	}
+	app.Workspace = func() string {
+		if *app.figs.Bool(kSystem) {
+			return filepath.Join("/", "usr", "go")
+		}
+		return filepath.Join(app.userHomeDir, "go")
+	}
+	app.figs = figtree.With(figtree.Options{
+		ConfigFile: filepath.Join(app.userHomeDir, ".igo.config.yml"),
+		Germinate:  true,
+		Harvest:    0,
+	})
+	app.figs.NewBool(kVersion, false, "Display current version")
+	app.figs.NewBool(kSystem, false, "Install for system-wide usage (ignore USER HOME directory)")
+	app.figs.NewBool(kDebug, false, "Enable debug mode")
+	app.figs.NewBool(kVerbose, false, "Enable verbose mode")
+	app.figs.NewString(kGoDir, filepath.Join(app.userHomeDir, "go"), "Path where you want multiple go versions installed")
+	app.figs.NewString(kCommand, "", "Command to run: install uninstall use list")
+	app.figs.NewString(kGoVersion, "1.24.3", "Go Version")
+	app.figs.WithValidator(kGoVersion, func(value interface{}) error {
+		v := figtree.NewFlesh(value).ToString()
+		if err := app.validateVersion(v); err != nil {
+			return err
+		}
+		return nil
+	})
+	app.figs.NewString(kGoos, runtime.GOOS, "Go OS")
+	app.figs.NewString(kGoArch, runtime.GOARCH, "Go Architecture")
+	app.figs.NewBool(kExtras, true, "Install extra packages")
+	app.figs.NewMap(kExtraPackages, packages, "Extra packages to install")
+	_, err = os.Lstat(figtree.ConfigFilePath)
+	if os.IsNotExist(err) || os.IsPermission(err) {
+		capture(app.figs.Parse())
+	} else {
+		capture(app.figs.Load())
+	}
+	return app
 }
 
-// Workspace provides the path to where igo is installed
-func (app *Application) Workspace() string {
-	if *app.figs.Bool(kSystem) {
-		return filepath.Join("/", "usr", "go")
+// Add this function to application.go to validate Go version formats
+func (app *Application) validateVersion(version string) error {
+	// Basic format check with regex
+	if !regexp.MustCompile(`^\d+\.\d+\.\d+$`).MatchString(version) {
+		return fmt.Errorf("invalid go version format: %s (expected format: X.Y.Z)", version)
 	}
-	return filepath.Join(app.userHomeDir, "go")
+
+	// Parse version parts to check they're valid numbers
+	var major, minor, patch int
+	_, err := fmt.Sscanf(version, "%d.%d.%d", &major, &minor, &patch)
+	if err != nil {
+		return fmt.Errorf("error parsing version components: %w", err)
+	}
+
+	// Optional: Add constraints on minimum supported versions
+	if major < 1 || (major == 1 && minor < 16) {
+		return fmt.Errorf("go version %s is not supported (minimum: 1.16.0)", version)
+	}
+
+	// Verify the version exists on Go's download server before proceeding
+	// Using a HEAD request to check if the URL exists
+	resp, err := httpHead(fmt.Sprintf("https://go.dev/dl/go%s.%s-%s.tar.gz",
+		version, *app.figs.String(kGoos), *app.figs.String(kGoArch)))
+	if err != nil {
+		return fmt.Errorf("error checking if version exists: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("go version %s not found on download server (status: %d)",
+			version, resp.StatusCode)
+	}
+
+	return nil
 }
 
 // CreateShims creates the shims for go and gofmt

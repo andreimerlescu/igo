@@ -17,6 +17,13 @@ if ! command -v counter >/dev/null; then
   echo "counter version: $(counter -v)"
 fi
 
+if ! command -v govulncheck > /dev/null; then
+  echo "govulncheck is not installed"
+  go install golang.org/x/vuln/cmd/govulncheck@latest
+  echo "govulncheck installed"
+  echo "govulncheck version: $(govulncheck -v)"
+fi
+
 echo "=== START TEST.SH ==="
 # Define command line arguments
 declare -A params=()
@@ -69,6 +76,10 @@ COUNTER_NAME="igo-tests-${BRANCH}"
 echo "Using counter name: $COUNTER_NAME"
 TEST_ID="${VERSION}q$(counter -name "${COUNTER_NAME}" -add)"
 echo "Test ID: $TEST_ID"
+
+govulncheck ./... || echo "govulncheck failed"
+
+
 
 # Remove old images and containers
 echo "Docker Image: igo:${TEST_ID}"

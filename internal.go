@@ -11,6 +11,8 @@ import (
 	"time"
 )
 
+var userCurrent = user.Current
+
 // about prints the product information
 func about() string {
 	sb := strings.Builder{}
@@ -36,7 +38,7 @@ func captureInt(_ int, err error) {
 //	     var E1 error
 //	     var E2 error
 //			capture(E1, E2)
-func capture(err ...error) {
+var capture = func(err ...error) {
 	if err == nil || len(err) == 0 || err[0] == nil {
 		return
 	}
@@ -303,7 +305,7 @@ func checkRootPrivileges() bool {
 }
 
 func User() *user.User {
-	currentUser, err := user.Current()
+	currentUser, err := userCurrent()
 	if err != nil {
 		return &user.User{
 			Uid:      "-1",
