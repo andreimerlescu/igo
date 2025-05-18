@@ -1,4 +1,10 @@
 #!/bin/bash
+
+mkdir tester-workspace
+cd tester-workspace
+
+declare from
+from=$PWD
 echo "=== START TESTER.SH ==="
 set -e
 
@@ -140,8 +146,13 @@ echo
 
 echo "=== LISTING ~/go FILES ==="
 SECONDS=0
+echo "--- CURRENT WORKING DIRECTORY ${from} ---"
+ls -la
+echo "--- IGO WORKSPACE ---"
 ls -la ~/go || exit 1
+echo "--- GOBIN ---"
 ls -la "$(realpath ~/go/bin)" || exit 1
+echo "--- GOSHIMS ---"
 ls -la "$(realpath ~/go/shims)" || exit 1
 TESTS=$(test_completed)
 test_took
@@ -164,7 +175,7 @@ echo
 echo "=== VERIFYING INSTALLATION ==="
 SECONDS=0
 v=$(go version)
-{ DEBUG=true go version | grep "go1.24.3" && echo "Go $v verified!"; } || { echo "FAIL: Go 1.24.3 not active; got $v"; exit 1; }
+{ cd /tmp && DEBUG=true go version | grep "go1.24.3" && echo "Go $v verified!" && cd "${from}"; } || { echo "FAIL: Go 1.24.3 not active; got $v"; exit 1; }
 unset v
 TESTS=$(test_completed)
 test_took
@@ -210,8 +221,6 @@ echo
 echo "=== VERIFYING INSTALLATION ==="
 SECONDS=0
 v=$(go version)
-declare from
-from=$PWD
 { cd /tmp && DEBUG=true go version | grep "go1.24.2" && echo "Go $v verified!" && cd "${from}"; } || { echo "FAIL: Go 1.24.2 not active; got $v"; exit 1; }
 unset v
 TESTS=$(test_completed)
