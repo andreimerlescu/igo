@@ -2,9 +2,22 @@
 # shellcheck disable=SC2086
 START_TIME=$(date +%s.%N)
 SECONDS=0
-echo "=== START TEST.SH ==="
+declare -i BUILD_TIME=0
 VERSION="$(cat VERSION)"
 
+if ! command -v docker >/dev/null; then
+  echo "docker is not installed"
+  exit 1
+fi
+
+if ! command -v counter >/dev/null; then
+  echo "counter is not installed"
+  go install github.com/andreimerlescu/counter@latest
+  echo "counter installed"
+  echo "counter version: $(counter -v)"
+fi
+
+echo "=== START TEST.SH ==="
 # Define command line arguments
 declare -A params=()
 params[build]="true"
@@ -72,7 +85,9 @@ fi
 
 # Build the Docker image
 if [[ "${params[build]}" == "true" ]]; then
+  SECONDS=0
   docker build -t "igo:${VERSION}" . || { echo "Docker build failed"; exit 1; }
+  BUILD_TIME=$SECONDS
 fi
 docker tag "igo:${VERSION}" "igo:${TEST_ID}" || { echo "Docker tag failed"; exit 1; }
 
@@ -85,11 +100,17 @@ echo "Running tests in container '${DEBUG}'..."
 if ! docker $DEBUG run --rm --env=TEST_ID=$TEST_ID --env=BRANCH=$BRANCH --env=VERSION=$VERSION --env=DEBUG=$DEBUG --env=VERBOSE=$VERBOSE --entrypoint "/home/tester/tester.sh" "igo:$TEST_ID"; then
   END_TIME=$(date +%s.%N)
   DURATION=$(echo "$END_TIME - $START_TIME" | bc)
-  echo "Tests failed - took $DURATION seconds"
+  if [ "$BUILD_TIME" -gt 0 ]; then
+    DURATION=$(echo "$DURATION - $BUILD_TIME" | bc)
+  fi
+  echo "Tests failed - built in $BUILD_TIME seconds and took $DURATION seconds to fail"
 else
   END_TIME=$(date +%s.%N)
   DURATION=$(echo "$END_TIME - $START_TIME" | bc)
-  echo "Tests completed successfully in $DURATION seconds!"
+  if [ "$BUILD_TIME" -gt 0 ]; then
+    DURATION=$(echo "$DURATION - $BUILD_TIME" | bc)
+  fi
+  echo "Built in $BUILD_TIME seconds. Tests completed successfully in $DURATION seconds!"
   code=0
 fi
 

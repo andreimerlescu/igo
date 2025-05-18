@@ -285,24 +285,61 @@ TESTS=$((TESTS + 1))
 test_took
 echo
 
-#echo "=== INSTALLING GO 1.24.3 ==="
-#SECONDS=0
-#igo -cmd install -gover 1.24.3 "${DEBUG}" "${VERBOSE}" || exit 1
-#TESTS=$((TESTS + 1))
-#test_took
-#echo
+echo "=== INSTALLING GO 1.24.3 ==="
+SECONDS=0
+igo -cmd install -gover 1.24.3 "${DEBUG}" "${VERBOSE}" || exit 1
+TESTS=$((TESTS + 1))
+test_took
+echo
 
-#echo "=== BREAK GO 1.24.3 ==="
-#SECONDS=0
-#rm -rf "${HOME}/go/root"
-#igo -cmd fix "${DEBUG}" "${VERBOSE}" || exit 1
-#TESTS=$((TESTS + 1))
-#test_took
-#echo
+echo "=== BREAK GO 1.24.3 ==="
+SECONDS=0
+rm -rf "${HOME}/go/root"
+igo -cmd fix "${DEBUG}" "${VERBOSE}" || exit 1
+TESTS=$((TESTS + 1))
+test_took
+echo
 
+echo "=== FIXED GO 1.24.3 ==="
+SECONDS=0
+igo -cmd fix "${DEBUG}" "${VERBOSE}" || exit 1
+TESTS=$((TESTS + 1))
+test_took
+echo
+
+echo "=== TELEMETRY & CACHE CHECK ==="
+SECONDS=0
+size=$(du -sb "${HOME}/go/telemetry" | awk '{print $1}')
+if [ "$size" -gt 0 ]; then
+    echo "Directory telemetry is not empty (size: $size bytes)"
+else
+    echo "Directory telemetry is empty"
+    exit 1
+fi
+unset size
+size=$(du -sb "${HOME}/go/cache" | awk '{print $1}')
+human_size=$(du -sh "${HOME}/go/cache" | awk '{print $1}')
+if [ "$size" -gt 0 ]; then
+    echo "Directory cache is not empty (size: $human_size)"
+else
+    echo "Directory cache is empty"
+    exit 1
+fi
+unset size human_size
+TESTS=$((TESTS + 1))
+test_took
+echo
+
+echo "=== VULNERABILITY CHECK ==="
+SECONDS=0
+govulncheck -mode binary "$(command -v igo)" || exit 1
+TESTS=$((TESTS + 1))
+test_took
+echo
 
 END_TIME=$(date +%s.%N)
 DURATION=$(echo "$END_TIME - $START_TIME" | bc)
 echo "Completed $TESTS tests in $DURATION seconds!"
 
 echo "=== END OF TESTER.SH ==="
+exit 0
