@@ -4,21 +4,152 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/fatih/color"
 	"os"
 	"path/filepath"
 	"slices"
 	"strings"
 	"sync"
 
+	"github.com/fatih/color"
 	"github.com/olekukonko/tablewriter"
+	"github.com/olekukonko/tablewriter/renderer"
+	"github.com/olekukonko/tablewriter/tw"
 )
 
-func fix(ctx context.Context, wg *sync.WaitGroup, errCh chan<- error, version string) {
+// fix fixes the go version
+func fix(app *Application, ctx context.Context, wg *sync.WaitGroup, errCh chan<- error, version string) {
 	defer wg.Done()
-	panic("not implemented")
+	verbose, debug := *app.figs.Bool(kVerbose), *app.figs.Bool(kDebug)
+	onlyVerbose := verbose && !debug
+
+	if verbose {
+		color.Green("VERBOSE MODE ENABLED")
+	}
+	if debug {
+		color.Red("DEBUG MODE ENABLED")
+	}
+	workspace := app.Workspace()
+	symlinks, err := FindSymlinks(workspace)
+	if err != nil {
+		if debug || onlyVerbose {
+			color.Red(err.Error())
+		}
+		errCh <- err
+		return
+	}
+	if len(symlinks) == 0 {
+		color.Red("No go versions installed.")
+		return
+	}
+	activeVersion, err := app.activatedVersion()
+	if err != nil {
+		if debug || onlyVerbose {
+			color.Red(err.Error())
+		}
+		errCh <- fmt.Errorf("no active Go version found")
+		return
+	}
+	if debug || onlyVerbose {
+		color.Green("Active Go version: %v", activeVersion)
+	}
+	files, err := os.ReadDir(workspace)
+	if err != nil {
+		if debug || onlyVerbose {
+			color.Red(err.Error())
+		}
+		errCh <- err
+		return
+	}
+	results := map[string]string{
+		GOBIN:      "",
+		GOPATH:     "",
+		GOMODCACHE: "",
+		GOROOT:     "",
+		"version":  "",
+	}
+	for _, dirEntry := range files {
+		if dirEntry.Name() == "bin" {
+			results[GOBIN] = filepath.Join(workspace, dirEntry.Name())
+		}
+		if dirEntry.Name() == "path" {
+			results[GOPATH] = filepath.Join(workspace, dirEntry.Name())
+		}
+		if dirEntry.Name() == "root" {
+			results[GOROOT] = filepath.Join(workspace, dirEntry.Name())
+		}
+		if dirEntry.Name() == "version" {
+			results["version"] = filepath.Join(workspace, dirEntry.Name())
+		}
+		if dirEntry.Name() == "versions" {
+			results[GOMODCACHE] = filepath.Join(workspace, "versions", version, "pkg", "mod")
+		}
+	}
+	for _, dirEntry := range files {
+		n := fmt.Sprintf("GO%s", strings.ToUpper(dirEntry.Name()))
+		if x, exists := results[n]; exists && len(x) > 0 {
+			if dirEntry.Type()&os.ModeSymlink == 0 {
+				color.Red("ERROR: file %s is NOT a symlink", dirEntry.Name())
+			}
+		}
+	}
+	patched := false
+	for name, path := range results {
+		if len(path) > 0 {
+			color.Green("%s: %s", name, path)
+		} else {
+			color.Red("!!! MISSING %s...", name)
+			switch name {
+			case GOPATH:
+				src := filepath.Join(workspace, "versions", version, "pkg", "mod")
+				tar := filepath.Join(workspace, "path")
+				err := os.Symlink(src, tar)
+				if err != nil {
+					if debug || onlyVerbose {
+						color.Red(err.Error())
+					}
+					errCh <- err
+					return
+				}
+				color.Green("Created symlink %s -> %s", src, tar)
+				patched = true
+			case GOROOT:
+				src := filepath.Join(workspace, "versions", version, "go")
+				tar := filepath.Join(workspace, "root")
+				err := os.Symlink(src, tar)
+				if err != nil {
+					if debug || onlyVerbose {
+						color.Red(err.Error())
+					}
+					errCh <- err
+					return
+				}
+				color.Green("Created symlink %s -> %s", src, tar)
+				patched = true
+			case GOBIN:
+				src := filepath.Join(workspace, "versions", version, "go", "bin")
+				tar := filepath.Join(workspace, "bin")
+				err := os.Symlink(src, tar)
+				if err != nil {
+					if debug || onlyVerbose {
+						color.Red(err.Error())
+					}
+					errCh <- err
+					return
+				}
+				color.Green("Created symlink %s -> %s", src, tar)
+				patched = true
+			}
+		}
+	}
+
+	if patched {
+		color.Green("Fixed go %s!", version)
+	} else {
+		color.Green("Nothing to fix!")
+	}
 }
 
+// env prints the environment variables for the current go version
 func env(app *Application, ctx context.Context, wg *sync.WaitGroup, errCh chan<- error) {
 	defer wg.Done()
 	verbose, debug := *app.figs.Bool(kVerbose), *app.figs.Bool(kDebug)
@@ -83,6 +214,7 @@ func env(app *Application, ctx context.Context, wg *sync.WaitGroup, errCh chan<-
 	return
 }
 
+// uninstall removes a version of go.
 func uninstall(app *Application, ctx context.Context, wg *sync.WaitGroup, errCh chan error, version string) {
 	defer wg.Done()
 	verbose, debug := *app.figs.Bool(kVerbose), *app.figs.Bool(kDebug)
@@ -132,6 +264,7 @@ func uninstall(app *Application, ctx context.Context, wg *sync.WaitGroup, errCh 
 	color.Green("Uninstalled version: %s", version)
 }
 
+// use sets the version of go to use.
 func use(app *Application, ctx context.Context, wg *sync.WaitGroup, errCh chan<- error, version string) {
 	defer wg.Done()
 	verbose, debug := *app.figs.Bool(kVerbose), *app.figs.Bool(kDebug)
@@ -163,23 +296,32 @@ func use(app *Application, ctx context.Context, wg *sync.WaitGroup, errCh chan<-
 		color.Green("Already using version %v", currentVersion)
 		return
 	}
-	binDir := filepath.Join(workspace, "bin")
-	pathDir := filepath.Join(workspace, "path")
-	rootDir := filepath.Join(workspace, "root")
-	shimDir := filepath.Join(workspace, "shims")
-	scriptsDir := filepath.Join(workspace, "scripts")
-	versionDir := filepath.Join(workspace, "versions", version)
-	versionFile := filepath.Join(workspace, "version")
+
+	var (
+		binDir       = filepath.Join(workspace, "bin")
+		pathDir      = filepath.Join(workspace, "path")
+		rootDir      = filepath.Join(workspace, "root")
+		shimDir      = filepath.Join(workspace, "shims")
+		telemetryDir = filepath.Join(workspace, "telemetry")
+		cacheDir     = filepath.Join(workspace, "cache")
+		scriptsDir   = filepath.Join(workspace, "scripts")
+		versionDir   = filepath.Join(workspace, "versions", version)
+		modCacheDir  = filepath.Join(workspace, "versions", version, "go", "pkg", "mod")
+		versionFile  = filepath.Join(workspace, "version")
+	)
 
 	// define the environment that igo requires
 	envs := map[string]string{
-		"GOOS":      *app.figs.String(kGoos),
-		"GOARCH":    *app.figs.String(kGoArch),
-		"GOSCRIPTS": scriptsDir,
-		"GOSHIMS":   shimDir,
-		"GOBIN":     binDir,
-		"GOROOT":    rootDir,
-		"GOPATH":    pathDir,
+		GOOS:           *app.figs.String(kGoos),
+		GOARCH:         *app.figs.String(kGoArch),
+		GOSCRIPTS:      scriptsDir,
+		GOSHIMS:        shimDir,
+		GOBIN:          binDir,
+		GOROOT:         rootDir,
+		GOPATH:         pathDir,
+		GOMODCACHE:     modCacheDir,
+		GOCACHE:        cacheDir,
+		GOTELEMETRYDIR: telemetryDir,
 	}
 
 	_, err = os.Stat(versionDir)
@@ -250,6 +392,7 @@ func use(app *Application, ctx context.Context, wg *sync.WaitGroup, errCh chan<-
 	}
 }
 
+// list lists all installed go versions
 func list(app *Application, ctx context.Context, wg *sync.WaitGroup, errCh chan<- error) {
 	defer wg.Done()
 	verbose, debug := *app.figs.Bool(kVerbose), *app.figs.Bool(kDebug)
@@ -303,24 +446,89 @@ func list(app *Application, ctx context.Context, wg *sync.WaitGroup, errCh chan<
 			a,
 		})
 	}
-	fmt.Println(about())
-	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"Version", "Creation", "Status"})
-	table.SetBorder(true) // Set Border to false
+	color.Magenta(about())
 
-	table.SetHeaderColor(tablewriter.Colors{tablewriter.Bold, tablewriter.FgHiBlueColor},
-		tablewriter.Colors{tablewriter.Bold, tablewriter.FgYellowColor},
-		tablewriter.Colors{tablewriter.Bold, tablewriter.FgRedColor})
+	symbols := tw.NewSymbolCustom("Nature").
+		WithRow("~").
+		WithColumn("|").
+		WithTopLeft("🌱").
+		WithTopMid("🌿").
+		WithTopRight("🌱").
+		WithMidLeft("🍃").
+		WithCenter("❀").
+		WithMidRight("🍃").
+		WithBottomLeft("🌻").
+		WithBottomMid("🌾").
+		WithBottomRight("🌻")
 
-	table.SetColumnColor(tablewriter.Colors{tablewriter.Bold, tablewriter.FgHiBlueColor},
-		tablewriter.Colors{tablewriter.FgYellowColor},
-		tablewriter.Colors{tablewriter.Bold, tablewriter.FgRedColor})
+	colorCfg := renderer.ColorizedConfig{
+		Header: renderer.Tint{
+			FG: renderer.Colors{color.FgGreen, color.Bold}, // Green bold headers
+			Columns: []renderer.Tint{
+				{FG: renderer.Colors{color.FgHiRed, color.Bold}},
+				{FG: renderer.Colors{color.FgHiWhite, color.Bold}},
+				{FG: renderer.Colors{color.FgHiBlue, color.Bold}},
+			},
+			BG: renderer.Colors{color.BgHiWhite},
+		},
+		Column: renderer.Tint{
+			FG: renderer.Colors{color.FgWhite},
+			Columns: []renderer.Tint{
+				{FG: renderer.Colors{color.FgHiRed}},
+				{FG: renderer.Colors{color.FgHiWhite}},
+				{FG: renderer.Colors{color.FgHiBlue}},
+			},
+		},
+		Footer: renderer.Tint{
+			FG: renderer.Colors{color.FgHiMagenta}, // Yellow bold footer
+			Columns: []renderer.Tint{
+				{},                                      // Inherit default
+				{FG: renderer.Colors{color.FgHiYellow}}, // High-intensity yellow for column 1
+				{},                                      // Inherit default
+			},
+		},
+		Border:    renderer.Tint{FG: renderer.Colors{color.FgWhite}},
+		Separator: renderer.Tint{FG: renderer.Colors{color.FgWhite}},
+	}
 
-	table.AppendBulk(data)
-	table.Render()
+	table := tablewriter.NewTable(os.Stdout,
+		tablewriter.WithRenderer(renderer.NewBlueprint(tw.Rendition{Symbols: symbols})),
+		tablewriter.WithRenderer(renderer.NewColorized(colorCfg)),
+		tablewriter.WithConfig(tablewriter.Config{
+			Row: tw.CellConfig{
+				Formatting: tw.CellFormatting{
+					AutoWrap:  tw.WrapNormal,
+					Alignment: tw.AlignLeft,
+				},
+			},
+			Footer: tw.CellConfig{
+				Formatting: tw.CellFormatting{Alignment: tw.AlignCenter},
+			},
+		}),
+	)
+
+	table.Header([]string{"Version", "Creation", "Status"})
+	table.Footer([]string{"I ❤ YOU!", "Made In America", "Be Inspired"})
+	err = table.Bulk(data)
+	if err != nil {
+		if debug || onlyVerbose {
+			color.Red(err.Error())
+		}
+		errCh <- err
+		return
+	}
+	err = table.Render()
+	if err != nil {
+		if debug || onlyVerbose {
+			color.Red(err.Error())
+		}
+		errCh <- err
+		return
+	}
 
 }
 
+// install installs a go version
 func install(app *Application, wg *sync.WaitGroup, errCh chan error, version string) {
 	defer wg.Done()
 
@@ -349,12 +557,15 @@ func install(app *Application, wg *sync.WaitGroup, errCh chan error, version str
 	}
 
 	var (
-		binDir     = filepath.Join(workspace, "bin")
-		pathDir    = filepath.Join(workspace, "path")
-		rootDir    = filepath.Join(workspace, "root")
-		shimDir    = filepath.Join(workspace, "shims")
-		scriptsDir = filepath.Join(workspace, "scripts")
-		versionDir = filepath.Join(workspace, "versions", version)
+		binDir       = filepath.Join(workspace, "bin")
+		pathDir      = filepath.Join(workspace, "path")
+		rootDir      = filepath.Join(workspace, "root")
+		cacheDir     = filepath.Join(workspace, "cache")
+		telemetryDir = filepath.Join(workspace, "telemetry")
+		shimDir      = filepath.Join(workspace, "shims")
+		scriptsDir   = filepath.Join(workspace, "scripts")
+		versionDir   = filepath.Join(workspace, "versions", version)
+		modCacheDir  = filepath.Join(workspace, "versions", version, "go", "pkg", "mod")
 	)
 	_, shimsErr := os.Stat(shimDir)
 	if os.IsNotExist(shimsErr) {
@@ -366,18 +577,21 @@ func install(app *Application, wg *sync.WaitGroup, errCh chan error, version str
 
 	// define the environment that igo requires
 	envs := map[string]string{
-		"GOOS":      *app.figs.String(kGoos),
-		"GOARCH":    *app.figs.String(kGoArch),
-		"GOSCRIPTS": scriptsDir,
-		"GOSHIMS":   shimDir,
-		"GOBIN":     binDir,
-		"GOROOT":    rootDir,
-		"GOPATH":    pathDir,
+		GOOS:           *app.figs.String(kGoos),
+		GOARCH:         *app.figs.String(kGoArch),
+		GOSCRIPTS:      scriptsDir,
+		GOSHIMS:        shimDir,
+		GOBIN:          binDir,
+		GOROOT:         rootDir,
+		GOPATH:         pathDir,
+		GOMODCACHE:     modCacheDir,
+		GOTELEMETRYDIR: telemetryDir,
+		GOCACHE:        cacheDir,
 	}
 
 	installerLockFile := filepath.Join(workspace, "installer.lock")
 	versionLockFile := filepath.Join(versionDir, "installer.lock")
-	tarball := fmt.Sprintf("go%s.%s-%s.tar.gz", version, envs["GOOS"], envs["GOARCH"])
+	tarball := fmt.Sprintf("go%s.%s-%s.tar.gz", version, envs[GOOS], envs[GOARCH])
 	downloadsDir := filepath.Join(workspace, "downloads")
 	versionsDir := filepath.Join(workspace, "versions")
 
@@ -556,6 +770,9 @@ func install(app *Application, wg *sync.WaitGroup, errCh chan error, version str
 	if verbose {
 		color.Green("Wrote '%s' to %s", version, versionFile)
 	}
+
+	capture(os.MkdirAll(telemetryDir, 0755))
+	capture(os.MkdirAll(cacheDir, 0755))
 
 	// report back to the user
 	if verbose {

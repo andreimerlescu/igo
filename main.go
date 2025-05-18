@@ -69,9 +69,9 @@ func main() {
 	case "use":
 		go use(app, ctx, wg, errCh, *app.figs.String(kGoVersion))
 	case "f":
-		go fix(ctx, wg, errCh, *app.figs.String(kGoVersion))
+		go fix(app, ctx, wg, errCh, *app.figs.String(kGoVersion))
 	case "fix":
-		go fix(ctx, wg, errCh, *app.figs.String(kGoVersion))
+		go fix(app, ctx, wg, errCh, *app.figs.String(kGoVersion))
 	}
 	wg.Wait()
 	close(errCh)
