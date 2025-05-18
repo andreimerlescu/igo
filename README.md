@@ -20,7 +20,6 @@ Download the binaries and use them to install go!
 | Argument   | Kind   | Usage                | Notes                         | 
 |------------|--------|----------------------|-------------------------------|
 | `-cmd`     | String | `igo -cmd <command>` | Run an `igo` command.         | 
-| `-system`  | Bool   | `igo -system=true`   | Install system wide.          |
 | `-version` | Bool   | `igo -version`       | Display `igo` binary version. |
 | `-gover`   | String | `igo -gover 1.23.4`  | Installs go `1.23.4`.         |
 | `-godir`   | String | `igo -godir /opt/go` | Installs `igo` in `/opt/go`.  |
@@ -76,10 +75,9 @@ into the `uninstall()` func. Currently, I've migrated over `install` and `list`.
 - [X] Implement `-cmd uninstall`
 - [X] Implement `-cmd use`
 - [X] Implement `-cmd env` to debug environment
-- [X] Add GitHub Actions Workflow
-- [ ] Implement `-cmd check` which is a check that verifies if go is installed with `~/go/bin` and `~/go/pkg` to integrate support
 - [X] Implement `-cmd fix`
-- [ ] Upload compiled binaries to release
+- [X] Add GitHub Actions Workflow
+- [X] Upload compiled binaries to release
 - [ ] Update README with new installation instructions
 - [ ] Add `igo` to `yum install igo` to `epel-release` yum repository.
 - [ ] Add `igo` to `apt-get install igo` to Ubuntu repository.
