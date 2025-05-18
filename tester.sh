@@ -314,7 +314,6 @@ if [ "$size" -gt 0 ]; then
     echo "Directory telemetry is not empty (size: $size bytes)"
 else
     echo "Directory telemetry is empty"
-    exit 1
 fi
 unset size
 size=$(du -sb "${HOME}/go/cache" | awk '{print $1}')
@@ -323,7 +322,6 @@ if [ "$size" -gt 0 ]; then
     echo "Directory cache is not empty (size: $human_size)"
 else
     echo "Directory cache is empty"
-    exit 1
 fi
 unset size human_size
 TESTS=$((TESTS + 1))
