@@ -32,6 +32,19 @@ const (
 	// AUTHOR is Andrei
 	AUTHOR string = "github.com/andreimerlescu/igo"
 
+	// Register the go environment variables as constants
+
+	GOBIN          string = "GOBIN"
+	GOPATH         string = "GOPATH"
+	GOROOT         string = "GOROOT"
+	GOMODCACHE     string = "GOMODCACHE"
+	GOOS           string = "GOOS"
+	GOARCH         string = "GOARCH"
+	GOSCRIPTS      string = "GOSCRIPTS"
+	GOSHIMS        string = "GOSHIMS"
+	GOTELEMETRYDIR string = "GOTELEMETRYDIR"
+	GOCACHE        string = "GOCACHE"
+
 	// XRP is how you can tip the AUTHOR
 	XRP string = "rAparioji3FxAtD7UufS8Hh9XmFn7h6AX"
 
@@ -70,11 +83,10 @@ const (
 
 // packages are installed after a new version of Go is installed
 var packages = map[string]string{
-	"genwordpass": "github.com/ProjectApario/genwordpass",
-	"summarize":   "github.com/andreimerlescu/summarize",
-	"counter":     "github.com/andreimerlescu/counter",
-	// "gotop":                "github.com/cjbassi/gotop",
-	// "go-generate-password": "github.com/m1/go-generate-password/cmd/go-generate-password",
-	// "bombardier":           "github.com/codesenberg/bombardier",
-	// "cli-gematria":         "github.com/andreimerlescu/cli-gematria",
+	"genwordpass":          "github.com/ProjectApario/genwordpass",
+	"summarize":            "github.com/andreimerlescu/summarize",
+	"counter":              "github.com/andreimerlescu/counter",
+	"govulncheck":          "golang.org/x/vuln/cmd/govulncheck",
+	"go-generate-password": "github.com/m1/go-generate-password/cmd/go-generate-password",
+	"cli-gematria":         "github.com/andreimerlescu/cli-gematria",
 }

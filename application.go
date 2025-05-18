@@ -43,6 +43,7 @@ func (app *Application) Workspace() string {
 	return filepath.Join(app.userHomeDir, "go")
 }
 
+// CreateShims creates the shims for go and gofmt
 func (app *Application) CreateShims() error {
 	workspace := app.Workspace()
 	shimsDir := filepath.Join(workspace, "shims")
