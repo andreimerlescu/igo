@@ -239,7 +239,23 @@ TESTS=$(test_completed)
 test_took
 echo
 
-# Remove Go 1.24.2
+echo "=== TESTING GO SHIM ==="
+SECONDS=0
+mkdir myapp
+cd myapp
+{
+  echo "module myapp"
+  echo "go 1.24.2"
+} | tee go.mod >/dev/null
+v=$(go version)
+{ go version | grep "go1.24.2" && echo "Go $v verified!"; } || { echo "FAIL: Go 1.24.2 not active; got $v"; exit 1; }
+unset v
+cd ../
+rm -rf myapp
+TESTS=$(test_completed)
+test_took
+echo
+
 echo "=== REMOVING GO 1.24.2 ==="
 SECONDS=0
 igo -cmd uninstall -gover 1.24.2 "${DEBUG}" "${VERBOSE}" || exit 1

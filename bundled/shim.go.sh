@@ -14,8 +14,8 @@ declare GODIR
 GODIR="${HOME:-"/home/$(whoami)"}/go"
 
 function safe_exit() {
-    echo "ERROR: $1" >&2
-    exit 1
+  echo "ERROR: $1" >&2
+  exit 1
 }
 
 get_go_binary_path_for_version() {
@@ -29,24 +29,36 @@ get_go_binary_path_for_version() {
 }
 
 find_version() {
-    local dir="$PWD"
-    while [[ "$dir" != "/" ]]; do
-        if [[ -f "$dir/.go_version" ]]; then
-            cat "$dir/.go_version"
-            return
-        fi
-        dir="$(dirname "$dir")"
-    done
-
-    if [ ! -f "${GODIR}/version" ]; then
-        safe_exit "No global Go version installed at ${GODIR}/version."
+  local dir="$PWD"
+  while [[ "$dir" != "/" ]]; do
+    if [[ -f "$dir/.go_version" ]]; then
+      cat "$dir/.go_version"
+      return
     fi
-    cat "${GODIR}/version"
+    if [[ -f "$dir/go.mod" ]]; then
+      local gomod_version
+      gomod_version=$(grep -E "^go [0-9]+\.[0-9]+(\.[0-9]+)?" "$dir/go.mod" | awk '{print $2}')
+      if [[ -n "$gomod_version" ]]; then
+        if [[ "$gomod_version" =~ ^[0-9]+\.[0-9]+$ ]]; then
+          echo "${gomod_version}.0"
+        else
+          echo "$gomod_version"
+        fi
+        return
+      fi
+    fi
+    dir="$(dirname "$dir")"
+  done
+
+  if [ ! -f "${GODIR}/version" ]; then
+    safe_exit "No global Go version installed at ${GODIR}/version."
+  fi
+  cat "${GODIR}/version"
 }
 
 version="$(find_version)"
 if [ "${version}" == "" ]; then
-    safe_exit "Invalid version detected."
+  safe_exit "Invalid version detected."
 fi
 
 # Invoke the real go binary with any arguments passed to the shim
