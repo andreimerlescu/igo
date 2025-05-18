@@ -5,6 +5,12 @@ set -e
 declare -i TESTS
 declare COUNTER_DIR
 
+if [ -n "${GITHUB_ACTIONS}" ]; then
+  echo "Running in GitHub Actions"
+  DEBUG="--debug"
+  VERBOSE="--verbose"
+fi
+
 START_TIME=$(date +%s.%N)
 
 function test_took() {
@@ -157,7 +163,9 @@ echo
 
 echo "=== VERIFYING INSTALLATION ==="
 SECONDS=0
-{ go version | grep "go1.24.3" && echo "Go 1.24.3 verified!"; } || { echo "FAIL: Go 1.24.3 not active"; exit 1; }
+v=$(go version)
+{ go version | grep "go1.24.3" && echo "Go $v verified!"; } || { echo "FAIL: Go 1.24.3 not active; got $v"; exit 1; }
+unset v
 TESTS=$(test_completed)
 test_took
 echo
