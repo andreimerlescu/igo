@@ -3,11 +3,11 @@
 set -e  # BEST PRACTICES: Exit immediately if a command exits with a non-zero status
 set -u  # SECURITY: Exit if an unset variable is used to prevent potential security risks
 set -C  # SECURITY: Prevent existing files from being overwritten using the '>' operator
-[ -n "${DEBUG:-}" ] && [ "${DEBUG}" == "true" ] && set -x  # DEVELOPER EXPERIENCE: Enable debug mode
-[ -n "${VERBOSE:-}" ] && [ "${VERBOSE}" == "true" ] && set -v  # DEVELOPER EXPERIENCE: Enable verbose mode
+[ -n "${DEBUG:-}" ] && [ "${DEBUG:-}" != "false" ] && set -x  # DEVELOPER EXPERIENCE: Enable debug mode
+[ -n "${VERBOSE:-}" ] && [ "${VERBOSE:-}" != "false" ] && set -v  # DEVELOPER EXPERIENCE: Enable verbose mode
 
-if [ -n "${DEBUG:-}" ] && [ "${DEBUG}" == "true" ]; then
-  echo "RUNNING SHIM GO: DEBUG=${DEBUG} VERBOSE=${VERBOSE}"
+if [ -n "${DEBUG:-}" ] && [ "${DEBUG:-}" != "false" ]; then
+  echo "RUNNING SHIM GO: DEBUG=${DEBUG:-} VERBOSE=${VERBOSE:-}"
 fi
 
 declare GODIR
@@ -19,9 +19,8 @@ function safe_exit() {
 }
 
 get_go_binary_path_for_version() {
-    local version="$1"
-    local binary="${GODIR}/versions/${version}/go/bin/go.${version}"
-    [ -f "$binary" ] && echo "$binary" || safe_exit "Go binary for version ${version} not found at ${binary}"
+    local binary="${GODIR}/versions/${1}/go/bin/go.${1}"
+    { [ -f "$binary" ] && echo "$binary"; } || safe_exit "Go binary for version ${1} not found at ${binary}"
 }
 
 find_version() {
@@ -40,6 +39,9 @@ find_version() {
         else
           echo "$gomod_version"
         fi
+        if [[ -n "${DEBUG:-}" ]] && [[ "${DEBUG:-}" != "false" ]]; then
+          echo "SHIM GO: ${gomod_version}"
+        fi
         return
       fi
     fi
@@ -52,15 +54,11 @@ find_version() {
   cat "${GODIR}/version"
 }
 
-version="$(find_version)"
-if [ "${version}" == "" ]; then
-  safe_exit "Invalid version detected."
-fi
-
 # Invoke the real go binary with any arguments passed to the shim
-GOBINARY="$(get_go_binary_path_for_version "${version}")"
-[ "${GOBINARY}"  == "" ] && safe_exit "a .go_version is set to '${version}' but it isn't installed yet"
-
+GOBINARY="$(get_go_binary_path_for_version "$(find_version)")"
+[ "${GOBINARY}"  == "" ] && safe_exit "a .go_version is set to '$(find_version)' but it isn't installed yet"
+declare version
+version="$(find_version)"
 GOBIN="${GODIR}/versions/${version}/go/bin"
 GOROOT="${GODIR}/versions/${version}/go"
 GOPATH="${GODIR}/versions/${version}"

@@ -164,7 +164,7 @@ echo
 echo "=== VERIFYING INSTALLATION ==="
 SECONDS=0
 v=$(go version)
-{ go version | grep "go1.24.3" && echo "Go $v verified!"; } || { echo "FAIL: Go 1.24.3 not active; got $v"; exit 1; }
+{ DEBUG=true go version | grep "go1.24.3" && echo "Go $v verified!"; } || { echo "FAIL: Go 1.24.3 not active; got $v"; exit 1; }
 unset v
 TESTS=$(test_completed)
 test_took
@@ -210,7 +210,9 @@ echo
 echo "=== VERIFYING INSTALLATION ==="
 SECONDS=0
 v=$(go version)
-{ go version | grep "go1.24.2" && echo "Go $v verified!"; } || { echo "FAIL: Go 1.24.2 not active; got $v"; exit 1; }
+declare from
+from=$PWD
+{ cd /tmp && DEBUG=true go version | grep "go1.24.2" && echo "Go $v verified!" && cd "${from}"; } || { echo "FAIL: Go 1.24.2 not active; got $v"; exit 1; }
 unset v
 TESTS=$(test_completed)
 test_took
@@ -241,7 +243,7 @@ echo
 echo "=== VERIFYING INSTALLATION ==="
 SECONDS=0
 v=$(go version)
-{ go version | grep "go1.24.3" && echo "Go $v verified!"; } || { echo "FAIL: Go 1.24.3 not active; got $v"; exit 1; }
+{ cd /tmp && DEBUG=true go version | grep "go1.24.3" && echo "Go $v verified!" && cd "${from}"; } || { echo "FAIL: Go 1.24.3 not active; got $v"; exit 1; }
 unset v
 TESTS=$(test_completed)
 test_took
@@ -256,7 +258,7 @@ cd myapp
   echo "go 1.24.2"
 } | tee go.mod >/dev/null
 v=$(go version)
-{ go version | grep "go1.24.2" && echo "Go $v verified!"; } || { echo "FAIL: Go 1.24.2 not active; got $v"; exit 1; }
+{ cd /tmp && DEBUG=true go version | grep "go1.24.2" && echo "Go $v verified!" && cd "${from}"; } || { echo "FAIL: Go 1.24.2 not active; got $v"; exit 1; }
 unset v
 cd ../
 rm -rf myapp
