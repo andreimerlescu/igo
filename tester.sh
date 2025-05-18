@@ -1,10 +1,10 @@
 #!/bin/bash
 
-mkdir tester-workspace
-cd tester-workspace
+mkdir tester-workspace || { echo "failed to mkdir tester-workspace" && exit 1; }
+cd tester-workspace || { echo "failed to cd into tester-workspace" && exit 1; }
 
 declare from
-from=$PWD
+from="$(realpath .)"
 echo "=== START TESTER.SH ==="
 set -e
 
@@ -267,7 +267,7 @@ cd myapp
   echo "go 1.24.2"
 } | tee go.mod >/dev/null
 v=$(go version)
-{ cd /tmp && DEBUG=true go version | grep "go1.24.2" && echo "Go $v verified!" && cd "${from}"; } || { echo "FAIL: Go 1.24.2 not active; got $v"; exit 1; }
+{ DEBUG=true go version | grep "go1.24.2" && echo "Go $v verified!"; } || { echo "FAIL: Go 1.24.2 not active; got $v"; exit 1; }
 unset v
 cd ../
 rm -rf myapp
