@@ -3,4 +3,6 @@ summaries
 *.log
 !test_results/test-sh-*.log
 igo
+bin/*
+
 

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"os/user"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -284,4 +285,33 @@ func touch(path string) error {
 	}
 
 	return nil
+}
+
+func checkRootPrivileges() bool {
+	if runtime.GOOS == "windows" {
+		return false // use msi installer for windows
+	} else {
+		if os.Geteuid() == 0 {
+			return true
+		}
+		if User().Uid == "0" {
+			return true
+		}
+
+		return false
+	}
+}
+
+func User() *user.User {
+	currentUser, err := user.Current()
+	if err != nil {
+		return &user.User{
+			Uid:      "-1",
+			Gid:      "-1",
+			Username: "nobody",
+			Name:     "nobody",
+			HomeDir:  "/dev/null",
+		}
+	}
+	return currentUser
 }
