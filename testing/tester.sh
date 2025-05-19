@@ -1,9 +1,31 @@
 #!/bin/bash
+#shellcheck disable=SC2317
+
+function cleanup() {
+  echo "Caught Ctrl-C, cleaning up..."
+  pkill -P $$ || true
+  echo "Terminated running tasks."
+  exit 1
+}
+
+trap cleanup SIGINT
+
+mkdir workspace || { echo "failed to mkdir workspace" && exit 1; }
+cd workspace || { echo "failed to cd into workspace" && exit 1; }
+
+declare from
+from="$(realpath .)"
 echo "=== START TESTER.SH ==="
 set -e
 
 declare -i TESTS
 declare COUNTER_DIR
+
+if [ -n "${GITHUB_ACTIONS}" ]; then
+  echo "Running in GitHub Actions"
+  DEBUG="--debug"
+  VERBOSE=""
+fi
 
 START_TIME=$(date +%s.%N)
 
@@ -134,8 +156,13 @@ echo
 
 echo "=== LISTING ~/go FILES ==="
 SECONDS=0
+echo "--- CURRENT WORKING DIRECTORY ${from} ---"
+ls -la
+echo "--- IGO WORKSPACE ---"
 ls -la ~/go || exit 1
+echo "--- GOBIN ---"
 ls -la "$(realpath ~/go/bin)" || exit 1
+echo "--- GOSHIMS ---"
 ls -la "$(realpath ~/go/shims)" || exit 1
 TESTS=$(test_completed)
 test_took
@@ -157,7 +184,9 @@ echo
 
 echo "=== VERIFYING INSTALLATION ==="
 SECONDS=0
-{ go version | grep "go1.24.3" && echo "Go 1.24.3 verified!"; } || { echo "FAIL: Go 1.24.3 not active"; exit 1; }
+v=$(go version)
+{ cd /tmp && DEBUG=true go version | grep "go1.24.3" && echo "Go $v verified!" && cd "${from}"; } || { echo "FAIL: Go 1.24.3 not active; got $v"; exit 1; }
+unset v
 TESTS=$(test_completed)
 test_took
 echo
@@ -202,7 +231,7 @@ echo
 echo "=== VERIFYING INSTALLATION ==="
 SECONDS=0
 v=$(go version)
-{ go version | grep "go1.24.2" && echo "Go $v verified!"; } || { echo "FAIL: Go 1.24.2 not active; got $v"; exit 1; }
+{ cd /tmp && DEBUG=true go version | grep "go1.24.2" && echo "Go $v verified!" && cd "${from}"; } || { echo "FAIL: Go 1.24.2 not active; got $v"; exit 1; }
 unset v
 TESTS=$(test_completed)
 test_took
@@ -233,13 +262,29 @@ echo
 echo "=== VERIFYING INSTALLATION ==="
 SECONDS=0
 v=$(go version)
-{ go version | grep "go1.24.3" && echo "Go $v verified!"; } || { echo "FAIL: Go 1.24.3 not active; got $v"; exit 1; }
+{ cd /tmp && DEBUG=true go version | grep "go1.24.3" && echo "Go $v verified!" && cd "${from}"; } || { echo "FAIL: Go 1.24.3 not active; got $v"; exit 1; }
 unset v
 TESTS=$(test_completed)
 test_took
 echo
 
-# Remove Go 1.24.2
+echo "=== TESTING GO SHIM ==="
+SECONDS=0
+mkdir myapp
+cd myapp
+{
+  echo "module myapp"
+  echo "go 1.24.2"
+} | tee go.mod >/dev/null
+v=$(go version)
+{ DEBUG=true go version | grep "go1.24.2" && echo "Go $v verified!"; } || { echo "FAIL: Go 1.24.2 not active; got $v"; exit 1; }
+unset v
+cd ../
+rm -rf myapp
+TESTS=$(test_completed)
+test_took
+echo
+
 echo "=== REMOVING GO 1.24.2 ==="
 SECONDS=0
 igo -cmd uninstall -gover 1.24.2 "${DEBUG}" "${VERBOSE}" || exit 1
@@ -332,6 +377,30 @@ echo "=== VULNERABILITY CHECK ==="
 SECONDS=0
 govulncheck -mode binary "$(command -v igo)" || exit 1
 TESTS=$((TESTS + 1))
+test_took
+echo
+
+echo "=== AUTO-FIX MISSING GO VERSION IN GO.MOD TEST ==="
+SECONDS=0
+mkdir new-app
+cd new-app
+{
+  echo "module new-app"
+  echo "go 1.21.2"
+} | tee go.mod >/dev/null
+v=$(go version)
+{ DEBUG=true go version | grep "go1.21.2" && echo "Go $v verified!"; } || { echo "FAIL: Go 1.21.2 not active; got $v"; exit 1; }
+unset v
+cd ../
+rm -rf new-app
+TESTS=$((TESTS+1))
+test_took
+echo
+
+echo "=== LIST GO VERSIONS ==="
+SECONDS=0
+igo -cmd list "${DEBUG}" "${VERBOSE}" || exit 1
+TESTS=$((TESTS+1))
 test_took
 echo
 

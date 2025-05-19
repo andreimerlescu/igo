@@ -16,7 +16,7 @@ RUN chown -R tester:tester /home/tester
 
 COPY --from=builder /bin/igo /bin/igo
 ENV PATH=/bin
-COPY tester.sh /home/tester/tester.sh
+COPY testing/*.sh /home/tester/
 RUN chmod +x /bin/igo /home/tester/tester.sh
 USER tester
 WORKDIR /home/tester

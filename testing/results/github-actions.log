@@ -1,0 +1,1181 @@
+﻿2025-05-19T13:49:26.1973480Z Current runner version: '2.324.0'
+2025-05-19T13:49:26.2002953Z ##[group]Operating System
+2025-05-19T13:49:26.2003876Z Ubuntu
+2025-05-19T13:49:26.2004576Z 22.04.5
+2025-05-19T13:49:26.2005062Z LTS
+2025-05-19T13:49:26.2005567Z ##[endgroup]
+2025-05-19T13:49:26.2006154Z ##[group]Runner Image
+2025-05-19T13:49:26.2006737Z Image: ubuntu-22.04
+2025-05-19T13:49:26.2007346Z Version: 0.0.11
+2025-05-19T13:49:26.2008288Z Included Software: https://github.com/actions/partner-runner-images/blob/main/images/arm-ubuntu-22-image.md
+2025-05-19T13:49:26.2009255Z ##[endgroup]
+2025-05-19T13:49:26.2009905Z ##[group]Runner Image Provisioner
+2025-05-19T13:49:26.2010544Z 2.0.437.1
+2025-05-19T13:49:26.2011037Z ##[endgroup]
+2025-05-19T13:49:26.2012236Z ##[group]GITHUB_TOKEN Permissions
+2025-05-19T13:49:26.2014798Z Contents: read
+2025-05-19T13:49:26.2015540Z Metadata: read
+2025-05-19T13:49:26.2016095Z Packages: read
+2025-05-19T13:49:26.2016611Z ##[endgroup]
+2025-05-19T13:49:26.2020587Z Secret source: Actions
+2025-05-19T13:49:26.2021609Z Prepare workflow directory
+2025-05-19T13:49:26.2350332Z Prepare all required actions
+2025-05-19T13:49:26.2387960Z Getting action download info
+2025-05-19T13:49:26.4790913Z ##[group]Download immutable action package 'actions/checkout@v3'
+2025-05-19T13:49:26.4792088Z Version: 3.6.0
+2025-05-19T13:49:26.4793399Z Digest: sha256:942562b9c7d4b1f2557f1da21f4d3eb4eb4fd01f2ad78b2a6e187d1b193e0a0f
+2025-05-19T13:49:26.4795106Z Source commit SHA: f43a0e5ff2bd294095638e18286ca9a3d1956744
+2025-05-19T13:49:26.4795853Z ##[endgroup]
+2025-05-19T13:49:27.4085065Z ##[group]Download immutable action package 'actions/setup-go@v3'
+2025-05-19T13:49:27.4086452Z Version: 3.6.1
+2025-05-19T13:49:27.4087849Z Digest: sha256:1b5ba729a06c8434c34b6776887b6934e562a955369e9f11807883dd5e99cd81
+2025-05-19T13:49:27.4089550Z Source commit SHA: be3c94b385c4f180051c996d336f57a34c397495
+2025-05-19T13:49:27.4090759Z ##[endgroup]
+2025-05-19T13:49:27.6689004Z Complete job name: test-linux (ubuntu-22.04-arm)
+2025-05-19T13:49:27.7491251Z ##[group]Run actions/checkout@v3
+2025-05-19T13:49:27.7492685Z with:
+2025-05-19T13:49:27.7493560Z   repository: andreimerlescu/igo
+2025-05-19T13:49:27.7494883Z   token: ***
+2025-05-19T13:49:27.7495585Z   ssh-strict: true
+2025-05-19T13:49:27.7496424Z   persist-credentials: true
+2025-05-19T13:49:27.7497223Z   clean: true
+2025-05-19T13:49:27.7497910Z   sparse-checkout-cone-mode: true
+2025-05-19T13:49:27.7498863Z   fetch-depth: 1
+2025-05-19T13:49:27.7499563Z   fetch-tags: false
+2025-05-19T13:49:27.7500256Z   lfs: false
+2025-05-19T13:49:27.7501006Z   submodules: false
+2025-05-19T13:49:27.7501707Z   set-safe-directory: true
+2025-05-19T13:49:27.7502989Z ##[endgroup]
+2025-05-19T13:49:31.1260808Z Syncing repository: andreimerlescu/igo
+2025-05-19T13:49:31.1262710Z ##[group]Getting Git version info
+2025-05-19T13:49:31.1263293Z Working directory is '/home/runner/work/igo/igo'
+2025-05-19T13:49:31.1264250Z [command]/usr/bin/git version
+2025-05-19T13:49:31.3598226Z git version 2.48.1
+2025-05-19T13:49:31.3626092Z ##[endgroup]
+2025-05-19T13:49:31.3635126Z Temporarily overriding HOME='/home/runner/work/_temp/a095491d-3eeb-43e2-b1be-e2288354de28' before making global git config changes
+2025-05-19T13:49:31.3636004Z Adding repository directory to the temporary git global config as a safe directory
+2025-05-19T13:49:31.3637445Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/igo/igo
+2025-05-19T13:49:31.4214318Z Deleting the contents of '/home/runner/work/igo/igo'
+2025-05-19T13:49:31.4217582Z ##[group]Initializing the repository
+2025-05-19T13:49:31.4219738Z [command]/usr/bin/git init /home/runner/work/igo/igo
+2025-05-19T13:49:31.5680949Z hint: Using 'master' as the name for the initial branch. This default branch name
+2025-05-19T13:49:31.5681900Z hint: is subject to change. To configure the initial branch name to use in all
+2025-05-19T13:49:31.5682602Z hint: of your new repositories, which will suppress this warning, call:
+2025-05-19T13:49:31.5683043Z hint:
+2025-05-19T13:49:31.5683464Z hint: 	git config --global init.defaultBranch <name>
+2025-05-19T13:49:31.5684501Z hint:
+2025-05-19T13:49:31.5684889Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2025-05-19T13:49:31.5685490Z hint: 'development'. The just-created branch can be renamed via this command:
+2025-05-19T13:49:31.5685945Z hint:
+2025-05-19T13:49:31.5686209Z hint: 	git branch -m <name>
+2025-05-19T13:49:31.6579123Z Initialized empty Git repository in /home/runner/work/igo/igo/.git/
+2025-05-19T13:49:31.6585637Z [command]/usr/bin/git remote add origin https://github.com/andreimerlescu/igo
+2025-05-19T13:49:31.6848801Z ##[endgroup]
+2025-05-19T13:49:31.6849429Z ##[group]Disabling automatic garbage collection
+2025-05-19T13:49:31.6850908Z [command]/usr/bin/git config --local gc.auto 0
+2025-05-19T13:49:31.6874230Z ##[endgroup]
+2025-05-19T13:49:31.6874843Z ##[group]Setting up auth
+2025-05-19T13:49:31.6878043Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2025-05-19T13:49:31.6898901Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2025-05-19T13:49:32.4650391Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2025-05-19T13:49:32.4671458Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2025-05-19T13:49:32.4835279Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2025-05-19T13:49:32.4863151Z ##[endgroup]
+2025-05-19T13:49:32.4863954Z ##[group]Fetching the repository
+2025-05-19T13:49:32.4874392Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --progress --no-recurse-submodules --depth=1 origin +d546b8a39c7bdae9a645703712b6ed9e64f13a5a:refs/remotes/pull/11/merge
+2025-05-19T13:49:33.0766490Z remote: Enumerating objects: 40, done.        
+2025-05-19T13:49:33.0767024Z remote: Counting objects:   2% (1/40)        
+2025-05-19T13:49:33.0767627Z remote: Counting objects:   5% (2/40)        
+2025-05-19T13:49:33.0768007Z remote: Counting objects:   7% (3/40)        
+2025-05-19T13:49:33.0768559Z remote: Counting objects:  10% (4/40)        
+2025-05-19T13:49:33.0768951Z remote: Counting objects:  12% (5/40)        
+2025-05-19T13:49:33.0769341Z remote: Counting objects:  15% (6/40)        
+2025-05-19T13:49:33.0769689Z remote: Counting objects:  17% (7/40)        
+2025-05-19T13:49:33.0770029Z remote: Counting objects:  20% (8/40)        
+2025-05-19T13:49:33.0770392Z remote: Counting objects:  22% (9/40)        
+2025-05-19T13:49:33.0770762Z remote: Counting objects:  25% (10/40)        
+2025-05-19T13:49:33.0771078Z remote: Counting objects:  27% (11/40)        
+2025-05-19T13:49:33.0771457Z remote: Counting objects:  30% (12/40)        
+2025-05-19T13:49:33.0771955Z remote: Counting objects:  32% (13/40)        
+2025-05-19T13:49:33.0772297Z remote: Counting objects:  35% (14/40)        
+2025-05-19T13:49:33.0772736Z remote: Counting objects:  37% (15/40)        
+2025-05-19T13:49:33.0773059Z remote: Counting objects:  40% (16/40)        
+2025-05-19T13:49:33.0773415Z remote: Counting objects:  42% (17/40)        
+2025-05-19T13:49:33.0773762Z remote: Counting objects:  45% (18/40)        
+2025-05-19T13:49:33.0774258Z remote: Counting objects:  47% (19/40)        
+2025-05-19T13:49:33.0774674Z remote: Counting objects:  50% (20/40)        
+2025-05-19T13:49:33.0775017Z remote: Counting objects:  52% (21/40)        
+2025-05-19T13:49:33.0775331Z remote: Counting objects:  55% (22/40)        
+2025-05-19T13:49:33.0775729Z remote: Counting objects:  57% (23/40)        
+2025-05-19T13:49:33.0776048Z remote: Counting objects:  60% (24/40)        
+2025-05-19T13:49:33.0776391Z remote: Counting objects:  62% (25/40)        
+2025-05-19T13:49:33.0776785Z remote: Counting objects:  65% (26/40)        
+2025-05-19T13:49:33.0777123Z remote: Counting objects:  67% (27/40)        
+2025-05-19T13:49:33.0777726Z remote: Counting objects:  70% (28/40)        
+2025-05-19T13:49:33.0778143Z remote: Counting objects:  72% (29/40)        
+2025-05-19T13:49:33.0778457Z remote: Counting objects:  75% (30/40)        
+2025-05-19T13:49:33.0778796Z remote: Counting objects:  77% (31/40)        
+2025-05-19T13:49:33.0779185Z remote: Counting objects:  80% (32/40)        
+2025-05-19T13:49:33.0779561Z remote: Counting objects:  82% (33/40)        
+2025-05-19T13:49:33.0780049Z remote: Counting objects:  85% (34/40)        
+2025-05-19T13:49:33.0780387Z remote: Counting objects:  87% (35/40)        
+2025-05-19T13:49:33.0780730Z remote: Counting objects:  90% (36/40)        
+2025-05-19T13:49:33.0781075Z remote: Counting objects:  92% (37/40)        
+2025-05-19T13:49:33.0781431Z remote: Counting objects:  95% (38/40)        
+2025-05-19T13:49:33.0781758Z remote: Counting objects:  97% (39/40)        
+2025-05-19T13:49:33.0782152Z remote: Counting objects: 100% (40/40)        
+2025-05-19T13:49:33.0782540Z remote: Counting objects: 100% (40/40), done.        
+2025-05-19T13:49:33.0782878Z remote: Compressing objects:   3% (1/31)        
+2025-05-19T13:49:33.0783288Z remote: Compressing objects:   6% (2/31)        
+2025-05-19T13:49:33.0783642Z remote: Compressing objects:   9% (3/31)        
+2025-05-19T13:49:33.0783968Z remote: Compressing objects:  12% (4/31)        
+2025-05-19T13:49:33.0784661Z remote: Compressing objects:  16% (5/31)        
+2025-05-19T13:49:33.0785002Z remote: Compressing objects:  19% (6/31)        
+2025-05-19T13:49:33.0785335Z remote: Compressing objects:  22% (7/31)        
+2025-05-19T13:49:33.0785760Z remote: Compressing objects:  25% (8/31)        
+2025-05-19T13:49:33.0786097Z remote: Compressing objects:  29% (9/31)        
+2025-05-19T13:49:33.0786502Z remote: Compressing objects:  32% (10/31)        
+2025-05-19T13:49:33.0786897Z remote: Compressing objects:  35% (11/31)        
+2025-05-19T13:49:33.0787446Z remote: Compressing objects:  38% (12/31)        
+2025-05-19T13:49:33.0787866Z remote: Compressing objects:  41% (13/31)        
+2025-05-19T13:49:33.0788219Z remote: Compressing objects:  45% (14/31)        
+2025-05-19T13:49:33.0788560Z remote: Compressing objects:  48% (15/31)        
+2025-05-19T13:49:33.0788978Z remote: Compressing objects:  51% (16/31)        
+2025-05-19T13:49:33.0789329Z remote: Compressing objects:  54% (17/31)        
+2025-05-19T13:49:33.0789658Z remote: Compressing objects:  58% (18/31)        
+2025-05-19T13:49:33.0790050Z remote: Compressing objects:  61% (19/31)        
+2025-05-19T13:49:33.0790399Z remote: Compressing objects:  64% (20/31)        
+2025-05-19T13:49:33.0790743Z remote: Compressing objects:  67% (21/31)        
+2025-05-19T13:49:33.0791172Z remote: Compressing objects:  70% (22/31)        
+2025-05-19T13:49:33.0791524Z remote: Compressing objects:  74% (23/31)        
+2025-05-19T13:49:33.0791832Z remote: Compressing objects:  77% (24/31)        
+2025-05-19T13:49:33.0792243Z remote: Compressing objects:  80% (25/31)        
+2025-05-19T13:49:33.0792598Z remote: Compressing objects:  83% (26/31)        
+2025-05-19T13:49:33.0792966Z remote: Compressing objects:  87% (27/31)        
+2025-05-19T13:49:33.0793358Z remote: Compressing objects:  90% (28/31)        
+2025-05-19T13:49:33.0793718Z remote: Compressing objects:  93% (29/31)        
+2025-05-19T13:49:33.0794220Z remote: Compressing objects:  96% (30/31)        
+2025-05-19T13:49:33.0794630Z remote: Compressing objects: 100% (31/31)        
+2025-05-19T13:49:33.0795000Z remote: Compressing objects: 100% (31/31), done.        
+2025-05-19T13:49:33.2357602Z remote: Total 40 (delta 6), reused 24 (delta 5), pack-reused 0 (from 0)        
+2025-05-19T13:49:33.5002588Z From https://github.com/andreimerlescu/igo
+2025-05-19T13:49:33.5003290Z  * [new ref]         d546b8a39c7bdae9a645703712b6ed9e64f13a5a -> pull/11/merge
+2025-05-19T13:49:33.5305754Z ##[endgroup]
+2025-05-19T13:49:33.5306227Z ##[group]Determining the checkout info
+2025-05-19T13:49:33.5306892Z ##[endgroup]
+2025-05-19T13:49:33.5307325Z ##[group]Checking out the ref
+2025-05-19T13:49:33.5310618Z [command]/usr/bin/git checkout --progress --force refs/remotes/pull/11/merge
+2025-05-19T13:49:33.6800812Z Note: switching to 'refs/remotes/pull/11/merge'.
+2025-05-19T13:49:33.6801104Z 
+2025-05-19T13:49:33.6801770Z You are in 'detached HEAD' state. You can look around, make experimental
+2025-05-19T13:49:33.6802766Z changes and commit them, and you can discard any commits you make in this
+2025-05-19T13:49:33.6803298Z state without impacting any branches by switching back to a branch.
+2025-05-19T13:49:33.6803555Z 
+2025-05-19T13:49:33.6803751Z If you want to create a new branch to retain commits you create, you may
+2025-05-19T13:49:33.6804417Z do so (now or later) by using -c with the switch command. Example:
+2025-05-19T13:49:33.6804658Z 
+2025-05-19T13:49:33.6804778Z   git switch -c <new-branch-name>
+2025-05-19T13:49:33.6804964Z 
+2025-05-19T13:49:33.6805061Z Or undo this operation with:
+2025-05-19T13:49:33.6805297Z 
+2025-05-19T13:49:33.6805390Z   git switch -
+2025-05-19T13:49:33.6805537Z 
+2025-05-19T13:49:33.6805737Z Turn off this advice by setting config variable advice.detachedHead to false
+2025-05-19T13:49:33.6806015Z 
+2025-05-19T13:49:33.6806359Z HEAD is now at d546b8a Merge 8f4a85951ade266127584df961528754a449078d into ace4ec10438b74fef1f05fdf811802fa1e5d640a
+2025-05-19T13:49:33.6813071Z ##[endgroup]
+2025-05-19T13:49:33.6839938Z [command]/usr/bin/git log -1 --format='%H'
+2025-05-19T13:49:33.6857702Z 'd546b8a39c7bdae9a645703712b6ed9e64f13a5a'
+2025-05-19T13:49:33.8592798Z ##[group]Run actions/setup-go@v3
+2025-05-19T13:49:33.8593139Z with:
+2025-05-19T13:49:33.8593474Z   go-version: 1.24.2
+2025-05-19T13:49:33.8593702Z   check-latest: false
+2025-05-19T13:49:33.8594456Z   token: ***
+2025-05-19T13:49:33.8594741Z   cache: false
+2025-05-19T13:49:33.8594982Z ##[endgroup]
+2025-05-19T13:49:34.0357330Z Setup go version spec 1.24.2
+2025-05-19T13:49:34.0368103Z Attempting to download 1.24.2...
+2025-05-19T13:49:34.3886966Z matching 1.24.2...
+2025-05-19T13:49:34.3917027Z Acquiring 1.24.2 from https://github.com/actions/go-versions/releases/download/1.24.2-14210955142/go-1.24.2-linux-arm64.tar.gz
+2025-05-19T13:49:34.7963619Z Extracting Go...
+2025-05-19T13:49:34.8050418Z [command]/usr/bin/tar xz --warning=no-unknown-keyword --overwrite -C /home/runner/work/_temp/368593a1-9757-4d4a-a5c6-d6f4af32b711 -f /home/runner/work/_temp/ac2b19ce-7e82-455a-8bae-04e1df5f9746
+2025-05-19T13:49:36.2668428Z Successfully extracted go to /home/runner/work/_temp/368593a1-9757-4d4a-a5c6-d6f4af32b711
+2025-05-19T13:49:36.2669136Z Adding to the cache ...
+2025-05-19T13:49:41.1769595Z Successfully cached go to /opt/hostedtoolcache/go/1.24.2/arm64
+2025-05-19T13:49:41.1770978Z Added go to the path
+2025-05-19T13:49:41.2149657Z Successfully set up Go version 1.24.2
+2025-05-19T13:49:41.2209397Z go version go1.24.2 linux/arm64
+2025-05-19T13:49:41.2209637Z 
+2025-05-19T13:49:41.2213402Z ##[group]go env
+2025-05-19T13:49:44.4965300Z AR='ar'
+2025-05-19T13:49:44.4965757Z CC='gcc'
+2025-05-19T13:49:44.4966036Z CGO_CFLAGS='-O2 -g'
+2025-05-19T13:49:44.4966362Z CGO_CPPFLAGS=''
+2025-05-19T13:49:44.4966643Z CGO_CXXFLAGS='-O2 -g'
+2025-05-19T13:49:44.4966944Z CGO_ENABLED='1'
+2025-05-19T13:49:44.4967196Z CGO_FFLAGS='-O2 -g'
+2025-05-19T13:49:44.4967436Z CGO_LDFLAGS='-O2 -g'
+2025-05-19T13:49:44.4967666Z CXX='g++'
+2025-05-19T13:49:44.4967913Z GCCGO='gccgo'
+2025-05-19T13:49:44.4968132Z GO111MODULE=''
+2025-05-19T13:49:44.4968325Z GOARCH='arm64'
+2025-05-19T13:49:44.4968573Z GOARM64='v8.0'
+2025-05-19T13:49:44.4968812Z GOAUTH='netrc'
+2025-05-19T13:49:44.4969002Z GOBIN=''
+2025-05-19T13:49:44.4969716Z GOCACHE='/home/runner/.cache/go-build'
+2025-05-19T13:49:44.4969980Z GOCACHEPROG=''
+2025-05-19T13:49:44.4970191Z GODEBUG=''
+2025-05-19T13:49:44.4970450Z GOENV='/home/runner/.config/go/env'
+2025-05-19T13:49:44.4970724Z GOEXE=''
+2025-05-19T13:49:44.4970944Z GOEXPERIMENT=''
+2025-05-19T13:49:44.4971162Z GOFIPS140='off'
+2025-05-19T13:49:44.4971381Z GOFLAGS=''
+2025-05-19T13:49:44.4972028Z GOGCCFLAGS='-fPIC -pthread -Wl,--no-gc-sections -fmessage-length=0 -ffile-prefix-map=/tmp/go-build4254081796=/tmp/go-build -gno-record-gcc-switches'
+2025-05-19T13:49:44.4972931Z GOHOSTARCH='arm64'
+2025-05-19T13:49:44.4973155Z GOHOSTOS='linux'
+2025-05-19T13:49:44.4973423Z GOINSECURE=''
+2025-05-19T13:49:44.4973653Z GOMOD='/home/runner/work/igo/igo/go.mod'
+2025-05-19T13:49:44.4973957Z GOMODCACHE='/home/runner/go/pkg/mod'
+2025-05-19T13:49:44.4974450Z GONOPROXY=''
+2025-05-19T13:49:44.4974682Z GONOSUMDB=''
+2025-05-19T13:49:44.4974878Z GOOS='linux'
+2025-05-19T13:49:44.4975139Z GOPATH='/home/runner/go'
+2025-05-19T13:49:44.4975376Z GOPRIVATE=''
+2025-05-19T13:49:44.4975638Z GOPROXY='https://proxy.golang.org,direct'
+2025-05-19T13:49:44.4976025Z GOROOT='/opt/hostedtoolcache/go/1.24.2/arm64'
+2025-05-19T13:49:44.4976327Z GOSUMDB='sum.golang.org'
+2025-05-19T13:49:44.4976543Z GOTELEMETRY='local'
+2025-05-19T13:49:44.4976867Z GOTELEMETRYDIR='/home/runner/.config/go/telemetry'
+2025-05-19T13:49:44.4977171Z GOTMPDIR=''
+2025-05-19T13:49:44.4977417Z GOTOOLCHAIN='auto'
+2025-05-19T13:49:44.4977766Z GOTOOLDIR='/opt/hostedtoolcache/go/1.24.2/arm64/pkg/tool/linux_arm64'
+2025-05-19T13:49:44.4978106Z GOVCS=''
+2025-05-19T13:49:44.4978343Z GOVERSION='go1.24.2'
+2025-05-19T13:49:44.4978564Z GOWORK=''
+2025-05-19T13:49:44.4978778Z PKG_CONFIG='pkg-config'
+2025-05-19T13:49:44.4978919Z 
+2025-05-19T13:49:44.4979354Z ##[endgroup]
+2025-05-19T13:49:44.5099543Z ##[group]Run go mod download
+2025-05-19T13:49:44.5100082Z [36;1mgo mod download[0m
+2025-05-19T13:49:44.5100351Z [36;1mgo mod tidy[0m
+2025-05-19T13:49:44.5100616Z [36;1mgo mod vendor[0m
+2025-05-19T13:49:44.6062352Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2025-05-19T13:49:44.6062893Z ##[endgroup]
+2025-05-19T13:49:45.1665370Z go: downloading gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405
+2025-05-19T13:49:45.2559345Z ##[group]Run go build -o igo
+2025-05-19T13:49:45.2559832Z [36;1mgo build -o igo[0m
+2025-05-19T13:49:45.2560118Z [36;1mchmod +x igo[0m
+2025-05-19T13:49:45.2560342Z [36;1mexport PATH=$PATH:$(pwd)[0m
+2025-05-19T13:49:45.2560681Z [36;1mchmod +x ./testing/tester.sh[0m
+2025-05-19T13:49:45.2560978Z [36;1mtouch .profile[0m
+2025-05-19T13:49:45.2561208Z [36;1mrm go.mod[0m
+2025-05-19T13:49:45.2561451Z [36;1mrm go.sum[0m
+2025-05-19T13:49:45.2561684Z [36;1m./testing/tester.sh[0m
+2025-05-19T13:49:45.2596225Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2025-05-19T13:49:45.2596585Z ##[endgroup]
+2025-05-19T13:49:54.5247948Z === START TESTER.SH ===
+2025-05-19T13:49:54.5248322Z Running in GitHub Actions
+2025-05-19T13:49:54.5256893Z === IGO VERSION ===
+2025-05-19T13:49:54.6825657Z v1.0.2
+2025-05-19T13:49:54.6832766Z Test 1 took 0 seconds
+2025-05-19T13:49:54.6833129Z 
+2025-05-19T13:49:54.6833289Z === IGO ENVIRONMENT ===
+2025-05-19T13:49:54.7764723Z DEBUG MODE ENABLED
+2025-05-19T13:49:54.7765377Z open /home/runner/go/version: no such file or directory
+2025-05-19T13:49:54.7765720Z Current version: 
+2025-05-19T13:49:54.7767624Z │   ENV:
+2025-05-19T13:49:54.7767980Z └── LINKS:
+2025-05-19T13:49:54.7773412Z Test 2 took 0 seconds
+2025-05-19T13:49:54.7773627Z 
+2025-05-19T13:49:54.7773633Z 
+2025-05-19T13:49:54.7773877Z === INITIAL LIST (Should be empty) ===
+2025-05-19T13:49:54.8807862Z igo [open source at github.com/andreimerlescu/igo]
+2025-05-19T13:49:54.8809555Z ┌──────────┬─────────────────┬─────────────┐
+2025-05-19T13:49:54.8810175Z │ VERSION  │    CREATION     │   STATUS    │
+2025-05-19T13:49:54.8810583Z ├──────────┼─────────────────┼─────────────┤
+2025-05-19T13:49:54.8814839Z ├──────────┼─────────────────┼─────────────┤
+2025-05-19T13:49:54.8815515Z │ I ❤ YOU! │ Made In America │ Be Inspired │
+2025-05-19T13:49:54.8815954Z └──────────┴─────────────────┴─────────────┘
+2025-05-19T13:49:54.8823159Z Test 3 took 0 seconds
+2025-05-19T13:49:54.8823386Z 
+2025-05-19T13:49:54.8823565Z === INSTALLING GO 1.24.2 ===
+2025-05-19T13:49:54.9652156Z DEBUG MODE ENABLED
+2025-05-19T13:49:54.9653201Z Starting download of go1.24.2.linux-arm64.tar.gz
+2025-05-19T13:49:55.4297896Z Downloaded 74762151 bytes of /home/runner/go/versions/1.24.2 in 464.270789ms
+2025-05-19T13:49:55.4299275Z Downloaded go1.24.2.linux-arm64.tar.gz in 464.320021ms
+2025-05-19T13:49:56.8833606Z Updated /home/runner/.profile with 10 new environment variables
+2025-05-19T13:49:56.8834599Z Patched igo variables in ENV
+2025-05-19T13:49:56.8834958Z    GOSHIMS=/home/runner/go/shims
+2025-05-19T13:49:56.8835337Z    GOMODCACHE=/home/runner/go/versions/1.24.2/go/pkg/mod
+2025-05-19T13:49:56.8835744Z    GOCACHE=/home/runner/go/cache
+2025-05-19T13:49:56.8836015Z    GOOS=linux
+2025-05-19T13:49:56.8836227Z    GOARCH=arm64
+2025-05-19T13:49:56.8836554Z    GOSCRIPTS=/home/runner/go/scripts
+2025-05-19T13:49:56.8836912Z    GOBIN=/home/runner/go/bin
+2025-05-19T13:49:56.8837225Z    GOROOT=/home/runner/go/root
+2025-05-19T13:49:56.8837554Z    GOPATH=/home/runner/go/path
+2025-05-19T13:49:56.8837889Z    GOTELEMETRYDIR=/home/runner/go/telemetry
+2025-05-19T13:49:56.8838223Z Found /home/runner/.profile
+2025-05-19T13:49:56.8838520Z Patched PATH in shell configs!
+2025-05-19T13:49:56.8864248Z Found data in version file response: go version go1.24.2 linux/arm64
+2025-05-19T13:49:56.8866054Z Installing extra packages: 
+2025-05-19T13:49:59.0530582Z Installed summarize successfully
+2025-05-19T13:49:59.9110289Z Installed counter successfully
+2025-05-19T13:50:03.6395458Z Installed govulncheck successfully
+2025-05-19T13:50:04.9724839Z Installed go-generate-password successfully
+2025-05-19T13:50:06.7494670Z Installed cli-gematria successfully
+2025-05-19T13:50:10.1353193Z Installed genwordpass successfully
+2025-05-19T13:50:11.7169419Z Test 4 took 17 seconds
+2025-05-19T13:50:11.7171378Z 
+2025-05-19T13:50:11.7171645Z === IGO ENVIRONMENT ===
+2025-05-19T13:50:11.8319848Z DEBUG MODE ENABLED
+2025-05-19T13:50:11.8321765Z Current version: 1.24.2
+2025-05-19T13:50:11.8322445Z │   ENV:
+2025-05-19T13:50:11.8323653Z └── LINKS:
+2025-05-19T13:50:11.8324596Z     ├── /home/runner/go/bin -> /home/runner/go/versions/1.24.2/go/bin ✅  
+2025-05-19T13:50:11.8325345Z     ├── /home/runner/go/path -> /home/runner/go/versions/1.24.2 ✅  
+2025-05-19T13:50:11.8326229Z     ├── /home/runner/go/root -> /home/runner/go/versions/1.24.2/go ✅  
+2025-05-19T13:50:11.8330716Z Test 5 took 0 seconds
+2025-05-19T13:50:11.8330914Z 
+2025-05-19T13:50:11.8330948Z 
+2025-05-19T13:50:11.8331358Z /bin/tree
+2025-05-19T13:50:11.8331629Z === LISTING FILES ===
+2025-05-19T13:50:13.5633829Z .
+2025-05-19T13:50:13.5634231Z 
+2025-05-19T13:50:13.5634397Z 0 directories, 0 files
+2025-05-19T13:50:13.5634607Z 
+2025-05-19T13:50:13.5634713Z === ENVIRONMENT VARIABLES ===
+2025-05-19T13:50:13.5644932Z ACCEPT_EULA=Y
+2025-05-19T13:50:13.5645291Z ACTIONS_RUNNER_ACTION_ARCHIVE_CACHE=/opt/actionarchivecache
+2025-05-19T13:50:13.5645714Z AGENT_TOOLSDIRECTORY=/opt/hostedtoolcache
+2025-05-19T13:50:13.5645999Z ANT_HOME=/usr/share/ant
+2025-05-19T13:50:13.5646341Z AZURE_EXTENSION_DIR=/opt/az/azcliextensions
+2025-05-19T13:50:13.5646643Z CI=true
+2025-05-19T13:50:13.5646886Z DEBIAN_FRONTEND=noninteractive
+2025-05-19T13:50:13.5647165Z DEPLOYMENT_BASEPATH=/opt/runner
+2025-05-19T13:50:13.5647438Z DOTNET_MULTILEVEL_LOOKUP=0
+2025-05-19T13:50:13.5647747Z DOTNET_NOLOGO=1
+2025-05-19T13:50:13.5647989Z DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
+2025-05-19T13:50:13.5648354Z GECKOWEBDRIVER=/usr/local/share/gecko_driver
+2025-05-19T13:50:13.5648674Z GITHUB_ACTION=__run_2
+2025-05-19T13:50:13.5648886Z GITHUB_ACTIONS=true
+2025-05-19T13:50:13.5649215Z GITHUB_ACTION_REF=
+2025-05-19T13:50:13.5649452Z GITHUB_ACTION_REPOSITORY=
+2025-05-19T13:50:13.5649727Z GITHUB_ACTOR=andreimerlescu
+2025-05-19T13:50:13.5650018Z GITHUB_ACTOR_ID=50429147
+2025-05-19T13:50:13.5650302Z GITHUB_API_URL=https://api.github.com
+2025-05-19T13:50:13.5650629Z GITHUB_BASE_REF=master
+2025-05-19T13:50:13.5651047Z GITHUB_ENV=/home/runner/work/_temp/_runner_file_commands/set_env_033791f6-4d9b-4274-980b-56e3ae5b2cca
+2025-05-19T13:50:13.5651525Z GITHUB_EVENT_NAME=pull_request
+2025-05-19T13:50:13.5651930Z GITHUB_EVENT_PATH=/home/runner/work/_temp/_github_workflow/event.json
+2025-05-19T13:50:13.5652344Z GITHUB_GRAPHQL_URL=https://api.github.com/graphql
+2025-05-19T13:50:13.5652662Z GITHUB_HEAD_REF=hotfix/shim-test
+2025-05-19T13:50:13.5653348Z GITHUB_JOB=test-linux
+2025-05-19T13:50:13.5653811Z GITHUB_OUTPUT=/home/runner/work/_temp/_runner_file_commands/set_output_033791f6-4d9b-4274-980b-56e3ae5b2cca
+2025-05-19T13:50:13.5654638Z GITHUB_PATH=/home/runner/work/_temp/_runner_file_commands/add_path_033791f6-4d9b-4274-980b-56e3ae5b2cca
+2025-05-19T13:50:13.5655152Z GITHUB_REF=refs/pull/11/merge
+2025-05-19T13:50:13.5655413Z GITHUB_REF_NAME=11/merge
+2025-05-19T13:50:13.5655700Z GITHUB_REF_PROTECTED=false
+2025-05-19T13:50:13.5655949Z GITHUB_REF_TYPE=branch
+2025-05-19T13:50:13.5656207Z GITHUB_REPOSITORY=andreimerlescu/igo
+2025-05-19T13:50:13.5656548Z GITHUB_REPOSITORY_ID=963951020
+2025-05-19T13:50:13.5656835Z GITHUB_REPOSITORY_OWNER=andreimerlescu
+2025-05-19T13:50:13.5657152Z GITHUB_REPOSITORY_OWNER_ID=50429147
+2025-05-19T13:50:13.5657424Z GITHUB_RETENTION_DAYS=90
+2025-05-19T13:50:13.5657680Z GITHUB_RUN_ATTEMPT=1
+2025-05-19T13:50:13.5657932Z GITHUB_RUN_ID=15114765417
+2025-05-19T13:50:13.5658197Z GITHUB_RUN_NUMBER=75
+2025-05-19T13:50:13.5658475Z GITHUB_SERVER_URL=https://github.com
+2025-05-19T13:50:13.5658791Z GITHUB_SHA=d546b8a39c7bdae9a645703712b6ed9e64f13a5a
+2025-05-19T13:50:13.5659330Z GITHUB_STATE=/home/runner/work/_temp/_runner_file_commands/save_state_033791f6-4d9b-4274-980b-56e3ae5b2cca
+2025-05-19T13:50:13.5660051Z GITHUB_STEP_SUMMARY=/home/runner/work/_temp/_runner_file_commands/step_summary_033791f6-4d9b-4274-980b-56e3ae5b2cca
+2025-05-19T13:50:13.5660969Z GITHUB_TRIGGERING_ACTOR=andreimerlescu
+2025-05-19T13:50:13.5661322Z GITHUB_WORKFLOW=Manage IGO Package
+2025-05-19T13:50:13.5661780Z GITHUB_WORKFLOW_REF=andreimerlescu/igo/.github/workflows/test-igo.yml@refs/pull/11/merge
+2025-05-19T13:50:13.5662501Z GITHUB_WORKFLOW_SHA=d546b8a39c7bdae9a645703712b6ed9e64f13a5a
+2025-05-19T13:50:13.5662871Z GITHUB_WORKSPACE=/home/runner/work/igo/igo
+2025-05-19T13:50:13.5663190Z GRADLE_HOME=/usr/share/gradle
+2025-05-19T13:50:13.5663474Z HOME=/home/runner
+2025-05-19T13:50:13.5663756Z INVOCATION_ID=931234392aca422bb425b4231d833263
+2025-05-19T13:50:13.5664200Z ImageOS=ubuntu22
+2025-05-19T13:50:13.5664431Z ImageVersion=0.0.11
+2025-05-19T13:50:13.5664717Z JAVA_HOME=/usr/lib/jvm/temurin-11-jdk-arm64
+2025-05-19T13:50:13.5665047Z JAVA_HOME_11_X64=/usr/lib/jvm/temurin-11-jdk-arm64
+2025-05-19T13:50:13.5665436Z JAVA_HOME_17_X64=/usr/lib/jvm/temurin-17-jdk-arm64
+2025-05-19T13:50:13.5665795Z JAVA_HOME_21_X64=/usr/lib/jvm/temurin-21-jdk-arm64
+2025-05-19T13:50:13.5666127Z JAVA_HOME_8_X64=/usr/lib/jvm/temurin-8-jdk-arm64
+2025-05-19T13:50:13.5666444Z JOURNAL_STREAM=8:3947
+2025-05-19T13:50:13.5666715Z LANG=C.UTF-8
+2025-05-19T13:50:13.5666930Z NVM_DIR=/home/runner/.nvm
+2025-05-19T13:50:13.5667355Z OLDPWD=/home/runner/work/igo/igo
+2025-05-19T13:50:13.5668682Z PATH=/bin:/home/runner/go/bin:/opt/hostedtoolcache/go/1.24.2/arm64/bin:/snap/bin:/home/runner/.local/bin:/opt/pipx_bin:/home/runner/.cargo/bin:/home/runner/.config/composer/vendor/bin:/opt/google-cloud-sdk/bin:/home/runner/.dotnet/tools:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/home/runner/work/igo/igo
+2025-05-19T13:50:13.5670012Z PERFLOG_LOCATION_SETTING=RUNNER_PERFLOG
+2025-05-19T13:50:13.5670328Z PIPX_BIN_DIR=/opt/pipx_bin
+2025-05-19T13:50:13.5670578Z PIPX_HOME=/opt/pipx
+2025-05-19T13:50:13.5670877Z POWERSHELL_DISTRIBUTION_CHANNEL=GitHub-Actions-ubuntu22
+2025-05-19T13:50:13.5671993Z ***
+2025-05-19T13:50:13.5672258Z RUNNER_ARCH=ARM64
+2025-05-19T13:50:13.5672610Z RUNNER_ENVIRONMENT=github-hosted
+2025-05-19T13:50:13.5672892Z RUNNER_NAME=GitHub Actions 8
+2025-05-19T13:50:13.5673122Z RUNNER_OS=Linux
+2025-05-19T13:50:13.5673415Z RUNNER_PERFLOG=/home/runner/perflog
+2025-05-19T13:50:13.5673705Z RUNNER_TEMP=/home/runner/work/_temp
+2025-05-19T13:50:13.5674130Z RUNNER_TOOL_CACHE=/opt/hostedtoolcache
+2025-05-19T13:50:13.5674552Z RUNNER_TRACKING_ID=github_2fd61737-a121-4006-b9d7-27f55b7074a6
+2025-05-19T13:50:13.5674895Z RUNNER_USER=runner
+2025-05-19T13:50:13.5675126Z RUNNER_WORKSPACE=/home/runner/work/igo
+2025-05-19T13:50:13.5675503Z SELENIUM_JAR_PATH=/usr/share/java/selenium-server.jar
+2025-05-19T13:50:13.5676038Z SGX_AESM_ADDR=1
+2025-05-19T13:50:13.5676279Z SHLVL=1
+2025-05-19T13:50:13.5676488Z STATS_D=false
+2025-05-19T13:50:13.5676692Z STATS_D_D=false
+2025-05-19T13:50:13.5676924Z STATS_D_TC=true
+2025-05-19T13:50:13.5677150Z STATS_EXT=true
+2025-05-19T13:50:13.5677646Z STATS_EXTP=https://provjobdprod.z13.web.core.windows.net/settings/provjobdsettings-latest/provjobd.data
+2025-05-19T13:50:13.5678167Z STATS_PIP=false
+2025-05-19T13:50:13.5678380Z STATS_RDCL=true
+2025-05-19T13:50:13.5678596Z STATS_TIS=mining
+2025-05-19T13:50:13.5678852Z STATS_TRP=true
+2025-05-19T13:50:13.5679078Z STATS_UE=true
+2025-05-19T13:50:13.5679282Z STATS_V3PS=true
+2025-05-19T13:50:13.5679510Z STATS_VMD=true
+2025-05-19T13:50:13.5679744Z STATS_VMFE=true
+2025-05-19T13:50:13.5679973Z SWIFT_PATH=/usr/share/swift/usr/bin
+2025-05-19T13:50:13.5680289Z SYSTEMD_EXEC_PID=573
+2025-05-19T13:50:13.5680521Z USER=runner
+2025-05-19T13:50:13.5680717Z VCPKG_FORCE_SYSTEM_BINARIES=1
+2025-05-19T13:50:13.5681073Z VCPKG_INSTALLATION_ROOT=/usr/local/share/vcpkg
+2025-05-19T13:50:13.5681393Z XDG_CONFIG_HOME=/home/runner/.config
+2025-05-19T13:50:13.5681698Z XDG_RUNTIME_DIR=/run/user/1001
+2025-05-19T13:50:13.5681968Z _=/bin/env
+2025-05-19T13:50:13.5682072Z 
+2025-05-19T13:50:13.5765816Z === RELOADING SHELL CONFIG ===
+2025-05-19T13:50:13.6088109Z Loaded ~/.profile into shell...
+2025-05-19T13:50:13.6088702Z Loaded ~/.zshrc.local
+2025-05-19T13:50:13.6088898Z 
+2025-05-19T13:50:13.6088991Z === BASH PROFILE ===
+2025-05-19T13:50:13.6095061Z # ~/.profile: executed by the command interpreter for login shells.
+2025-05-19T13:50:13.6095569Z # This file is not read by bash(1), if ~/.bash_profile or ~/.bash_login
+2025-05-19T13:50:13.6095971Z # exists.
+2025-05-19T13:50:13.6096580Z # see /usr/share/doc/bash/examples/startup-files for examples.
+2025-05-19T13:50:13.6096987Z # the files are located in the bash-doc package.
+2025-05-19T13:50:13.6097211Z 
+2025-05-19T13:50:13.6097521Z # the default umask is set in /etc/profile; for setting the umask
+2025-05-19T13:50:13.6097988Z # for ssh logins, install and configure the libpam-umask package.
+2025-05-19T13:50:13.6098325Z #umask 022
+2025-05-19T13:50:13.6098425Z 
+2025-05-19T13:50:13.6098583Z # if running bash
+2025-05-19T13:50:13.6098855Z if [ -n "$BASH_VERSION" ]; then
+2025-05-19T13:50:13.6099137Z     # include .bashrc if it exists
+2025-05-19T13:50:13.6099477Z     if [ -f "$HOME/.bashrc" ]; then
+2025-05-19T13:50:13.6099762Z 	. "$HOME/.bashrc"
+2025-05-19T13:50:13.6099972Z     fi
+2025-05-19T13:50:13.6100216Z fi
+2025-05-19T13:50:13.6100313Z 
+2025-05-19T13:50:13.6100462Z # set PATH so it includes user's private bin if it exists
+2025-05-19T13:50:13.6100943Z if [ -d "$HOME/bin" ] ; then
+2025-05-19T13:50:13.6101274Z     PATH="$HOME/bin:$PATH"
+2025-05-19T13:50:13.6101513Z fi
+2025-05-19T13:50:13.6101611Z 
+2025-05-19T13:50:13.6101790Z # set PATH so it includes user's private bin if it exists
+2025-05-19T13:50:13.6102141Z if [ -d "$HOME/.local/bin" ] ; then
+2025-05-19T13:50:13.6102426Z     PATH="$HOME/.local/bin:$PATH"
+2025-05-19T13:50:13.6102725Z fi
+2025-05-19T13:50:13.6102980Z export GOTELEMETRYDIR=/home/runner/go/telemetry
+2025-05-19T13:50:13.6103306Z export GOSHIMS=/home/runner/go/shims
+2025-05-19T13:50:13.6103708Z export GOMODCACHE=/home/runner/go/versions/1.24.2/go/pkg/mod
+2025-05-19T13:50:13.6104228Z export GOCACHE=/home/runner/go/cache
+2025-05-19T13:50:13.6104512Z export GOOS=linux
+2025-05-19T13:50:13.6104793Z export GOARCH=arm64
+2025-05-19T13:50:13.6105046Z export GOSCRIPTS=/home/runner/go/scripts
+2025-05-19T13:50:13.6105348Z export GOBIN=/home/runner/go/bin
+2025-05-19T13:50:13.6105662Z export GOROOT=/home/runner/go/root
+2025-05-19T13:50:13.6105929Z export GOPATH=/home/runner/go/path
+2025-05-19T13:50:13.6107520Z export PATH=/home/runner/go/shims:/home/runner/go/bin:/home/runner/go/scripts:/bin:/home/runner/go/bin:/opt/hostedtoolcache/go/1.24.2/arm64/bin:/snap/bin:/home/runner/.local/bin:/opt/pipx_bin:/home/runner/.cargo/bin:/home/runner/.config/composer/vendor/bin:/opt/google-cloud-sdk/bin:/home/runner/.dotnet/tools:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/home/runner/work/igo/igo
+2025-05-19T13:50:13.6109238Z 
+2025-05-19T13:50:13.6109332Z === PATH ===
+2025-05-19T13:50:13.6110828Z /home/runner/go/shims:/home/runner/go/bin:/home/runner/go/scripts:/bin:/home/runner/go/bin:/opt/hostedtoolcache/go/1.24.2/arm64/bin:/snap/bin:/home/runner/.local/bin:/opt/pipx_bin:/home/runner/.cargo/bin:/home/runner/.config/composer/vendor/bin:/opt/google-cloud-sdk/bin:/home/runner/.dotnet/tools:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/home/runner/work/igo/igo
+2025-05-19T13:50:13.6112174Z 
+2025-05-19T13:50:13.9201243Z TEST_ID: 11-speen5subclassifying]calcarate]
+2025-05-19T13:50:13.9221426Z Test 12 took 0 seconds
+2025-05-19T13:50:13.9221623Z 
+2025-05-19T13:50:13.9221629Z 
+2025-05-19T13:50:13.9221913Z === LISTING GO VERSIONS ===
+2025-05-19T13:50:14.0076834Z DEBUG MODE ENABLED
+2025-05-19T13:50:14.0382428Z igo [open source at github.com/andreimerlescu/igo]
+2025-05-19T13:50:14.0384600Z ┌──────────┬──────────────────┬─────────────┐
+2025-05-19T13:50:14.0385091Z │ VERSION  │     CREATION     │   STATUS    │
+2025-05-19T13:50:14.0385596Z ├──────────┼──────────────────┼─────────────┤
+2025-05-19T13:50:14.0385992Z │ 1.24.2   │ 2025-05-19 13:50 │  * ACTIVE   │
+2025-05-19T13:50:14.0386410Z ├──────────┼──────────────────┼─────────────┤
+2025-05-19T13:50:14.0386902Z │ I ❤ YOU! │ Made In America  │ Be Inspired │
+2025-05-19T13:50:14.0387306Z └──────────┴──────────────────┴─────────────┘
+2025-05-19T13:50:14.0418063Z Test 13 took 1 seconds
+2025-05-19T13:50:14.0418397Z 
+2025-05-19T13:50:14.0418402Z 
+2025-05-19T13:50:14.0418529Z === INSTALLING GO 1.24.3 ===
+2025-05-19T13:50:14.3072162Z DEBUG MODE ENABLED
+2025-05-19T13:50:14.3072577Z Starting download of go1.24.3.linux-arm64.tar.gz
+2025-05-19T13:50:14.6222116Z Downloaded 74805957 bytes of /home/runner/go/versions/1.24.3 in 314.823918ms
+2025-05-19T13:50:14.6222669Z Downloaded go1.24.3.linux-arm64.tar.gz in 314.86211ms
+2025-05-19T13:50:16.0538175Z No new environment variables to add to /home/runner/.profile
+2025-05-19T13:50:16.0538874Z Patched igo variables in ENV
+2025-05-19T13:50:16.0539187Z    GOARCH=arm64
+2025-05-19T13:50:16.0539529Z    GOSHIMS=/home/runner/go/shims
+2025-05-19T13:50:16.0539838Z    GOROOT=/home/runner/go/root
+2025-05-19T13:50:16.0540121Z    GOPATH=/home/runner/go/path
+2025-05-19T13:50:16.0540510Z    GOMODCACHE=/home/runner/go/versions/1.24.3/go/pkg/mod
+2025-05-19T13:50:16.0540871Z    GOCACHE=/home/runner/go/cache
+2025-05-19T13:50:16.0541144Z    GOOS=linux
+2025-05-19T13:50:16.0541438Z    GOSCRIPTS=/home/runner/go/scripts
+2025-05-19T13:50:16.0541721Z    GOBIN=/home/runner/go/bin
+2025-05-19T13:50:16.0542087Z    GOTELEMETRYDIR=/home/runner/go/telemetry
+2025-05-19T13:50:16.0542431Z Found /home/runner/.profile
+2025-05-19T13:50:16.0542788Z PATH in /home/runner/.profile already contains all required paths
+2025-05-19T13:50:16.0543146Z Patched PATH in shell configs!
+2025-05-19T13:50:16.0563171Z Found data in version file response: go version go1.24.3 linux/arm64
+2025-05-19T13:50:16.0564499Z Installing extra packages: 
+2025-05-19T13:50:19.0763094Z Installed counter successfully
+2025-05-19T13:50:25.9391266Z Installed govulncheck successfully
+2025-05-19T13:50:26.8314308Z Installed go-generate-password successfully
+2025-05-19T13:50:27.6226608Z Installed cli-gematria successfully
+2025-05-19T13:50:30.5456180Z Installed genwordpass successfully
+2025-05-19T13:50:31.4991927Z Installed summarize successfully
+2025-05-19T13:50:31.5482971Z Test 14 took 17 seconds
+2025-05-19T13:50:31.5483419Z 
+2025-05-19T13:50:31.5483425Z 
+2025-05-19T13:50:31.5483539Z === IGO ENVIRONMENT ===
+2025-05-19T13:50:31.6727238Z DEBUG MODE ENABLED
+2025-05-19T13:50:31.6727801Z Current version: 1.24.3
+2025-05-19T13:50:31.6728328Z │   ENV:
+2025-05-19T13:50:31.6728665Z │   ├── GOARCH=arm64
+2025-05-19T13:50:31.6729102Z │   ├── GOBIN=/home/runner/go/bin
+2025-05-19T13:50:31.6729453Z │   ├── GOCACHE=/home/runner/go/cache
+2025-05-19T13:50:31.6730380Z │   ├── GOMODCACHE=/home/runner/go/versions/1.24.2/go/pkg/mod
+2025-05-19T13:50:31.6730825Z │   ├── GOOS=linux
+2025-05-19T13:50:31.6731170Z │   ├── GOPATH=/home/runner/go/path
+2025-05-19T13:50:31.6731484Z │   ├── GOROOT=/home/runner/go/root
+2025-05-19T13:50:31.6732311Z │   ├── GOSCRIPTS=/home/runner/go/scripts
+2025-05-19T13:50:31.6732752Z │   ├── GOSHIMS=/home/runner/go/shims
+2025-05-19T13:50:31.6733170Z │   ├── GOTELEMETRYDIR=/home/runner/go/telemetry
+2025-05-19T13:50:31.6733575Z └── LINKS:
+2025-05-19T13:50:31.6734322Z     ├── /home/runner/go/bin -> /home/runner/go/versions/1.24.3/go/bin ✅  
+2025-05-19T13:50:31.6734904Z     ├── /home/runner/go/path -> /home/runner/go/versions/1.24.3 ✅  
+2025-05-19T13:50:31.6735584Z     ├── /home/runner/go/root -> /home/runner/go/versions/1.24.3/go ✅  
+2025-05-19T13:50:31.6762355Z Test 15 took 0 seconds
+2025-05-19T13:50:31.6762544Z 
+2025-05-19T13:50:31.6762551Z 
+2025-05-19T13:50:31.6762768Z === RELOADING ENVIRONMENT ===
+2025-05-19T13:50:31.6764512Z Loaded ~/.profile into shell...
+2025-05-19T13:50:31.6764900Z Loaded ~/.zshrc.local in to shell...
+2025-05-19T13:50:31.6785552Z Test 16 took 0 seconds
+2025-05-19T13:50:31.6785785Z 
+2025-05-19T13:50:31.6785793Z 
+2025-05-19T13:50:31.6785947Z === LISTING ~/go FILES ===
+2025-05-19T13:50:31.6786349Z --- CURRENT WORKING DIRECTORY /home/runner/work/igo/igo/workspace ---
+2025-05-19T13:50:31.6795672Z total 12
+2025-05-19T13:50:31.6795977Z drwxr-xr-x 3 runner docker 4096 May 19 13:50 .
+2025-05-19T13:50:31.6796308Z drwxr-xr-x 8 runner docker 4096 May 19 13:49 ..
+2025-05-19T13:50:31.6796724Z drwxr-xr-x 2 runner docker 4096 May 19 13:50 .counters
+2025-05-19T13:50:31.6797048Z --- IGO WORKSPACE ---
+2025-05-19T13:50:31.6806342Z total 40
+2025-05-19T13:50:31.6806889Z drwxr-xr-x   9 runner docker 4096 May 19 13:50 .
+2025-05-19T13:50:31.6807291Z drwxr-x---  17 runner docker 4096 May 19 13:49 ..
+2025-05-19T13:50:31.6807800Z lrwxrwxrwx   1 runner docker   38 May 19 13:50 bin -> /home/runner/go/versions/1.24.3/go/bin
+2025-05-19T13:50:31.6808268Z drwxr-xr-x   2 runner docker 4096 May 19 13:49 bin.bak
+2025-05-19T13:50:31.6808645Z drwxr-xr-x 258 runner docker 4096 May 19 13:50 cache
+2025-05-19T13:50:31.6809042Z drwxr-xr-x   2 runner docker 4096 May 19 13:50 downloads
+2025-05-19T13:50:31.6809503Z lrwxrwxrwx   1 runner docker   31 May 19 13:50 path -> /home/runner/go/versions/1.24.3
+2025-05-19T13:50:31.6809929Z drwxr-xr-x   3 runner docker 4096 May 19 13:49 pkg
+2025-05-19T13:50:31.6810405Z lrwxrwxrwx   1 runner docker   34 May 19 13:50 root -> /home/runner/go/versions/1.24.3/go
+2025-05-19T13:50:31.6810861Z drwxr-xr-x   2 runner docker 4096 May 19 13:49 shims
+2025-05-19T13:50:31.6811243Z drwxr-xr-x   2 runner docker 4096 May 19 13:49 telemetry
+2025-05-19T13:50:31.6811612Z -rw-r--r--   1 runner docker    6 May 19 13:50 version
+2025-05-19T13:50:31.6811966Z drwxr-xr-x   4 runner docker 4096 May 19 13:50 versions
+2025-05-19T13:50:31.6812339Z --- GOBIN ---
+2025-05-19T13:50:31.6826902Z total 126948
+2025-05-19T13:50:31.6827246Z drwsr-sr-x  2 runner docker     4096 May 19 13:50 .
+2025-05-19T13:50:31.6827756Z drwsr-sr-x 10 runner docker     4096 May 19 13:50 ..
+2025-05-19T13:50:31.6828148Z -rwsr-sr-x  1 runner docker  3191726 May 19 13:50 cli-gematria
+2025-05-19T13:50:31.6828539Z -rwsr-sr-x  1 runner docker  2756307 May 19 13:50 counter
+2025-05-19T13:50:31.6828965Z -rwsr-sr-x  1 runner docker 84098346 May 19 13:50 genwordpass
+2025-05-19T13:50:31.6829451Z -rwsr-sr-x  1 runner docker  5341832 May 19 13:50 go-generate-password
+2025-05-19T13:50:31.6829850Z -rwsr-sr-x  1 runner docker 13565116 May 19 13:50 go.1.24.3
+2025-05-19T13:50:31.6830320Z -rwsr-sr-x  1 runner docker  2965899 May 19 13:50 gofmt.1.24.3
+2025-05-19T13:50:31.6830688Z -rwsr-sr-x  1 runner docker 13819226 May 19 13:50 govulncheck
+2025-05-19T13:50:31.6831068Z -rwsr-sr-x  1 runner docker  4234289 May 19 13:50 summarize
+2025-05-19T13:50:31.6831464Z --- GOSHIMS ---
+2025-05-19T13:50:31.6846277Z total 16
+2025-05-19T13:50:31.6846627Z drwxr-xr-x 2 runner docker 4096 May 19 13:49 .
+2025-05-19T13:50:31.6846977Z drwxr-xr-x 9 runner docker 4096 May 19 13:50 ..
+2025-05-19T13:50:31.6847608Z -rwxr-xr-x 1 runner docker 2295 May 19 13:50 go
+2025-05-19T13:50:31.6847988Z -rwxr-xr-x 1 runner docker 2094 May 19 13:50 gofmt
+2025-05-19T13:50:31.6867087Z Test 17 took 0 seconds
+2025-05-19T13:50:31.6867300Z 
+2025-05-19T13:50:31.6867305Z 
+2025-05-19T13:50:31.6867422Z === ENVIRONMENT VARIABLES ===
+2025-05-19T13:50:31.6876827Z ACCEPT_EULA=Y
+2025-05-19T13:50:31.6877255Z ACTIONS_RUNNER_ACTION_ARCHIVE_CACHE=/opt/actionarchivecache
+2025-05-19T13:50:31.6877685Z AGENT_TOOLSDIRECTORY=/opt/hostedtoolcache
+2025-05-19T13:50:31.6878005Z ANT_HOME=/usr/share/ant
+2025-05-19T13:50:31.6878291Z AZURE_EXTENSION_DIR=/opt/az/azcliextensions
+2025-05-19T13:50:31.6878607Z CI=true
+2025-05-19T13:50:31.6878904Z COUNTER_DIR=/home/runner/work/igo/igo/workspace/.counters
+2025-05-19T13:50:31.6879244Z COUNTER_USE_FORCE=1
+2025-05-19T13:50:31.6879528Z DEBIAN_FRONTEND=noninteractive
+2025-05-19T13:50:31.6879811Z DEPLOYMENT_BASEPATH=/opt/runner
+2025-05-19T13:50:31.6880052Z DOTNET_MULTILEVEL_LOOKUP=0
+2025-05-19T13:50:31.6880351Z DOTNET_NOLOGO=1
+2025-05-19T13:50:31.6880605Z DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
+2025-05-19T13:50:31.6880923Z GECKOWEBDRIVER=/usr/local/share/gecko_driver
+2025-05-19T13:50:31.6881245Z GITHUB_ACTION=__run_2
+2025-05-19T13:50:31.6881465Z GITHUB_ACTIONS=true
+2025-05-19T13:50:31.6881710Z GITHUB_ACTION_REF=
+2025-05-19T13:50:31.6881966Z GITHUB_ACTION_REPOSITORY=
+2025-05-19T13:50:31.6882220Z GITHUB_ACTOR=andreimerlescu
+2025-05-19T13:50:31.6882487Z GITHUB_ACTOR_ID=50429147
+2025-05-19T13:50:31.6882760Z GITHUB_API_URL=https://api.github.com
+2025-05-19T13:50:31.6883041Z GITHUB_BASE_REF=master
+2025-05-19T13:50:31.6883494Z GITHUB_ENV=/home/runner/work/_temp/_runner_file_commands/set_env_033791f6-4d9b-4274-980b-56e3ae5b2cca
+2025-05-19T13:50:31.6884434Z GITHUB_EVENT_NAME=pull_request
+2025-05-19T13:50:31.6884840Z GITHUB_EVENT_PATH=/home/runner/work/_temp/_github_workflow/event.json
+2025-05-19T13:50:31.6885327Z GITHUB_GRAPHQL_URL=https://api.github.com/graphql
+2025-05-19T13:50:31.6885644Z GITHUB_HEAD_REF=hotfix/shim-test
+2025-05-19T13:50:31.6885898Z GITHUB_JOB=test-linux
+2025-05-19T13:50:31.6886393Z GITHUB_OUTPUT=/home/runner/work/_temp/_runner_file_commands/set_output_033791f6-4d9b-4274-980b-56e3ae5b2cca
+2025-05-19T13:50:31.6887053Z GITHUB_PATH=/home/runner/work/_temp/_runner_file_commands/add_path_033791f6-4d9b-4274-980b-56e3ae5b2cca
+2025-05-19T13:50:31.6887550Z GITHUB_REF=refs/pull/11/merge
+2025-05-19T13:50:31.6887814Z GITHUB_REF_NAME=11/merge
+2025-05-19T13:50:31.6888043Z GITHUB_REF_PROTECTED=false
+2025-05-19T13:50:31.6888322Z GITHUB_REF_TYPE=branch
+2025-05-19T13:50:31.6888590Z GITHUB_REPOSITORY=andreimerlescu/igo
+2025-05-19T13:50:31.6888892Z GITHUB_REPOSITORY_ID=963951020
+2025-05-19T13:50:31.6889219Z GITHUB_REPOSITORY_OWNER=andreimerlescu
+2025-05-19T13:50:31.6889497Z GITHUB_REPOSITORY_OWNER_ID=50429147
+2025-05-19T13:50:31.6889782Z GITHUB_RETENTION_DAYS=90
+2025-05-19T13:50:31.6890058Z GITHUB_RUN_ATTEMPT=1
+2025-05-19T13:50:31.6890285Z GITHUB_RUN_ID=15114765417
+2025-05-19T13:50:31.6890549Z GITHUB_RUN_NUMBER=75
+2025-05-19T13:50:31.6890827Z GITHUB_SERVER_URL=https://github.com
+2025-05-19T13:50:31.6891160Z GITHUB_SHA=d546b8a39c7bdae9a645703712b6ed9e64f13a5a
+2025-05-19T13:50:31.6891678Z GITHUB_STATE=/home/runner/work/_temp/_runner_file_commands/save_state_033791f6-4d9b-4274-980b-56e3ae5b2cca
+2025-05-19T13:50:31.6892664Z GITHUB_STEP_SUMMARY=/home/runner/work/_temp/_runner_file_commands/step_summary_033791f6-4d9b-4274-980b-56e3ae5b2cca
+2025-05-19T13:50:31.6893231Z GITHUB_TRIGGERING_ACTOR=andreimerlescu
+2025-05-19T13:50:31.6893571Z GITHUB_WORKFLOW=Manage IGO Package
+2025-05-19T13:50:31.6894118Z GITHUB_WORKFLOW_REF=andreimerlescu/igo/.github/workflows/test-igo.yml@refs/pull/11/merge
+2025-05-19T13:50:31.6894674Z GITHUB_WORKFLOW_SHA=d546b8a39c7bdae9a645703712b6ed9e64f13a5a
+2025-05-19T13:50:31.6895078Z GITHUB_WORKSPACE=/home/runner/work/igo/igo
+2025-05-19T13:50:31.6895377Z GOARCH=arm64
+2025-05-19T13:50:31.6895596Z GOBIN=/home/runner/go/bin
+2025-05-19T13:50:31.6895886Z GOCACHE=/home/runner/go/cache
+2025-05-19T13:50:31.6896370Z GOMODCACHE=/home/runner/go/versions/1.24.2/go/pkg/mod
+2025-05-19T13:50:31.6896679Z GOOS=linux
+2025-05-19T13:50:31.6896954Z GOPATH=/home/runner/go/path
+2025-05-19T13:50:31.6897210Z GOROOT=/home/runner/go/root
+2025-05-19T13:50:31.6897469Z GOSCRIPTS=/home/runner/go/scripts
+2025-05-19T13:50:31.6897773Z GOSHIMS=/home/runner/go/shims
+2025-05-19T13:50:31.6898047Z GOTELEMETRYDIR=/home/runner/go/telemetry
+2025-05-19T13:50:31.6898332Z GRADLE_HOME=/usr/share/gradle
+2025-05-19T13:50:31.6898635Z HOME=/home/runner
+2025-05-19T13:50:31.6898935Z INVOCATION_ID=931234392aca422bb425b4231d833263
+2025-05-19T13:50:31.6899254Z ImageOS=ubuntu22
+2025-05-19T13:50:31.6899484Z ImageVersion=0.0.11
+2025-05-19T13:50:31.6899744Z JAVA_HOME=/usr/lib/jvm/temurin-11-jdk-arm64
+2025-05-19T13:50:31.6900136Z JAVA_HOME_11_X64=/usr/lib/jvm/temurin-11-jdk-arm64
+2025-05-19T13:50:31.6900467Z JAVA_HOME_17_X64=/usr/lib/jvm/temurin-17-jdk-arm64
+2025-05-19T13:50:31.6900810Z JAVA_HOME_21_X64=/usr/lib/jvm/temurin-21-jdk-arm64
+2025-05-19T13:50:31.6901209Z JAVA_HOME_8_X64=/usr/lib/jvm/temurin-8-jdk-arm64
+2025-05-19T13:50:31.6901511Z JOURNAL_STREAM=8:3947
+2025-05-19T13:50:31.6901749Z LANG=C.UTF-8
+2025-05-19T13:50:31.6901998Z NVM_DIR=/home/runner/.nvm
+2025-05-19T13:50:31.6902237Z OLDPWD=/home/runner/work/igo/igo
+2025-05-19T13:50:31.6903795Z PATH=/home/runner/go/shims:/home/runner/go/bin:/home/runner/go/scripts:/bin:/home/runner/go/bin:/opt/hostedtoolcache/go/1.24.2/arm64/bin:/snap/bin:/home/runner/.local/bin:/opt/pipx_bin:/home/runner/.cargo/bin:/home/runner/.config/composer/vendor/bin:/opt/google-cloud-sdk/bin:/home/runner/.dotnet/tools:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/home/runner/work/igo/igo
+2025-05-19T13:50:31.6905618Z PERFLOG_LOCATION_SETTING=RUNNER_PERFLOG
+2025-05-19T13:50:31.6905995Z PIPX_BIN_DIR=/opt/pipx_bin
+2025-05-19T13:50:31.6906287Z PIPX_HOME=/opt/pipx
+2025-05-19T13:50:31.6906601Z POWERSHELL_DISTRIBUTION_CHANNEL=GitHub-Actions-ubuntu22
+2025-05-19T13:50:31.6907160Z ***
+2025-05-19T13:50:31.6907392Z RUNNER_ARCH=ARM64
+2025-05-19T13:50:31.6907671Z RUNNER_ENVIRONMENT=github-hosted
+2025-05-19T13:50:31.6907952Z RUNNER_NAME=GitHub Actions 8
+2025-05-19T13:50:31.6908233Z RUNNER_OS=Linux
+2025-05-19T13:50:31.6908484Z RUNNER_PERFLOG=/home/runner/perflog
+2025-05-19T13:50:31.6908751Z RUNNER_TEMP=/home/runner/work/_temp
+2025-05-19T13:50:31.6909069Z RUNNER_TOOL_CACHE=/opt/hostedtoolcache
+2025-05-19T13:50:31.6909440Z RUNNER_TRACKING_ID=github_2fd61737-a121-4006-b9d7-27f55b7074a6
+2025-05-19T13:50:31.6909813Z RUNNER_USER=runner
+2025-05-19T13:50:31.6910105Z RUNNER_WORKSPACE=/home/runner/work/igo
+2025-05-19T13:50:31.6910418Z SELENIUM_JAR_PATH=/usr/share/java/selenium-server.jar
+2025-05-19T13:50:31.6910723Z SGX_AESM_ADDR=1
+2025-05-19T13:50:31.6910988Z SHLVL=1
+2025-05-19T13:50:31.6911186Z STATS_D=false
+2025-05-19T13:50:31.6911407Z STATS_D_D=false
+2025-05-19T13:50:31.6911640Z STATS_D_TC=true
+2025-05-19T13:50:31.6911833Z STATS_EXT=true
+2025-05-19T13:50:31.6912301Z STATS_EXTP=https://provjobdprod.z13.web.core.windows.net/settings/provjobdsettings-latest/provjobd.data
+2025-05-19T13:50:31.6913294Z STATS_PIP=false
+2025-05-19T13:50:31.6913525Z STATS_RDCL=true
+2025-05-19T13:50:31.6913813Z STATS_TIS=mining
+2025-05-19T13:50:31.6914186Z STATS_TRP=true
+2025-05-19T13:50:31.6914430Z STATS_UE=true
+2025-05-19T13:50:31.6914687Z STATS_V3PS=true
+2025-05-19T13:50:31.6914898Z STATS_VMD=true
+2025-05-19T13:50:31.6915112Z STATS_VMFE=true
+2025-05-19T13:50:31.6915361Z SWIFT_PATH=/usr/share/swift/usr/bin
+2025-05-19T13:50:31.6915627Z SYSTEMD_EXEC_PID=573
+2025-05-19T13:50:31.6915857Z USER=runner
+2025-05-19T13:50:31.6916109Z VCPKG_FORCE_SYSTEM_BINARIES=1
+2025-05-19T13:50:31.6916400Z VCPKG_INSTALLATION_ROOT=/usr/local/share/vcpkg
+2025-05-19T13:50:31.6916718Z XDG_CONFIG_HOME=/home/runner/.config
+2025-05-19T13:50:31.6917036Z XDG_RUNTIME_DIR=/run/user/1001
+2025-05-19T13:50:31.6917290Z _=/bin/env
+2025-05-19T13:50:31.6917507Z Test 18 took 0 seconds
+2025-05-19T13:50:31.6917643Z 
+2025-05-19T13:50:31.6917648Z 
+2025-05-19T13:50:31.6917921Z === PATH ===
+2025-05-19T13:50:31.6919424Z /home/runner/go/shims:/home/runner/go/bin:/home/runner/go/scripts:/bin:/home/runner/go/bin:/opt/hostedtoolcache/go/1.24.2/arm64/bin:/snap/bin:/home/runner/.local/bin:/opt/pipx_bin:/home/runner/.cargo/bin:/home/runner/.config/composer/vendor/bin:/opt/google-cloud-sdk/bin:/home/runner/.dotnet/tools:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/home/runner/work/igo/igo
+2025-05-19T13:50:31.6920931Z Test 19 took 0 seconds
+2025-05-19T13:50:31.6921061Z 
+2025-05-19T13:50:31.6921066Z 
+2025-05-19T13:50:31.6921199Z === VERIFYING INSTALLATION ===
+2025-05-19T13:50:31.7037471Z + '[' -n '' ']'
+2025-05-19T13:50:31.7037870Z + '[' -n true ']'
+2025-05-19T13:50:31.7038154Z + '[' true '!=' false ']'
+2025-05-19T13:50:31.7038418Z + echo 'RUNNING SHIM GO: DEBUG=true VERBOSE='
+2025-05-19T13:50:31.7038750Z + declare GODIR
+2025-05-19T13:50:31.7038979Z + GODIR=/home/runner/go
+2025-05-19T13:50:31.7040603Z ++ find_version
+2025-05-19T13:50:31.7040896Z ++ local dir=/tmp
+2025-05-19T13:50:31.7041119Z ++ [[ /tmp != \/ ]]
+2025-05-19T13:50:31.7041369Z ++ [[ -f /tmp/.go_version ]]
+2025-05-19T13:50:31.7041655Z ++ [[ -f /tmp/go.mod ]]
+2025-05-19T13:50:31.7043656Z +++ dirname /tmp
+2025-05-19T13:50:31.7050866Z ++ dir=/
+2025-05-19T13:50:31.7051115Z ++ [[ / != \/ ]]
+2025-05-19T13:50:31.7051341Z ++ '[' '!' -f /home/runner/go/version ']'
+2025-05-19T13:50:31.7051681Z ++ cat /home/runner/go/version
+2025-05-19T13:50:31.7057467Z + GOVERSION=1.24.3
+2025-05-19T13:50:31.7060385Z ++ get_go_binary_path_for_version 1.24.3
+2025-05-19T13:50:31.7060914Z ++ local binary=/home/runner/go/versions/1.24.3/go/bin/go.1.24.3
+2025-05-19T13:50:31.7061327Z ++ '[' -f /home/runner/go/versions/1.24.3/go/bin/go.1.24.3 ']'
+2025-05-19T13:50:31.7061954Z ++ echo /home/runner/go/versions/1.24.3/go/bin/go.1.24.3
+2025-05-19T13:50:31.7062728Z + GOBINARY=/home/runner/go/versions/1.24.3/go/bin/go.1.24.3
+2025-05-19T13:50:31.7063188Z + [[ -z /home/runner/go/versions/1.24.3/go/bin/go.1.24.3 ]]
+2025-05-19T13:50:31.7063711Z + GOBIN=/home/runner/go/versions/1.24.3/go/bin
+2025-05-19T13:50:31.7064208Z + GOROOT=/home/runner/go/versions/1.24.3/go
+2025-05-19T13:50:31.7064527Z + GOPATH=/home/runner/go/versions/1.24.3
+2025-05-19T13:50:31.7064873Z + export GOBIN
+2025-05-19T13:50:31.7065083Z + export GOROOT
+2025-05-19T13:50:31.7065344Z + export GOPATH
+2025-05-19T13:50:31.7065631Z + exec /home/runner/go/versions/1.24.3/go/bin/go.1.24.3 version
+2025-05-19T13:50:31.7086473Z go version go1.24.3 linux/arm64
+2025-05-19T13:50:31.7088004Z Go go version go1.24.3 linux/arm64 verified!
+2025-05-19T13:50:31.7107903Z Test 20 took 0 seconds
+2025-05-19T13:50:31.7108076Z 
+2025-05-19T13:50:31.7108083Z 
+2025-05-19T13:50:31.7108243Z === LISTING GO VERSIONS ===
+2025-05-19T13:50:31.8187033Z DEBUG MODE ENABLED
+2025-05-19T13:50:31.9652299Z Test 21 took 0 seconds
+2025-05-19T13:50:31.9652868Z 
+2025-05-19T13:50:31.9652879Z 
+2025-05-19T13:50:31.9653190Z === IGO ENVIRONMENT ===
+2025-05-19T13:50:32.0574460Z DEBUG MODE ENABLED
+2025-05-19T13:50:32.0574865Z Current version: 1.24.3
+2025-05-19T13:50:32.0575319Z │   ENV:
+2025-05-19T13:50:32.0575694Z │   ├── GOARCH=arm64
+2025-05-19T13:50:32.0576020Z │   ├── GOBIN=/home/runner/go/bin
+2025-05-19T13:50:32.0576374Z │   ├── GOCACHE=/home/runner/go/cache
+2025-05-19T13:50:32.0576871Z │   ├── GOMODCACHE=/home/runner/go/versions/1.24.2/go/pkg/mod
+2025-05-19T13:50:32.0577259Z │   ├── GOOS=linux
+2025-05-19T13:50:32.0577547Z │   ├── GOPATH=/home/runner/go/path
+2025-05-19T13:50:32.0577957Z │   ├── GOROOT=/home/runner/go/root
+2025-05-19T13:50:32.0578326Z │   ├── GOSCRIPTS=/home/runner/go/scripts
+2025-05-19T13:50:32.0578678Z │   ├── GOSHIMS=/home/runner/go/shims
+2025-05-19T13:50:32.0579144Z │   ├── GOTELEMETRYDIR=/home/runner/go/telemetry
+2025-05-19T13:50:32.0579516Z └── LINKS:
+2025-05-19T13:50:32.0580074Z     ├── /home/runner/go/bin -> /home/runner/go/versions/1.24.3/go/bin ✅  
+2025-05-19T13:50:32.0580685Z     ├── /home/runner/go/path -> /home/runner/go/versions/1.24.3 ✅  
+2025-05-19T13:50:32.0581277Z     ├── /home/runner/go/root -> /home/runner/go/versions/1.24.3/go ✅  
+2025-05-19T13:50:32.0602768Z Test 22 took 1 seconds
+2025-05-19T13:50:32.0603006Z 
+2025-05-19T13:50:32.0603011Z 
+2025-05-19T13:50:32.0603672Z === SWITCHING TO GO 1.24.2 ===
+2025-05-19T13:50:32.2036702Z DEBUG MODE ENABLED
+2025-05-19T13:50:32.2037418Z Linking /home/runner/go/bin -> /home/runner/go/versions/1.24.2/go/bin
+2025-05-19T13:50:32.2042784Z Linking /home/runner/go/path -> /home/runner/go/versions/1.24.2
+2025-05-19T13:50:32.2043257Z Linking /home/runner/go/root -> /home/runner/go/versions/1.24.2/go
+2025-05-19T13:50:32.2063986Z Set go version 1.24.2
+2025-05-19T13:50:32.2093145Z Test 23 took 0 seconds
+2025-05-19T13:50:32.2093353Z 
+2025-05-19T13:50:32.2093359Z 
+2025-05-19T13:50:32.2093489Z === IGO ENVIRONMENT ===
+2025-05-19T13:50:32.3230271Z DEBUG MODE ENABLED
+2025-05-19T13:50:32.3230819Z Current version: 1.24.2
+2025-05-19T13:50:32.3231336Z │   ENV:
+2025-05-19T13:50:32.3231628Z │   ├── GOARCH=arm64
+2025-05-19T13:50:32.3232025Z │   ├── GOBIN=/home/runner/go/bin
+2025-05-19T13:50:32.3232479Z │   ├── GOCACHE=/home/runner/go/cache
+2025-05-19T13:50:32.3232890Z │   ├── GOMODCACHE=/home/runner/go/versions/1.24.2/go/pkg/mod
+2025-05-19T13:50:32.3233350Z │   ├── GOOS=linux
+2025-05-19T13:50:32.3233678Z │   ├── GOPATH=/home/runner/go/path
+2025-05-19T13:50:32.3233981Z │   ├── GOROOT=/home/runner/go/root
+2025-05-19T13:50:32.3234661Z │   ├── GOSCRIPTS=/home/runner/go/scripts
+2025-05-19T13:50:32.3235054Z │   ├── GOSHIMS=/home/runner/go/shims
+2025-05-19T13:50:32.3235455Z │   ├── GOTELEMETRYDIR=/home/runner/go/telemetry
+2025-05-19T13:50:32.3235813Z └── LINKS:
+2025-05-19T13:50:32.3236290Z     ├── /home/runner/go/bin -> /home/runner/go/versions/1.24.2/go/bin ✅  
+2025-05-19T13:50:32.3237203Z     ├── /home/runner/go/path -> /home/runner/go/versions/1.24.2 ✅  
+2025-05-19T13:50:32.3237846Z     ├── /home/runner/go/root -> /home/runner/go/versions/1.24.2/go ✅  
+2025-05-19T13:50:32.3263169Z Test 24 took 0 seconds
+2025-05-19T13:50:32.3263480Z 
+2025-05-19T13:50:32.3263487Z 
+2025-05-19T13:50:32.3263681Z === LISTING GO VERSIONS ===
+2025-05-19T13:50:32.4269039Z DEBUG MODE ENABLED
+2025-05-19T13:50:32.5729722Z Test 25 took 0 seconds
+2025-05-19T13:50:32.5730604Z 
+2025-05-19T13:50:32.5730613Z 
+2025-05-19T13:50:32.5730815Z === VERIFYING INSTALLATION ===
+2025-05-19T13:50:32.5849975Z + '[' -n '' ']'
+2025-05-19T13:50:32.5850302Z + '[' -n true ']'
+2025-05-19T13:50:32.5850673Z + '[' true '!=' false ']'
+2025-05-19T13:50:32.5850974Z + echo 'RUNNING SHIM GO: DEBUG=true VERBOSE='
+2025-05-19T13:50:32.5851316Z + declare GODIR
+2025-05-19T13:50:32.5851551Z + GODIR=/home/runner/go
+2025-05-19T13:50:32.5853132Z ++ find_version
+2025-05-19T13:50:32.5853431Z ++ local dir=/tmp
+2025-05-19T13:50:32.5853671Z ++ [[ /tmp != \/ ]]
+2025-05-19T13:50:32.5853971Z ++ [[ -f /tmp/.go_version ]]
+2025-05-19T13:50:32.5854594Z ++ [[ -f /tmp/go.mod ]]
+2025-05-19T13:50:32.5856280Z +++ dirname /tmp
+2025-05-19T13:50:32.5863027Z ++ dir=/
+2025-05-19T13:50:32.5863333Z ++ [[ / != \/ ]]
+2025-05-19T13:50:32.5863598Z ++ '[' '!' -f /home/runner/go/version ']'
+2025-05-19T13:50:32.5864335Z ++ cat /home/runner/go/version
+2025-05-19T13:50:32.5870632Z + GOVERSION=1.24.2
+2025-05-19T13:50:32.5872646Z ++ get_go_binary_path_for_version 1.24.2
+2025-05-19T13:50:32.5873031Z ++ local binary=/home/runner/go/versions/1.24.2/go/bin/go.1.24.2
+2025-05-19T13:50:32.5873564Z ++ '[' -f /home/runner/go/versions/1.24.2/go/bin/go.1.24.2 ']'
+2025-05-19T13:50:32.5873949Z ++ echo /home/runner/go/versions/1.24.2/go/bin/go.1.24.2
+2025-05-19T13:50:32.5875009Z + GOBINARY=/home/runner/go/versions/1.24.2/go/bin/go.1.24.2
+2025-05-19T13:50:32.5875457Z + [[ -z /home/runner/go/versions/1.24.2/go/bin/go.1.24.2 ]]
+2025-05-19T13:50:32.5875805Z + GOBIN=/home/runner/go/versions/1.24.2/go/bin
+2025-05-19T13:50:32.5876164Z + GOROOT=/home/runner/go/versions/1.24.2/go
+2025-05-19T13:50:32.5876486Z + GOPATH=/home/runner/go/versions/1.24.2
+2025-05-19T13:50:32.5876768Z + export GOBIN
+2025-05-19T13:50:32.5877031Z + export GOROOT
+2025-05-19T13:50:32.5877251Z + export GOPATH
+2025-05-19T13:50:32.5877540Z + exec /home/runner/go/versions/1.24.2/go/bin/go.1.24.2 version
+2025-05-19T13:50:32.5897846Z go version go1.24.2 linux/arm64
+2025-05-19T13:50:32.5898784Z Go go version go1.24.2 linux/arm64 verified!
+2025-05-19T13:50:32.5919052Z Test 26 took 0 seconds
+2025-05-19T13:50:32.5919260Z 
+2025-05-19T13:50:32.5919267Z 
+2025-05-19T13:50:32.5919380Z === SWITCHING TO GO 1.24.3 ===
+2025-05-19T13:50:32.7156262Z DEBUG MODE ENABLED
+2025-05-19T13:50:32.7156892Z Linking /home/runner/go/path -> /home/runner/go/versions/1.24.3
+2025-05-19T13:50:32.7572104Z Linking /home/runner/go/root -> /home/runner/go/versions/1.24.3/go
+2025-05-19T13:50:32.7572659Z Linking /home/runner/go/bin -> /home/runner/go/versions/1.24.3/go/bin
+2025-05-19T13:50:32.7597277Z Set go version 1.24.3
+2025-05-19T13:50:32.7625317Z Test 27 took 0 seconds
+2025-05-19T13:50:32.7625548Z 
+2025-05-19T13:50:32.7625554Z 
+2025-05-19T13:50:32.7625671Z === IGO ENVIRONMENT ===
+2025-05-19T13:50:32.8733331Z DEBUG MODE ENABLED
+2025-05-19T13:50:32.8733804Z Current version: 1.24.3
+2025-05-19T13:50:32.8734517Z │   ENV:
+2025-05-19T13:50:32.8734865Z │   ├── GOARCH=arm64
+2025-05-19T13:50:32.8735297Z │   ├── GOBIN=/home/runner/go/bin
+2025-05-19T13:50:32.8735704Z │   ├── GOCACHE=/home/runner/go/cache
+2025-05-19T13:50:32.8736185Z │   ├── GOMODCACHE=/home/runner/go/versions/1.24.2/go/pkg/mod
+2025-05-19T13:50:32.8736602Z │   ├── GOOS=linux
+2025-05-19T13:50:32.8736960Z │   ├── GOPATH=/home/runner/go/path
+2025-05-19T13:50:32.8737368Z │   ├── GOROOT=/home/runner/go/root
+2025-05-19T13:50:32.8737820Z │   ├── GOSCRIPTS=/home/runner/go/scripts
+2025-05-19T13:50:32.8738225Z │   ├── GOSHIMS=/home/runner/go/shims
+2025-05-19T13:50:32.8738638Z │   ├── GOTELEMETRYDIR=/home/runner/go/telemetry
+2025-05-19T13:50:32.8739018Z └── LINKS:
+2025-05-19T13:50:32.8739661Z     ├── /home/runner/go/bin -> /home/runner/go/versions/1.24.3/go/bin ✅  
+2025-05-19T13:50:32.8740376Z     ├── /home/runner/go/path -> /home/runner/go/versions/1.24.3 ✅  
+2025-05-19T13:50:32.8740993Z     ├── /home/runner/go/root -> /home/runner/go/versions/1.24.3/go ✅  
+2025-05-19T13:50:32.8768658Z Test 28 took 0 seconds
+2025-05-19T13:50:32.8768870Z 
+2025-05-19T13:50:32.8768876Z 
+2025-05-19T13:50:32.8769018Z === LISTING GO VERSIONS ===
+2025-05-19T13:50:32.9883661Z DEBUG MODE ENABLED
+2025-05-19T13:50:33.1321669Z Test 29 took 1 seconds
+2025-05-19T13:50:33.1321917Z 
+2025-05-19T13:50:33.1321924Z 
+2025-05-19T13:50:33.1322042Z === VERIFYING INSTALLATION ===
+2025-05-19T13:50:33.1435541Z + '[' -n '' ']'
+2025-05-19T13:50:33.1435955Z + '[' -n true ']'
+2025-05-19T13:50:33.1436197Z + '[' true '!=' false ']'
+2025-05-19T13:50:33.1436478Z + echo 'RUNNING SHIM GO: DEBUG=true VERBOSE='
+2025-05-19T13:50:33.1436813Z + declare GODIR
+2025-05-19T13:50:33.1437049Z + GODIR=/home/runner/go
+2025-05-19T13:50:33.1438390Z ++ find_version
+2025-05-19T13:50:33.1438662Z ++ local dir=/tmp
+2025-05-19T13:50:33.1438905Z ++ [[ /tmp != \/ ]]
+2025-05-19T13:50:33.1439127Z ++ [[ -f /tmp/.go_version ]]
+2025-05-19T13:50:33.1439431Z ++ [[ -f /tmp/go.mod ]]
+2025-05-19T13:50:33.1441077Z +++ dirname /tmp
+2025-05-19T13:50:33.1447503Z ++ dir=/
+2025-05-19T13:50:33.1447754Z ++ [[ / != \/ ]]
+2025-05-19T13:50:33.1447989Z ++ '[' '!' -f /home/runner/go/version ']'
+2025-05-19T13:50:33.1448365Z ++ cat /home/runner/go/version
+2025-05-19T13:50:33.1454275Z + GOVERSION=1.24.3
+2025-05-19T13:50:33.1456398Z ++ get_go_binary_path_for_version 1.24.3
+2025-05-19T13:50:33.1456843Z ++ local binary=/home/runner/go/versions/1.24.3/go/bin/go.1.24.3
+2025-05-19T13:50:33.1457251Z ++ '[' -f /home/runner/go/versions/1.24.3/go/bin/go.1.24.3 ']'
+2025-05-19T13:50:33.1457699Z ++ echo /home/runner/go/versions/1.24.3/go/bin/go.1.24.3
+2025-05-19T13:50:33.1458250Z + GOBINARY=/home/runner/go/versions/1.24.3/go/bin/go.1.24.3
+2025-05-19T13:50:33.1458678Z + [[ -z /home/runner/go/versions/1.24.3/go/bin/go.1.24.3 ]]
+2025-05-19T13:50:33.1459121Z + GOBIN=/home/runner/go/versions/1.24.3/go/bin
+2025-05-19T13:50:33.1459459Z + GOROOT=/home/runner/go/versions/1.24.3/go
+2025-05-19T13:50:33.1459749Z + GOPATH=/home/runner/go/versions/1.24.3
+2025-05-19T13:50:33.1460086Z + export GOBIN
+2025-05-19T13:50:33.1460312Z + export GOROOT
+2025-05-19T13:50:33.1460514Z + export GOPATH
+2025-05-19T13:50:33.1460983Z + exec /home/runner/go/versions/1.24.3/go/bin/go.1.24.3 version
+2025-05-19T13:50:33.1480777Z go version go1.24.3 linux/arm64
+2025-05-19T13:50:33.1482264Z Go go version go1.24.3 linux/arm64 verified!
+2025-05-19T13:50:33.1500986Z Test 30 took 0 seconds
+2025-05-19T13:50:33.1501187Z 
+2025-05-19T13:50:33.1501191Z 
+2025-05-19T13:50:33.1501288Z === TESTING GO SHIM ===
+2025-05-19T13:50:33.1599874Z + '[' -n '' ']'
+2025-05-19T13:50:33.1600224Z + '[' -n true ']'
+2025-05-19T13:50:33.1600456Z + '[' true '!=' false ']'
+2025-05-19T13:50:33.1600794Z + echo 'RUNNING SHIM GO: DEBUG=true VERBOSE='
+2025-05-19T13:50:33.1601330Z + declare GODIR
+2025-05-19T13:50:33.1601575Z + GODIR=/home/runner/go
+2025-05-19T13:50:33.1602974Z ++ find_version
+2025-05-19T13:50:33.1603275Z ++ local dir=/home/runner/work/igo/igo/workspace/myapp
+2025-05-19T13:50:33.1603661Z ++ [[ /home/runner/work/igo/igo/workspace/myapp != \/ ]]
+2025-05-19T13:50:33.1604476Z ++ [[ -f /home/runner/work/igo/igo/workspace/myapp/.go_version ]]
+2025-05-19T13:50:33.1604891Z ++ [[ -f /home/runner/work/igo/igo/workspace/myapp/go.mod ]]
+2025-05-19T13:50:33.1605238Z ++ local gomod_version
+2025-05-19T13:50:33.1608798Z +++ grep -E '^go [0-9]+\.[0-9]+(\.[0-9]+|[a-zA-Z0-9]+)?' /home/runner/work/igo/igo/workspace/myapp/go.mod
+2025-05-19T13:50:33.1609262Z +++ awk '{print $2}'
+2025-05-19T13:50:33.1622561Z ++ gomod_version=1.24.2
+2025-05-19T13:50:33.1622852Z ++ [[ -n 1.24.2 ]]
+2025-05-19T13:50:33.1623064Z ++ [[ 1.24.2 =~ ^[0-9]+\.[0-9]+$ ]]
+2025-05-19T13:50:33.1624716Z ++ echo 1.24.2
+2025-05-19T13:50:33.1624969Z ++ return
+2025-05-19T13:50:33.1625204Z + GOVERSION=1.24.2
+2025-05-19T13:50:33.1627781Z ++ get_go_binary_path_for_version 1.24.2
+2025-05-19T13:50:33.1628201Z ++ local binary=/home/runner/go/versions/1.24.2/go/bin/go.1.24.2
+2025-05-19T13:50:33.1628620Z ++ '[' -f /home/runner/go/versions/1.24.2/go/bin/go.1.24.2 ']'
+2025-05-19T13:50:33.1629086Z ++ echo /home/runner/go/versions/1.24.2/go/bin/go.1.24.2
+2025-05-19T13:50:33.1629456Z + GOBINARY=/home/runner/go/versions/1.24.2/go/bin/go.1.24.2
+2025-05-19T13:50:33.1629912Z + [[ -z /home/runner/go/versions/1.24.2/go/bin/go.1.24.2 ]]
+2025-05-19T13:50:33.1630275Z + GOBIN=/home/runner/go/versions/1.24.2/go/bin
+2025-05-19T13:50:33.1630605Z + GOROOT=/home/runner/go/versions/1.24.2/go
+2025-05-19T13:50:33.1630956Z + GOPATH=/home/runner/go/versions/1.24.2
+2025-05-19T13:50:33.1631231Z + export GOBIN
+2025-05-19T13:50:33.1631447Z + export GOROOT
+2025-05-19T13:50:33.1631703Z + export GOPATH
+2025-05-19T13:50:33.1632011Z + exec /home/runner/go/versions/1.24.2/go/bin/go.1.24.2 version
+2025-05-19T13:50:33.1652984Z go version go1.24.2 linux/arm64
+2025-05-19T13:50:33.1654452Z Go go version go1.24.2 linux/arm64 verified!
+2025-05-19T13:50:33.1681007Z Test 31 took 0 seconds
+2025-05-19T13:50:33.1681212Z 
+2025-05-19T13:50:33.1681218Z 
+2025-05-19T13:50:33.1681312Z === REMOVING GO 1.24.2 ===
+2025-05-19T13:50:33.3175535Z DEBUG MODE ENABLED
+2025-05-19T13:50:33.7691215Z Uninstalled version: 1.24.2
+2025-05-19T13:50:33.7725889Z Test 32 took 0 seconds
+2025-05-19T13:50:33.7726278Z 
+2025-05-19T13:50:33.7726283Z 
+2025-05-19T13:50:33.7726395Z === IGO ENVIRONMENT ===
+2025-05-19T13:50:33.8797854Z DEBUG MODE ENABLED
+2025-05-19T13:50:33.8798298Z Current version: 1.24.3
+2025-05-19T13:50:33.8798775Z │   ENV:
+2025-05-19T13:50:33.8799088Z │   ├── GOARCH=arm64
+2025-05-19T13:50:33.8799460Z │   ├── GOBIN=/home/runner/go/bin
+2025-05-19T13:50:33.8799869Z │   ├── GOCACHE=/home/runner/go/cache
+2025-05-19T13:50:33.8800325Z │   ├── GOMODCACHE=/home/runner/go/versions/1.24.2/go/pkg/mod
+2025-05-19T13:50:33.8800800Z │   ├── GOOS=linux
+2025-05-19T13:50:33.8801132Z │   ├── GOPATH=/home/runner/go/path
+2025-05-19T13:50:33.8801544Z │   ├── GOROOT=/home/runner/go/root
+2025-05-19T13:50:33.8801965Z │   ├── GOSCRIPTS=/home/runner/go/scripts
+2025-05-19T13:50:33.8802372Z │   ├── GOSHIMS=/home/runner/go/shims
+2025-05-19T13:50:33.8802715Z │   ├── GOTELEMETRYDIR=/home/runner/go/telemetry
+2025-05-19T13:50:33.8803137Z └── LINKS:
+2025-05-19T13:50:33.8803635Z     ├── /home/runner/go/bin -> /home/runner/go/versions/1.24.3/go/bin ✅  
+2025-05-19T13:50:33.8804502Z     ├── /home/runner/go/path -> /home/runner/go/versions/1.24.3 ✅  
+2025-05-19T13:50:33.8805225Z     ├── /home/runner/go/root -> /home/runner/go/versions/1.24.3/go ✅  
+2025-05-19T13:50:33.8831111Z Test 33 took 0 seconds
+2025-05-19T13:50:33.8831271Z 
+2025-05-19T13:50:33.8831278Z 
+2025-05-19T13:50:33.8831543Z === LISTING GO VERSIONS (After removing 1.24.2) ===
+2025-05-19T13:50:33.9695897Z DEBUG MODE ENABLED
+2025-05-19T13:50:34.0247061Z Test 34 took 1 seconds
+2025-05-19T13:50:34.0247385Z 
+2025-05-19T13:50:34.0247390Z 
+2025-05-19T13:50:34.0247530Z === REMOVING GO 1.24.3 ===
+2025-05-19T13:50:34.1246377Z DEBUG MODE ENABLED
+2025-05-19T13:50:34.3521454Z Uninstalled version: 1.24.3
+2025-05-19T13:50:34.3532735Z Test 35 took 0 seconds
+2025-05-19T13:50:34.3532965Z 
+2025-05-19T13:50:34.3532972Z 
+2025-05-19T13:50:34.3533306Z === LISTING GO VERSIONS (Should be empty) ===
+2025-05-19T13:50:34.4609897Z DEBUG MODE ENABLED
+2025-05-19T13:50:34.4721807Z Test 36 took 0 seconds
+2025-05-19T13:50:34.4722046Z 
+2025-05-19T13:50:34.4722051Z 
+2025-05-19T13:50:34.4722328Z === IGO ENVIRONMENT ===
+2025-05-19T13:50:34.5530043Z DEBUG MODE ENABLED
+2025-05-19T13:50:34.5530390Z open /home/runner/go/version: no such file or directory
+2025-05-19T13:50:34.5530904Z Current version: 
+2025-05-19T13:50:34.5531396Z │   ENV:
+2025-05-19T13:50:34.5531717Z │   ├── GOARCH=arm64
+2025-05-19T13:50:34.5532123Z │   ├── GOBIN=/home/runner/go/bin
+2025-05-19T13:50:34.5532508Z │   ├── GOCACHE=/home/runner/go/cache
+2025-05-19T13:50:34.5532925Z │   ├── GOMODCACHE=/home/runner/go/versions/1.24.2/go/pkg/mod
+2025-05-19T13:50:34.5533422Z │   ├── GOOS=linux
+2025-05-19T13:50:34.5533767Z │   ├── GOPATH=/home/runner/go/path
+2025-05-19T13:50:34.5534416Z │   ├── GOROOT=/home/runner/go/root
+2025-05-19T13:50:34.5534831Z │   ├── GOSCRIPTS=/home/runner/go/scripts
+2025-05-19T13:50:34.5535215Z │   ├── GOSHIMS=/home/runner/go/shims
+2025-05-19T13:50:34.5535671Z │   ├── GOTELEMETRYDIR=/home/runner/go/telemetry
+2025-05-19T13:50:34.5536050Z └── LINKS:
+2025-05-19T13:50:34.5541852Z Test 37 took 0 seconds
+2025-05-19T13:50:34.5541998Z 
+2025-05-19T13:50:34.5542002Z 
+2025-05-19T13:50:34.5542236Z === INSTALLING GO 1.24.3 ===
+2025-05-19T13:50:34.6677313Z DEBUG MODE ENABLED
+2025-05-19T13:50:36.1820607Z No new environment variables to add to /home/runner/.profile
+2025-05-19T13:50:36.1821133Z Patched igo variables in ENV
+2025-05-19T13:50:36.1821632Z    GOARCH=arm64
+2025-05-19T13:50:36.1821942Z    GOSHIMS=/home/runner/go/shims
+2025-05-19T13:50:36.1822253Z    GOCACHE=/home/runner/go/cache
+2025-05-19T13:50:36.1822537Z    GOOS=linux
+2025-05-19T13:50:36.1822866Z    GOSCRIPTS=/home/runner/go/scripts
+2025-05-19T13:50:36.1823172Z    GOBIN=/home/runner/go/bin
+2025-05-19T13:50:36.1823583Z    GOROOT=/home/runner/go/root
+2025-05-19T13:50:36.1823907Z    GOPATH=/home/runner/go/path
+2025-05-19T13:50:36.1824389Z    GOMODCACHE=/home/runner/go/versions/1.24.3/go/pkg/mod
+2025-05-19T13:50:36.1825178Z    GOTELEMETRYDIR=/home/runner/go/telemetry
+2025-05-19T13:50:36.1825493Z Found /home/runner/.profile
+2025-05-19T13:50:36.1825832Z PATH in /home/runner/.profile already contains all required paths
+2025-05-19T13:50:36.1826257Z Patched PATH in shell configs!
+2025-05-19T13:50:36.1845688Z Found data in version file response: go version go1.24.3 linux/arm64
+2025-05-19T13:50:36.1846095Z Installing extra packages: 
+2025-05-19T13:50:37.8351163Z Installed genwordpass successfully
+2025-05-19T13:50:38.2076356Z Installed summarize successfully
+2025-05-19T13:50:38.3990881Z Installed counter successfully
+2025-05-19T13:50:39.2300005Z Installed govulncheck successfully
+2025-05-19T13:50:39.5220407Z Installed go-generate-password successfully
+2025-05-19T13:50:39.8625381Z Installed cli-gematria successfully
+2025-05-19T13:50:39.9095717Z Test 38 took 5 seconds
+2025-05-19T13:50:39.9095962Z 
+2025-05-19T13:50:39.9095967Z 
+2025-05-19T13:50:39.9096064Z === BREAK GO 1.24.3 ===
+2025-05-19T13:50:40.0111661Z DEBUG MODE ENABLED
+2025-05-19T13:50:40.0111976Z Active Go version: 1.24.3
+2025-05-19T13:50:40.0112259Z version: /home/runner/go/version
+2025-05-19T13:50:40.0112689Z GOBIN: /home/runner/go/bin
+2025-05-19T13:50:40.0112949Z GOPATH: /home/runner/go/path
+2025-05-19T13:50:40.0113284Z GOMODCACHE: /home/runner/go/versions/1.24.3/pkg/mod
+2025-05-19T13:50:40.0113640Z !!! MISSING GOROOT...
+2025-05-19T13:50:40.0113987Z Created symlink /home/runner/go/versions/1.24.3/go -> /home/runner/go/root
+2025-05-19T13:50:40.0114588Z Fixed go 1.24.3!
+2025-05-19T13:50:40.0122245Z Test 39 took 1 seconds
+2025-05-19T13:50:40.0122459Z 
+2025-05-19T13:50:40.0122465Z 
+2025-05-19T13:50:40.0122565Z === FIXED GO 1.24.3 ===
+2025-05-19T13:50:40.1297061Z DEBUG MODE ENABLED
+2025-05-19T13:50:40.1297899Z Active Go version: 1.24.3
+2025-05-19T13:50:40.1298203Z GOBIN: /home/runner/go/bin
+2025-05-19T13:50:40.1298571Z GOPATH: /home/runner/go/path
+2025-05-19T13:50:40.1298904Z GOMODCACHE: /home/runner/go/versions/1.24.3/pkg/mod
+2025-05-19T13:50:40.1299234Z GOROOT: /home/runner/go/root
+2025-05-19T13:50:40.1299579Z version: /home/runner/go/version
+2025-05-19T13:50:40.1299839Z Nothing to fix!
+2025-05-19T13:50:40.1309093Z Test 40 took 0 seconds
+2025-05-19T13:50:40.1309452Z 
+2025-05-19T13:50:40.1309458Z 
+2025-05-19T13:50:40.1309575Z === TELEMETRY & CACHE CHECK ===
+2025-05-19T13:50:40.2496283Z Directory telemetry is not empty (size: 4096 bytes)
+2025-05-19T13:50:40.2624654Z Directory cache is not empty (size: 244M)
+2025-05-19T13:50:40.2625039Z Test 41 took 0 seconds
+2025-05-19T13:50:40.2625180Z 
+2025-05-19T13:50:40.2625185Z 
+2025-05-19T13:50:40.2625298Z === VULNERABILITY CHECK ===
+2025-05-19T13:50:40.8161304Z No vulnerabilities found.
+2025-05-19T13:50:40.8171123Z Test 42 took 0 seconds
+2025-05-19T13:50:40.8171387Z 
+2025-05-19T13:50:40.8171400Z 
+2025-05-19T13:50:40.8171628Z === AUTO-FIX MISSING GO VERSION IN GO.MOD TEST ===
+2025-05-19T13:51:18.7856651Z + '[' -n '' ']'
+2025-05-19T13:51:18.7857044Z + '[' -n true ']'
+2025-05-19T13:51:18.7857308Z + '[' true '!=' false ']'
+2025-05-19T13:51:18.7857678Z + echo 'RUNNING SHIM GO: DEBUG=true VERBOSE='
+2025-05-19T13:51:18.7857954Z + declare GODIR
+2025-05-19T13:51:18.7858192Z + GODIR=/home/runner/go
+2025-05-19T13:51:18.7859080Z ++ find_version
+2025-05-19T13:51:18.7859380Z ++ local dir=/home/runner/work/igo/igo/workspace/new-app
+2025-05-19T13:51:18.7859770Z ++ [[ /home/runner/work/igo/igo/workspace/new-app != \/ ]]
+2025-05-19T13:51:18.7860639Z ++ [[ -f /home/runner/work/igo/igo/workspace/new-app/.go_version ]]
+2025-05-19T13:51:18.7861039Z ++ [[ -f /home/runner/work/igo/igo/workspace/new-app/go.mod ]]
+2025-05-19T13:51:18.7861380Z ++ local gomod_version
+2025-05-19T13:51:18.7866237Z +++ grep -E '^go [0-9]+\.[0-9]+(\.[0-9]+|[a-zA-Z0-9]+)?' /home/runner/work/igo/igo/workspace/new-app/go.mod
+2025-05-19T13:51:18.7866742Z +++ awk '{print $2}'
+2025-05-19T13:51:18.7881774Z ++ gomod_version=1.21.2
+2025-05-19T13:51:18.7882149Z ++ [[ -n 1.21.2 ]]
+2025-05-19T13:51:18.7882366Z ++ [[ 1.21.2 =~ ^[0-9]+\.[0-9]+$ ]]
+2025-05-19T13:51:18.7883232Z ++ echo 1.21.2
+2025-05-19T13:51:18.7883444Z ++ return
+2025-05-19T13:51:18.7884509Z + GOVERSION=1.21.2
+2025-05-19T13:51:18.7887113Z ++ get_go_binary_path_for_version 1.21.2
+2025-05-19T13:51:18.7887558Z ++ local binary=/home/runner/go/versions/1.21.2/go/bin/go.1.21.2
+2025-05-19T13:51:18.7888116Z ++ '[' -f /home/runner/go/versions/1.21.2/go/bin/go.1.21.2 ']'
+2025-05-19T13:51:18.7888533Z ++ echo /home/runner/go/versions/1.21.2/go/bin/go.1.21.2
+2025-05-19T13:51:18.7889543Z + GOBINARY=/home/runner/go/versions/1.21.2/go/bin/go.1.21.2
+2025-05-19T13:51:18.7890117Z + [[ -z /home/runner/go/versions/1.21.2/go/bin/go.1.21.2 ]]
+2025-05-19T13:51:18.7891204Z + GOBIN=/home/runner/go/versions/1.21.2/go/bin
+2025-05-19T13:51:18.7891557Z + GOROOT=/home/runner/go/versions/1.21.2/go
+2025-05-19T13:51:18.7891923Z + GOPATH=/home/runner/go/versions/1.21.2
+2025-05-19T13:51:18.7892202Z + export GOBIN
+2025-05-19T13:51:18.7892427Z + export GOROOT
+2025-05-19T13:51:18.7892684Z + export GOPATH
+2025-05-19T13:51:18.7892973Z + exec /home/runner/go/versions/1.21.2/go/bin/go.1.21.2 version
+2025-05-19T13:51:18.7911896Z go version go1.21.2 linux/arm64
+2025-05-19T13:51:18.7915510Z Go Missing Go version 1.21.2! installing now...
+2025-05-19T13:51:18.7915942Z Starting download of go1.21.2.linux-arm64.tar.gz
+2025-05-19T13:51:18.7916378Z Downloaded go1.21.2.linux-arm64.tar.gz in 3.692180941s
+2025-05-19T13:51:18.7916779Z No new environment variables to add to /home/runner/.profile
+2025-05-19T13:51:18.7917132Z Found /home/runner/.profile
+2025-05-19T13:51:18.7917482Z PATH in /home/runner/.profile already contains all required paths
+2025-05-19T13:51:18.7917845Z Installing extra packages: 
+2025-05-19T13:51:18.7918118Z Installed summarize successfully
+2025-05-19T13:51:18.7918749Z Installed counter successfully
+2025-05-19T13:51:18.7919055Z Installed govulncheck successfully
+2025-05-19T13:51:18.7919353Z Installed go-generate-password successfully
+2025-05-19T13:51:18.7919709Z Installed cli-gematria successfully
+2025-05-19T13:51:18.7920005Z Installed genwordpass successfully
+2025-05-19T13:51:18.7920292Z go version go1.21.2 linux/arm64 verified!
+2025-05-19T13:51:18.7923329Z Test 43 took 38 seconds
+2025-05-19T13:51:18.7923482Z 
+2025-05-19T13:51:18.7923486Z 
+2025-05-19T13:51:18.7923599Z === LIST GO VERSIONS ===
+2025-05-19T13:51:18.8989143Z DEBUG MODE ENABLED
+2025-05-19T13:51:19.0845794Z Test 44 took 1 seconds
+2025-05-19T13:51:19.0846147Z 
+2025-05-19T13:51:19.0846155Z 
+2025-05-19T13:51:19.1463346Z Completed 44 tests in 84.559925551 seconds!
+2025-05-19T13:51:19.1463696Z === END OF TESTER.SH ===
+2025-05-19T13:51:19.1528032Z Post job cleanup.
+2025-05-19T13:51:19.2854529Z Post job cleanup.
+2025-05-19T13:51:19.3452636Z [command]/usr/bin/git version
+2025-05-19T13:51:19.3481788Z git version 2.48.1
+2025-05-19T13:51:19.3518214Z Temporarily overriding HOME='/home/runner/work/_temp/3f1b6a50-b2ed-4372-8825-68ed4baa1fd9' before making global git config changes
+2025-05-19T13:51:19.3518904Z Adding repository directory to the temporary git global config as a safe directory
+2025-05-19T13:51:19.3521018Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/igo/igo
+2025-05-19T13:51:19.3546337Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2025-05-19T13:51:19.3570176Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2025-05-19T13:51:19.3736144Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2025-05-19T13:51:19.3751342Z http.https://github.com/.extraheader
+2025-05-19T13:51:19.3762189Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2025-05-19T13:51:19.3784650Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2025-05-19T13:51:19.4032174Z Cleaning up orphan processes
