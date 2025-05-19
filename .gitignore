@@ -1,7 +1,7 @@
 .idea
 summaries
 *.log
-!test_results/test-sh-*.log
+!testing/results/*.log
 igo
 bin/*
 

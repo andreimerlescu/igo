@@ -20,7 +20,7 @@ function safe_exit() {
 
 get_go_binary_path_for_version() {
     local binary="${GODIR}/versions/${1}/go/bin/go.${1}"
-    { [ -f "$binary" ] && echo "$binary"; } || safe_exit "Go binary for version ${1} not found at ${binary}"
+    { [ -f "$binary" ] && echo "$binary"; } || echo ""
 }
 
 find_version() {
@@ -39,15 +39,11 @@ find_version() {
         else
           echo "$gomod_version"
         fi
-        if [[ -n "${DEBUG:-}" ]] && [[ "${DEBUG:-}" != "false" ]]; then
-          echo "SHIM GO: ${gomod_version}"
-        fi
         return
       fi
     fi
-    dir="$(dirname "$dir")"
+    dir=$(dirname "$dir")
   done
-
   if [ ! -f "${GODIR}/version" ]; then
     safe_exit "No global Go version installed at ${GODIR}/version."
   fi
@@ -55,13 +51,18 @@ find_version() {
 }
 
 # Invoke the real go binary with any arguments passed to the shim
-GOBINARY="$(get_go_binary_path_for_version "$(find_version)")"
-[ "${GOBINARY}"  == "" ] && safe_exit "a .go_version is set to '$(find_version)' but it isn't installed yet"
-declare version
-version="$(find_version)"
-GOBIN="${GODIR}/versions/${version}/go/bin"
-GOROOT="${GODIR}/versions/${version}/go"
-GOPATH="${GODIR}/versions/${version}"
+GOVERSION="$(find_version)"
+GOBINARY="$(get_go_binary_path_for_version "${GOVERSION}")"
+if [[ -z "${GOBINARY}" ]]; then
+  echo "Missing Go version ${GOVERSION}! installing now..."
+  igo -cmd install -gover "${GOVERSION}" || safe_exit "Failed to install Go version ${GOVERSION}"
+  GOBINARY="$(get_go_binary_path_for_version "${GOVERSION}")"
+  [[ -z "${GOBINARY}" ]] && safe_exit "Failed to install Go version ${GOVERSION}"
+fi
+
+GOBIN="${GODIR}/versions/${GOVERSION}/go/bin"
+GOROOT="${GODIR}/versions/${GOVERSION}/go"
+GOPATH="${GODIR}/versions/${GOVERSION}"
 
 export GOBIN
 export GOROOT

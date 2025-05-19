@@ -1,0 +1,420 @@
+Branch: feature/install
+Using counter name: igo-tests-feature-install
+Test ID: v1.0.0q95
+Docker Image: igo:v1.0.0q95
+[+] Building 42.2s (19/19) FINISHED                                            docker:default
+ => [internal] load build definition from Dockerfile                                     0.0s
+ => => transferring dockerfile: 658B                                                     0.0s
+ => [internal] load metadata for docker.io/library/debian:bookworm-slim                  0.2s
+ => [internal] load metadata for docker.io/library/golang:1.24-bookworm                  0.2s
+ => [internal] load .dockerignore                                                        0.0s
+ => => transferring context: 2B                                                          0.0s
+ => [builder 1/5] FROM docker.io/library/golang:1.24-bookworm@sha256:89a04cc2e2fbafef82  0.0s
+ => [stage-1 1/8] FROM docker.io/library/debian:bookworm-slim@sha256:4b50eb66f977b40626  0.0s
+ => [internal] load build context                                                        0.0s
+ => => transferring context: 52.74kB                                                     0.0s
+ => CACHED [builder 2/5] WORKDIR /src                                                    0.0s
+ => [builder 3/5] COPY . .                                                               0.1s
+ => [builder 4/5] RUN go mod download                                                    1.0s
+ => [builder 5/5] RUN CGO_ENABLED=0 go build -o /bin/igo                                40.9s
+ => CACHED [stage-1 2/8] RUN apt-get update && apt-get install -y git ca-certificates b  0.0s
+ => CACHED [stage-1 3/8] RUN useradd -m -d /home/tester tester                           0.0s
+ => CACHED [stage-1 4/8] RUN chown -R tester:tester /home/tester                         0.0s
+ => CACHED [stage-1 5/8] COPY --from=builder /bin/igo /bin/igo                           0.0s
+ => CACHED [stage-1 6/8] COPY tester.sh /home/tester/tester.sh                           0.0s
+ => CACHED [stage-1 7/8] RUN chmod +x /bin/igo /home/tester/tester.sh                    0.0s
+ => CACHED [stage-1 8/8] WORKDIR /home/tester                                            0.0s
+ => exporting to image                                                                   0.0s
+ => => exporting layers                                                                  0.0s
+ => => writing image sha256:2b236ddd37104df7dc99735d7b65a66e59074993b6d9f27f25c23d6d1bf  0.0s
+ => => naming to docker.io/library/igo:v1.0.0                                            0.0s
+Running tests in container ''...
+Starting igo test script...
+=== IGO VERSION ===
+v1.0.0
+Test 1 took 0 seconds
+
+=== IGO ENVIRONMENT ===
+No go versions installed.
+Test 2 took 0 seconds
+
+
+=== INITIAL LIST (Should be empty) ===
+No go versions installed.
+Test 3 took 0 seconds
+
+=== INSTALLING GO 1.24.2 ===
+Starting download of go1.24.2.linux-amd64.tar.gz
+Downloaded go1.24.2.linux-amd64.tar.gz in 4.26320855s
+Updated /home/tester/.profile with 7 new environment variables
+Found /home/tester/.profile
+Installing extra packages:
+Installed genwordpass successfully
+Installed summarize successfully
+Installed counter successfully
+Test 4 took 19 seconds
+
+=== IGO ENVIRONMENT ===
+Current version: 1.24.2
+│   ENV:
+└── LINKS:
+    ├── /home/tester/go/bin -> /home/tester/go/versions/1.24.2/go/bin ✅
+    ├── /home/tester/go/path -> /home/tester/go/versions/1.24.2 ✅
+    ├── /home/tester/go/root -> /home/tester/go/versions/1.24.2/go ✅
+Test 5 took 0 seconds
+
+
+=== LISTING FILES ===
+.
+|-- go
+|   |-- bin -> /home/tester/go/versions/1.24.2/go/bin
+|   |-- downloads
+|   |   `-- go1.24.2.linux-amd64.tar.gz
+|   |-- path -> /home/tester/go/versions/1.24.2
+|   |-- root -> /home/tester/go/versions/1.24.2/go
+|   |-- shims
+|   |   |-- go
+|   |   `-- gofmt
+|   |-- version
+|   `-- versions
+|       `-- 1.24.2
+`-- tester.sh
+
+9 directories, 5 files
+
+=== ENVIRONMENT VARIABLES ===
+BRANCH=feature-install
+DEBUG=
+HOME=/home/tester
+HOSTNAME=89cb4a79ca61
+PATH=/bin:/bin
+PWD=/home/tester
+SHLVL=1
+TEST_ID=v1.0.0q95
+VERBOSE=--verbose
+VERSION=v1.0.0
+_=/bin/env
+
+=== RELOADING SHELL CONFIG ===
+Loaded ~/.profile into shell...
+/home/tester/tester.sh: line 64: /home/tester/.zshrc.local: No such file or directory
+Loaded ~/.zshrc.local
+
+=== BASH PROFILE ===
+# ~/.profile: executed by the command interpreter for login shells.
+# This file is not read by bash(1), if ~/.bash_profile or ~/.bash_login
+# exists.
+# see /usr/share/doc/bash/examples/startup-files for examples.
+# the files are located in the bash-doc package.
+
+# the default umask is set in /etc/profile; for setting the umask
+# for ssh logins, install and configure the libpam-umask package.
+#umask 022
+
+# if running bash
+if [ -n "$BASH_VERSION" ]; then
+    # include .bashrc if it exists
+    if [ -f "$HOME/.bashrc" ]; then
+	. "$HOME/.bashrc"
+    fi
+fi
+
+# set PATH so it includes user's private bin if it exists
+if [ -d "$HOME/bin" ] ; then
+    PATH="$HOME/bin:$PATH"
+fi
+
+# set PATH so it includes user's private bin if it exists
+if [ -d "$HOME/.local/bin" ] ; then
+    PATH="$HOME/.local/bin:$PATH"
+fi
+export GOARCH=amd64
+export GOSCRIPTS=/home/tester/go/scripts
+export GOSHIMS=/home/tester/go/shims
+export GOBIN=/home/tester/go/bin
+export GOROOT=/home/tester/go/root
+export GOPATH=/home/tester/go/path
+export GOOS=linux
+export PATH=/home/tester/go/shims:/home/tester/go/bin:/home/tester/go/scripts:/bin:/bin
+
+=== PATH ===
+/home/tester/go/shims:/home/tester/go/bin:/home/tester/go/scripts:/bin:/bin
+
+TEST_ID: 11-chillness/essayist.epicoela9
+Test 12 took 0 seconds
+
+
+=== LISTING GO VERSIONS ===
+igo [open source at github.com/andreimerlescu/igo]
++---------+------------------+------------+
+| VERSION |     CREATION     |   STATUS   |
++---------+------------------+------------+
+| 1.24.2  | 2025-05-12 02:34 |  * ACTIVE  |
++---------+------------------+------------+
+Test 13 took 0 seconds
+
+
+=== INSTALLING GO 1.24.3 ===
+Starting download of go1.24.3.linux-amd64.tar.gz
+Downloaded go1.24.3.linux-amd64.tar.gz in 4.400695583s
+No new environment variables to add to /home/tester/.profile
+Found /home/tester/.profile
+PATH in /home/tester/.profile already contains all required paths
+Installing extra packages:
+Installed genwordpass successfully
+Installed summarize successfully
+Installed counter successfully
+Test 14 took 48 seconds
+
+
+=== IGO ENVIRONMENT ===
+Current version: 1.24.3
+│   ENV:
+│   ├── GOARCH=amd64
+│   ├── GOBIN=/home/tester/go/bin
+│   ├── GOOS=linux
+│   ├── GOPATH=/home/tester/go/path
+│   ├── GOROOT=/home/tester/go/root
+│   ├── GOSCRIPTS=/home/tester/go/scripts
+│   ├── GOSHIMS=/home/tester/go/shims
+└── LINKS:
+    ├── /home/tester/go/bin -> /home/tester/go/versions/1.24.3/go/bin ✅
+    ├── /home/tester/go/path -> /home/tester/go/versions/1.24.3 ✅
+    ├── /home/tester/go/root -> /home/tester/go/versions/1.24.3/go ✅
+Test 15 took 0 seconds
+
+
+=== RELOADING ENVIRONMENT ===
+Loaded ~/.profile into shell...
+Loaded ~/.zshrc.local in to shell...
+Test 16 took 0 seconds
+
+
+=== LISTING ~/go FILES ===
+total 4
+drwxr-xr-x. 5 tester tester 102 May 12 02:34 .
+drwxr-xr-x. 1 tester tester  78 May 12 02:34 ..
+lrwxrwxrwx. 1 tester tester  38 May 12 02:34 bin -> /home/tester/go/versions/1.24.3/go/bin
+drwxr-xr-x. 2 tester tester  76 May 12 02:34 downloads
+lrwxrwxrwx. 1 tester tester  31 May 12 02:34 path -> /home/tester/go/versions/1.24.3
+lrwxrwxrwx. 1 tester tester  34 May 12 02:34 root -> /home/tester/go/versions/1.24.3/go
+drwxr-xr-x. 2 tester tester  29 May 12 02:33 shims
+-rw-r--r--. 1 tester tester   6 May 12 02:34 version
+drwxr-xr-x. 4 tester tester  34 May 12 02:34 versions
+total 106156
+drwsr-sr-x.  2 tester tester       94 May 12 02:34 .
+drwsr-sr-x. 10 tester tester     4096 May 12 02:34 ..
+-rwsr-sr-x.  1 tester tester  2853531 May 12 02:34 counter
+-rwsr-sr-x.  1 tester tester 84268276 May 12 02:34 genwordpass
+-rwsr-sr-x.  1 tester tester 14323124 May 12 02:34 go.1.24.3
+-rwsr-sr-x.  1 tester tester  2921864 May 12 02:34 gofmt.1.24.3
+-rwsr-sr-x.  1 tester tester  4323816 May 12 02:34 summarize
+total 8
+drwxr-xr-x. 2 tester tester   29 May 12 02:33 .
+drwxr-xr-x. 5 tester tester  102 May 12 02:34 ..
+-rwxr-xr-x. 1 tester tester 1931 May 12 02:34 go
+-rwxr-xr-x. 1 tester tester 1872 May 12 02:34 gofmt
+Test 17 took 0 seconds
+
+
+=== ENVIRONMENT VARIABLES ===
+BRANCH=feature-install
+COUNTER_DIR=/home/tester/.counters
+COUNTER_USE_FORCE=1
+DEBUG=
+GOARCH=amd64
+GOBIN=/home/tester/go/bin
+GOOS=linux
+GOPATH=/home/tester/go/path
+GOROOT=/home/tester/go/root
+GOSCRIPTS=/home/tester/go/scripts
+GOSHIMS=/home/tester/go/shims
+HOME=/home/tester
+HOSTNAME=89cb4a79ca61
+PATH=/home/tester/go/shims:/home/tester/go/bin:/home/tester/go/scripts:/bin:/bin
+PWD=/home/tester
+SHLVL=1
+TEST_ID=11-chillness/essayist.epicoela9
+VERBOSE=--verbose
+VERSION=v1.0.0
+_=/bin/env
+Test 18 took 0 seconds
+
+
+=== PATH ===
+/home/tester/go/shims:/home/tester/go/bin:/home/tester/go/scripts:/bin:/bin
+Test 19 took 0 seconds
+
+
+=== VERIFYING INSTALLATION ===
+go version go1.24.3 linux/amd64
+Go 1.24.3 verified!
+Test 20 took 0 seconds
+
+
+=== LISTING GO VERSIONS ===
+igo [open source at github.com/andreimerlescu/igo]
++---------+------------------+------------+
+| VERSION |     CREATION     |   STATUS   |
++---------+------------------+------------+
+| 1.24.3  | 2025-05-12 02:34 |  * ACTIVE  |
+| 1.24.2  | 2025-05-12 02:34 |            |
++---------+------------------+------------+
+Test 21 took 0 seconds
+
+
+=== IGO ENVIRONMENT ===
+Current version: 1.24.3
+│   ENV:
+│   ├── GOARCH=amd64
+│   ├── GOBIN=/home/tester/go/bin
+│   ├── GOOS=linux
+│   ├── GOPATH=/home/tester/go/path
+│   ├── GOROOT=/home/tester/go/root
+│   ├── GOSCRIPTS=/home/tester/go/scripts
+│   ├── GOSHIMS=/home/tester/go/shims
+└── LINKS:
+    ├── /home/tester/go/bin -> /home/tester/go/versions/1.24.3/go/bin ✅
+    ├── /home/tester/go/path -> /home/tester/go/versions/1.24.3 ✅
+    ├── /home/tester/go/root -> /home/tester/go/versions/1.24.3/go ✅
+Test 22 took 0 seconds
+
+
+=== SWITCHING TO GO 1.24.2 ===
+Test 23 took 0 seconds
+
+
+=== IGO ENVIRONMENT ===
+Current version: 1.24.2
+│   ENV:
+│   ├── GOARCH=amd64
+│   ├── GOBIN=/home/tester/go/bin
+│   ├── GOOS=linux
+│   ├── GOPATH=/home/tester/go/path
+│   ├── GOROOT=/home/tester/go/root
+│   ├── GOSCRIPTS=/home/tester/go/scripts
+│   ├── GOSHIMS=/home/tester/go/shims
+└── LINKS:
+    ├── /home/tester/go/bin -> /home/tester/go/versions/1.24.2/go/bin ✅
+    ├── /home/tester/go/path -> /home/tester/go/versions/1.24.2 ✅
+    ├── /home/tester/go/root -> /home/tester/go/versions/1.24.2/go ✅
+Test 24 took 0 seconds
+
+
+=== LISTING GO VERSIONS ===
+igo [open source at github.com/andreimerlescu/igo]
++---------+------------------+------------+
+| VERSION |     CREATION     |   STATUS   |
++---------+------------------+------------+
+| 1.24.3  | 2025-05-12 02:34 |            |
+| 1.24.2  | 2025-05-12 02:34 |  * ACTIVE  |
++---------+------------------+------------+
+Test 25 took 1 seconds
+
+
+=== VERIFYING INSTALLATION ===
+go version go1.24.2 linux/amd64
+Go go version go1.24.2 linux/amd64 verified!
+Test 26 took 0 seconds
+
+
+=== SWITCHING TO GO 1.24.3 ===
+Test 27 took 0 seconds
+
+
+=== IGO ENVIRONMENT ===
+Current version: 1.24.3
+│   ENV:
+│   ├── GOARCH=amd64
+│   ├── GOBIN=/home/tester/go/bin
+│   ├── GOOS=linux
+│   ├── GOPATH=/home/tester/go/path
+│   ├── GOROOT=/home/tester/go/root
+│   ├── GOSCRIPTS=/home/tester/go/scripts
+│   ├── GOSHIMS=/home/tester/go/shims
+└── LINKS:
+    ├── /home/tester/go/bin -> /home/tester/go/versions/1.24.3/go/bin ✅
+    ├── /home/tester/go/path -> /home/tester/go/versions/1.24.3 ✅
+    ├── /home/tester/go/root -> /home/tester/go/versions/1.24.3/go ✅
+Test 28 took 0 seconds
+
+
+=== LISTING GO VERSIONS ===
+igo [open source at github.com/andreimerlescu/igo]
++---------+------------------+------------+
+| VERSION |     CREATION     |   STATUS   |
++---------+------------------+------------+
+| 1.24.3  | 2025-05-12 02:34 |  * ACTIVE  |
+| 1.24.2  | 2025-05-12 02:34 |            |
++---------+------------------+------------+
+Test 29 took 0 seconds
+
+
+=== VERIFYING INSTALLATION ===
+go version go1.24.3 linux/amd64
+Go go version go1.24.3 linux/amd64 verified!
+Test 30 took 0 seconds
+
+
+=== REMOVING GO 1.24.2 ===
+Uninstalled version: 1.24.2
+Test 31 took 0 seconds
+
+
+=== IGO ENVIRONMENT ===
+Current version: 1.24.3
+│   ENV:
+│   ├── GOARCH=amd64
+│   ├── GOBIN=/home/tester/go/bin
+│   ├── GOOS=linux
+│   ├── GOPATH=/home/tester/go/path
+│   ├── GOROOT=/home/tester/go/root
+│   ├── GOSCRIPTS=/home/tester/go/scripts
+│   ├── GOSHIMS=/home/tester/go/shims
+└── LINKS:
+    ├── /home/tester/go/bin -> /home/tester/go/versions/1.24.3/go/bin ✅
+    ├── /home/tester/go/path -> /home/tester/go/versions/1.24.3 ✅
+    ├── /home/tester/go/root -> /home/tester/go/versions/1.24.3/go ✅
+Test 32 took 0 seconds
+
+
+=== LISTING GO VERSIONS (After removing 1.24.2) ===
+igo [open source at github.com/andreimerlescu/igo]
++---------+------------------+------------+
+| VERSION |     CREATION     |   STATUS   |
++---------+------------------+------------+
+| 1.24.3  | 2025-05-12 02:34 |  * ACTIVE  |
++---------+------------------+------------+
+Test 33 took 0 seconds
+
+
+=== REMOVING GO 1.24.3 ===
+Uninstalled version: 1.24.3
+Test 34 took 24 seconds
+
+
+=== LISTING GO VERSIONS (Should be empty) ===
+igo [open source at github.com/andreimerlescu/igo]
++---------+----------+--------+
+| VERSION | CREATION | STATUS |
++---------+----------+--------+
++---------+----------+--------+
+Test 35 took 0 seconds
+
+
+=== IGO ENVIRONMENT ===
+Current version:
+│   ENV:
+│   ├── GOARCH=amd64
+│   ├── GOBIN=/home/tester/go/bin
+│   ├── GOOS=linux
+│   ├── GOPATH=/home/tester/go/path
+│   ├── GOROOT=/home/tester/go/root
+│   ├── GOSCRIPTS=/home/tester/go/scripts
+│   ├── GOSHIMS=/home/tester/go/shims
+└── LINKS:
+Test 36 took 0 seconds
+
+
+Completed 36 tests in 0 seconds!
+Tests completed successfully in 136 seconds!
