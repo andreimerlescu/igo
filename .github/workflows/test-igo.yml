@@ -203,6 +203,8 @@ jobs:
           export PATH=$PATH:$(pwd)
           chmod +x ./testing/tester.sh
           touch .profile
+          rm go.mod
+          rm go.sum
           ./testing/tester.sh
         shell: bash
 
@@ -249,6 +251,8 @@ jobs:
           chmod +x igo
           export PATH=$PATH:$(pwd)
           chmod +x ./testing/tester.sh
+          rm go.mod
+          rm go.sum
           touch ~/.profile
           ./testing/tester.sh --verbose true --debug true
         shell: bash
