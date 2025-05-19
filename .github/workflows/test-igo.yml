@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - master
-      - 'hotfix/**'
   pull_request:
     branches: [ master, develop, 'release/**' ]
   workflow_dispatch:
@@ -202,9 +201,9 @@ jobs:
           go build -o igo
           chmod +x igo
           export PATH=$PATH:$(pwd)
-          chmod +x ./tester.sh
+          chmod +x ./testing/tester.sh
           touch .profile
-          ./tester.sh
+          ./testing/tester.sh
         shell: bash
 
   test-macos:
@@ -249,7 +248,7 @@ jobs:
           go build -o igo
           chmod +x igo
           export PATH=$PATH:$(pwd)
-          chmod +x ./tester.sh
+          chmod +x ./testing/tester.sh
           touch ~/.profile
-          ./tester.sh --verbose true --debug true
+          ./testing/tester.sh --verbose true --debug true
         shell: bash
