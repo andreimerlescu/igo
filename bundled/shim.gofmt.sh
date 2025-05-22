@@ -60,9 +60,11 @@ fi
 GOBIN="${GODIR}/versions/${GOVERSION}/go/bin"
 GOROOT="${GODIR}/versions/${GOVERSION}/go"
 GOPATH="${GODIR}/versions/${GOVERSION}"
+GOMODCACHE="${GODIR}/versions/${GOVERSION}/go/pkg/mod"
 
 export GOBIN
 export GOROOT
 export GOPATH
+export GOMODCACHE
 
 exec "${GOBINARY}" "$@"

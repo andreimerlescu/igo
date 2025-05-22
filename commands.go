@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/andreimerlescu/igo/internal"
 	"os"
 	"path/filepath"
 	"slices"
@@ -29,7 +30,7 @@ func fix(app *Application, ctx context.Context, wg *sync.WaitGroup, errCh chan<-
 		color.Red("DEBUG MODE ENABLED")
 	}
 	workspace := app.Workspace()
-	symlinks, err := FindSymlinks(workspace)
+	symlinks, err := internal.FindSymlinks(workspace)
 	if err != nil {
 		if debug || onlyVerbose {
 			color.Red(err.Error())
@@ -179,6 +180,12 @@ func env(app *Application, ctx context.Context, wg *sync.WaitGroup, errCh chan<-
 			return
 		}
 	}
+	have := map[string]bool{
+		"GOBIN":      false,
+		"GOPATH":     false,
+		"GOMODCACHE": false,
+		"GOROOT":     false,
+	}
 	color.Green("Current version: %v", currentVersion)
 	color.Green("│   ENV:")
 	env := os.Environ()
@@ -189,8 +196,82 @@ func env(app *Application, ctx context.Context, wg *sync.WaitGroup, errCh chan<-
 			continue
 		}
 		color.Green("│   ├── %v=%v", parts[0], parts[1])
+		if _, exists := have[parts[0]]; exists {
+			have[parts[0]] = true
+		}
 	}
-	links, err := FindSymlinks(workspace)
+	var (
+		binDir  = filepath.Join(workspace, "bin")
+		pathDir = filepath.Join(workspace, "path")
+		rootDir = filepath.Join(workspace, "root")
+		shimDir = filepath.Join(workspace, "shims")
+		modDir  = filepath.Join(workspace, "versions", currentVersion, "pkg", "mod")
+	)
+	path := os.Getenv("PATH")
+	path = strings.TrimSpace(path)
+	requiredPaths := map[string]bool{shimDir: false, binDir: false}
+	paths := strings.Split(path, string(filepath.ListSeparator))
+	pathVersions := make(map[string]bool)
+	for _, p := range paths {
+		if _, exists := requiredPaths[p]; exists {
+			requiredPaths[p] = true
+		}
+		if strings.HasPrefix(p, filepath.Join(workspace, "versions")) {
+			pathVersions[p] = true
+		}
+	}
+	// writePaths := slices.Clone(paths)
+	writePaths := make(map[string]bool)
+	for _, p := range paths {
+		if _, exists := requiredPaths[p]; exists {
+			writePaths[p] = true
+		}
+	}
+	for p, _ := range pathVersions {
+		v := strings.TrimPrefix(p, filepath.Join(workspace, "versions"))
+		v = strings.TrimSuffix(v, filepath.Join("go", "bin"))
+		v = strings.ReplaceAll(v, string(filepath.Separator), "")
+		if v != currentVersion {
+			for wp, _ := range writePaths {
+				if strings.HasPrefix(wp, p) {
+					delete(writePaths, wp)
+				}
+			}
+		}
+	}
+	for k, v := range have {
+		if !v {
+			switch k {
+			case "GOBIN":
+				internal.Capture(os.Setenv(k, binDir))
+				color.Green("│   ├── %v=%s", k, binDir)
+			case "GOPATH":
+				internal.Capture(os.Setenv(k, pathDir))
+				color.Green("│   ├── %v=%s", k, pathDir)
+			case "GOMODCACHE":
+				internal.Capture(os.Setenv(k, modDir))
+				color.Green("│   ├── %v=%s", k, modDir)
+			case "GOROOT":
+				internal.Capture(os.Setenv(k, rootDir))
+				color.Green("│   ├── %v=%s", k, rootDir)
+			}
+		}
+	}
+	color.Green("│   PATH: ")
+	for k, v := range requiredPaths {
+		if !v {
+			writePaths[k] = true
+		}
+	}
+	newPaths := make([]string, 0, len(writePaths))
+	for p, _ := range writePaths {
+		color.Green("│   ├── %v", p)
+		newPaths = append(newPaths, p)
+	}
+	slices.Sort(newPaths)
+	internal.Capture(os.Setenv("PATH", strings.Join(newPaths, string(filepath.ListSeparator))))
+
+	links, err := internal.FindSymlinks(workspace)
 	slices.Sort(links)
 	if err != nil {
 		if debug || onlyVerbose {
@@ -201,14 +282,14 @@ func env(app *Application, ctx context.Context, wg *sync.WaitGroup, errCh chan<-
 	}
 	color.Green("└── LINKS:")
 	for _, link := range links {
-		to, err := ReadSymlink(link)
+		to, err := internal.ReadSymlink(link)
 		if err != nil {
 			if debug || onlyVerbose {
 				color.Red(err.Error())
 			}
 			continue
 		}
-		color.Green("    ├── %v -> %v %s  ", link, to, VerifyLink(link, to))
+		color.Green("    ├── %v -> %v %s  ", link, to, internal.VerifyLink(link, to))
 	}
 
 	return
@@ -248,18 +329,18 @@ func uninstall(app *Application, ctx context.Context, wg *sync.WaitGroup, errCh 
 	versionDir := filepath.Join(workspace, "versions", version)
 	versionFile := filepath.Join(workspace, "version")
 
-	capture(removeStickyBit(versionDir))
-	capture(removeSetuidSetgidBits(versionDir))
+	internal.Capture(internal.RemoveStickyBit(versionDir))
+	internal.Capture(internal.RemoveSetuidSetgidBits(versionDir))
 
 	if strings.Contains(currentVersion, version) {
 		for _, path := range []string{binDir, pathDir, rootDir} {
-			capture(os.RemoveAll(path))
+			internal.Capture(os.RemoveAll(path))
 		}
-		capture(os.Remove(versionFile))
+		internal.Capture(os.Remove(versionFile))
 	}
 
-	capture(makeDirsWritable(versionDir))
-	capture(os.RemoveAll(versionDir))
+	internal.Capture(internal.MakeDirsWritable(versionDir))
+	internal.Capture(os.RemoveAll(versionDir))
 
 	color.Green("Uninstalled version: %s", version)
 }
@@ -342,7 +423,7 @@ func use(app *Application, ctx context.Context, wg *sync.WaitGroup, errCh chan<-
 		if debug {
 			color.Green("Linking %v -> %v", target, source)
 		}
-		err = removeSymlinkOrBackupPath(target)
+		err = internal.RemoveSymlinkOrBackupPath(target)
 		if err != nil {
 			if debug || onlyVerbose {
 				color.Red("Failed to link %v -> %v due to err: %s", target, source, err)
@@ -446,7 +527,7 @@ func list(app *Application, ctx context.Context, wg *sync.WaitGroup, errCh chan<
 			a,
 		})
 	}
-	color.Magenta(about())
+	color.Magenta(internal.About())
 
 	symbols := tw.NewSymbolCustom("Nature").
 		WithRow("~").
@@ -550,7 +631,7 @@ func install(app *Application, wg *sync.WaitGroup, errCh chan error, version str
 
 	_, workspaceErr := os.Stat(workspace)
 	if os.IsNotExist(workspaceErr) {
-		capture(os.MkdirAll(workspace, 0755))
+		internal.Capture(os.MkdirAll(workspace, 0755))
 		if verbose {
 			color.Green("Create workspace directory: %v", workspace)
 		}
@@ -569,7 +650,7 @@ func install(app *Application, wg *sync.WaitGroup, errCh chan error, version str
 	)
 	_, shimsErr := os.Stat(shimDir)
 	if os.IsNotExist(shimsErr) {
-		capture(os.MkdirAll(shimDir, 0755))
+		internal.Capture(os.MkdirAll(shimDir, 0755))
 		if verbose {
 			color.Green("Create shim directory: %v", shimDir)
 		}
@@ -611,11 +692,11 @@ func install(app *Application, wg *sync.WaitGroup, errCh chan error, version str
 			return
 		}
 		if os.IsPermission(err) {
-			capture(err)
+			internal.Capture(err)
 		}
 		err = os.Remove(installerLockFile)
 		if err != nil {
-			capture(err)
+			internal.Capture(err)
 		}
 	}()
 	if os.IsExist(err) { // installer.lock exists
@@ -630,7 +711,7 @@ func install(app *Application, wg *sync.WaitGroup, errCh chan error, version str
 	}
 
 	// write the current version to the lockFile
-	capture(os.WriteFile(installerLockFile, []byte(version), 0644))
+	internal.Capture(os.WriteFile(installerLockFile, []byte(version), 0644))
 	if verbose {
 		color.Green("Created igo lockfile at %v", installerLockFile)
 	}
@@ -638,7 +719,7 @@ func install(app *Application, wg *sync.WaitGroup, errCh chan error, version str
 	// create the downloads directory
 	_, err = os.Stat(downloadsDir)
 	if os.IsNotExist(err) {
-		capture(os.MkdirAll(downloadsDir, 0755))
+		internal.Capture(os.MkdirAll(downloadsDir, 0755))
 		if verbose {
 			color.Green("Created directory %s", downloadsDir)
 		}
@@ -648,7 +729,7 @@ func install(app *Application, wg *sync.WaitGroup, errCh chan error, version str
 	_, tarErr := os.Stat(filepath.Join(downloadsDir, tarball))
 	if os.IsNotExist(tarErr) {
 		// download the tar.gz
-		capture(versionData.downloadURL(app))
+		internal.Capture(versionData.downloadURL(app))
 		if verbose {
 			color.Green("Download file %s to %s", tarball, downloadsDir)
 		}
@@ -657,14 +738,14 @@ func install(app *Application, wg *sync.WaitGroup, errCh chan error, version str
 	// create if not exists the version extract destination
 	_, err = os.Stat(versionData.ExtractPath)
 	if os.IsNotExist(err) {
-		capture(os.MkdirAll(versionData.ExtractPath, 0755))
+		internal.Capture(os.MkdirAll(versionData.ExtractPath, 0755))
 		if verbose {
 			color.Green("Created directory %s", versionData.ExtractPath)
 		}
 	}
 
 	// extract the tar.gz into the destination
-	capture(versionData.extractTarGz(app))
+	internal.Capture(versionData.extractTarGz(app))
 	if verbose {
 		color.Green("Extracted %s to %s", versionData.DownloadName, versionData.ExtractPath)
 	}
@@ -672,7 +753,7 @@ func install(app *Application, wg *sync.WaitGroup, errCh chan error, version str
 	// move go to go.version in the version dir
 	_old := filepath.Join(versionDir, "go", "bin", "go")
 	_new := filepath.Join(versionDir, "go", "bin", "go."+version)
-	capture(os.Rename(_old, _new))
+	internal.Capture(os.Rename(_old, _new))
 	if verbose {
 		color.Green("Renamed %s to %s", _old, _new)
 	}
@@ -680,7 +761,7 @@ func install(app *Application, wg *sync.WaitGroup, errCh chan error, version str
 	// move gofmt to gofmt.version in the version dir
 	_old = filepath.Join(versionDir, "go", "bin", "gofmt")
 	_new = filepath.Join(versionDir, "go", "bin", "gofmt."+version)
-	capture(os.Rename(_old, _new))
+	internal.Capture(os.Rename(_old, _new))
 	if verbose {
 		color.Green("Renamed %s to %s", _old, _new)
 	}
@@ -693,39 +774,39 @@ func install(app *Application, wg *sync.WaitGroup, errCh chan error, version str
 	}
 
 	// if GOROOT is a directory, move it to root.bak in the app.Workspace()
-	capture(removeSymlinkOrBackupPath(rootDir))
+	internal.Capture(internal.RemoveSymlinkOrBackupPath(rootDir))
 
 	// symlink for GOROOT to version go directory
 	src := filepath.Join(versionDir, "go")
 	tar := rootDir
-	capture(os.Symlink(src, tar))
+	internal.Capture(os.Symlink(src, tar))
 	if verbose {
 		color.Green("Created symlink %s to %s", src, tar)
 	}
 
 	// if GOBIN is a directory, move it to bin.bak in the app.Workspace()
-	capture(removeSymlinkOrBackupPath(binDir))
+	internal.Capture(internal.RemoveSymlinkOrBackupPath(binDir))
 
 	// symlink for GOBIN to version go directory
 	src = filepath.Join(versionDir, "go", "bin")
 	tar = binDir
-	capture(os.Symlink(src, tar))
+	internal.Capture(os.Symlink(src, tar))
 	if verbose {
 		color.Green("Created symlink %s -> %s", src, tar)
 	}
 
-	capture(removeSymlinkOrBackupPath(pathDir))
+	internal.Capture(internal.RemoveSymlinkOrBackupPath(pathDir))
 
 	// symlink for GOPATH to version go directory
 	src = strings.Clone(versionDir)
 	tar = pathDir
-	capture(os.Symlink(src, tar))
+	internal.Capture(os.Symlink(src, tar))
 	if verbose {
 		color.Green("Created symlink %s -> %s", src, tar)
 	}
 
 	// add GOBIN/GOROOT/GOOS/GOARCH/GOPATH to ~/.zshrc or ~/.bashrc
-	capture(app.injectEnvVarsToShellConfig(envs))
+	internal.Capture(app.injectEnvVarsToShellConfig(envs))
 	if verbose || debug {
 		color.Green("Patched igo variables in ENV")
 		for name, value := range envs {
@@ -734,7 +815,7 @@ func install(app *Application, wg *sync.WaitGroup, errCh chan error, version str
 	}
 
 	// update PATH in ~/.zshrc and ~/.bashrc to use GOSHIMS and GOBIN directories before PATH
-	capture(app.patchShellConfigPath(envs))
+	internal.Capture(app.patchShellConfigPath(envs))
 	if verbose || debug {
 		color.Green("Patched PATH in shell configs!")
 	}
@@ -760,19 +841,19 @@ func install(app *Application, wg *sync.WaitGroup, errCh chan error, version str
 
 	// open the version file
 	versionFile := filepath.Join(workspace, "version")
-	fileHandler := captureOpenFile(versionFile, os.O_CREATE|os.O_RDWR|os.O_TRUNC, 0644)
+	fileHandler := internal.CaptureOpenFile(versionFile, os.O_CREATE|os.O_RDWR|os.O_TRUNC, 0644)
 	if verbose {
 		color.Green("Opened the %v", versionFile)
 	}
 
 	// write the current version
-	captureInt(fileHandler.Write([]byte(version)))
+	internal.CaptureInt(fileHandler.Write([]byte(version)))
 	if verbose {
 		color.Green("Wrote '%s' to %s", version, versionFile)
 	}
 
-	capture(os.MkdirAll(telemetryDir, 0755))
-	capture(os.MkdirAll(cacheDir, 0755))
+	internal.Capture(os.MkdirAll(telemetryDir, 0755))
+	internal.Capture(os.MkdirAll(cacheDir, 0755))
 
 	// report back to the user
 	if verbose {
@@ -780,25 +861,25 @@ func install(app *Application, wg *sync.WaitGroup, errCh chan error, version str
 	}
 
 	// close the current version file handler
-	capture(fileHandler.Close())
+	internal.Capture(fileHandler.Close())
 
 	// install extra packages on the system
-	capture(app.installExtraPackages(envs, version))
+	internal.Capture(app.installExtraPackages(envs, version))
 	if verbose {
 		color.Green("Installed extra packages successfully!")
 	}
 
-	capture(setStickyBit(versionDir))
-	capture(setSetuidSetgidBits(versionDir))
+	internal.Capture(internal.SetStickyBit(versionDir))
+	internal.Capture(internal.SetSetuidSetgidBits(versionDir))
 
 	// write a lockfile to the version directory to prevent future changes by this script
-	capture(touch(versionLockFile))
+	internal.Capture(internal.Touch(versionLockFile))
 	if verbose {
 		color.Green("Locked version of go with locker file at %v", versionLockFile)
 	}
 
 	// when we're finished, remove the installer.lock file
-	capture(os.Remove(installerLockFile))
+	internal.Capture(os.Remove(installerLockFile))
 	if verbose {
 		color.Green("Removed the igo runtime locker at %v", installerLockFile)
 	}

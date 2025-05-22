@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/andreimerlescu/igo/internal"
 	"os"
 	"runtime"
 	"sync"
@@ -27,7 +28,7 @@ func main() {
 	wg.Add(1)
 	go func() {
 		for err := range errCh {
-			capture(err)
+			internal.Capture(err)
 		}
 	}()
 	switch *app.figs.String(kCommand) {

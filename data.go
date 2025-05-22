@@ -2,6 +2,7 @@ package main
 
 import (
 	"embed"
+	"github.com/andreimerlescu/igo/internal"
 	"strings"
 )
 
@@ -19,19 +20,13 @@ var binaryCurrentVersion string
 func BinaryVersion() string {
 	if len(binaryCurrentVersion) == 0 {
 		versionBytes, err := binaryVersionBytes.ReadFile("VERSION")
-		capture(err)
+		internal.Capture(err)
 		binaryCurrentVersion = strings.TrimSpace(string(versionBytes))
 	}
 	return binaryCurrentVersion
 }
 
 const (
-	// PRODUCT is called igo for Install Go
-	PRODUCT string = "igo"
-
-	// AUTHOR is Andrei
-	AUTHOR string = "github.com/andreimerlescu/igo"
-
 	// Register the go environment variables as constants
 
 	GOBIN          string = "GOBIN"
@@ -44,9 +39,6 @@ const (
 	GOSHIMS        string = "GOSHIMS"
 	GOTELEMETRYDIR string = "GOTELEMETRYDIR"
 	GOCACHE        string = "GOCACHE"
-
-	// XRP is how you can tip the AUTHOR
-	XRP string = "rAparioji3FxAtD7UufS8Hh9XmFn7h6AX"
 
 	// kVersion defines -version in the CLI to print the BinaryVersion()
 	kVersion string = "version"

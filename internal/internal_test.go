@@ -1,4 +1,4 @@
-package main
+package internal
 
 import (
 	"errors"
@@ -11,26 +11,26 @@ import (
 )
 
 func TestAbout(t *testing.T) {
-	result := about()
+	result := About()
 	if !strings.Contains(result, PRODUCT) {
-		t.Errorf("about() should contain the product name, got: %s", result)
+		t.Errorf("About() should contain the product name, got: %s", result)
 	}
 	if !strings.Contains(result, AUTHOR) {
-		t.Errorf("about() should contain the author info, got: %s", result)
+		t.Errorf("About() should contain the author info, got: %s", result)
 	}
 }
 
 func TestCaptureIntWithNilError(t *testing.T) {
-	captureInt(42, nil)
+	CaptureInt(42, nil)
 }
 
 func TestCaptureIntWithError(t *testing.T) {
 	defer func() {
 		if r := recover(); r == nil {
-			t.Errorf("captureInt should have panicked with an error")
+			t.Errorf("CaptureInt should have panicked with an error")
 		}
 	}()
-	captureInt(42, errors.New("test error"))
+	CaptureInt(42, errors.New("test error"))
 }
 
 var osExit = func(code int) {
@@ -38,25 +38,25 @@ var osExit = func(code int) {
 }
 
 func TestDiscard(t *testing.T) {
-	discard(nil)
+	Discard(nil)
 
 	originalStdout := os.Stdout
 	r, w, _ := os.Pipe()
 	os.Stdout = w
 
-	discard(errors.New("test error"))
+	Discard(errors.New("test error"))
 
 	w.Close()
 	out, _ := io.ReadAll(r)
 	os.Stdout = originalStdout
 
 	if !strings.Contains(string(out), "test error") {
-		t.Errorf("discard() should print error message")
+		t.Errorf("Discard() should print error message")
 	}
 }
 
 func TestCaptureOpenFile(t *testing.T) {
-	tempFile, err := os.CreateTemp("", "test-capture-open-file-")
+	tempFile, err := os.CreateTemp("", "test-Capture-open-file-")
 	if err != nil {
 		t.Fatalf("Failed to create temp file: %v", err)
 	}
@@ -64,33 +64,33 @@ func TestCaptureOpenFile(t *testing.T) {
 	tempFile.Close()
 	defer os.Remove(tempPath)
 
-	originalCapture := capture
-	defer func() { capture = originalCapture }()
+	originalCapture := Capture
+	defer func() { Capture = originalCapture }()
 	captureWasCalled := false
-	capture = func(errs ...error) {
+	Capture = func(errs ...error) {
 		if errs != nil && len(errs) > 0 && errs[0] != nil {
 			captureWasCalled = true
 			panic(errs[0])
 		}
 	}
 
-	file := captureOpenFile(tempPath, os.O_RDONLY, 0600)
+	file := CaptureOpenFile(tempPath, os.O_RDONLY, 0600)
 	if file == nil {
-		t.Errorf("captureOpenFile should return a file handle")
+		t.Errorf("CaptureOpenFile should return a file handle")
 	} else {
 		file.Close()
 	}
 	if captureWasCalled {
-		t.Errorf("capture should not be called with valid file")
+		t.Errorf("Capture should not be called with valid file")
 	}
 
 	captureWasCalled = false
 	defer func() {
 		if r := recover(); r == nil {
-			t.Errorf("captureOpenFile should panic with non-existent file")
+			t.Errorf("CaptureOpenFile should panic with non-existent file")
 		}
 	}()
-	captureOpenFile("/nonexistent/file", os.O_RDONLY, 0600)
+	CaptureOpenFile("/nonexistent/file", os.O_RDONLY, 0600)
 }
 
 func TestRemoveSymlinkOrBackupPath(t *testing.T) {
@@ -101,9 +101,9 @@ func TestRemoveSymlinkOrBackupPath(t *testing.T) {
 	defer os.RemoveAll(tempDir)
 
 	nonExistentPath := filepath.Join(tempDir, "nonexistent")
-	err = removeSymlinkOrBackupPath(nonExistentPath)
+	err = RemoveSymlinkOrBackupPath(nonExistentPath)
 	if err != nil {
-		t.Errorf("removeSymlinkOrBackupPath should not return error for non-existent path: %v", err)
+		t.Errorf("RemoveSymlinkOrBackupPath should not return error for non-existent path: %v", err)
 	}
 
 	linkPath := filepath.Join(tempDir, "symlink")
@@ -118,7 +118,7 @@ func TestRemoveSymlinkOrBackupPath(t *testing.T) {
 		t.Fatalf("Failed to create symlink: %v", err)
 	}
 
-	err = removeSymlinkOrBackupPath(linkPath)
+	err = RemoveSymlinkOrBackupPath(linkPath)
 	if err != nil {
 		t.Errorf("Failed to remove symlink: %v", err)
 	}
@@ -132,7 +132,7 @@ func TestRemoveSymlinkOrBackupPath(t *testing.T) {
 		t.Fatalf("Failed to create regular file: %v", err)
 	}
 
-	err = removeSymlinkOrBackupPath(filePath)
+	err = RemoveSymlinkOrBackupPath(filePath)
 	if err != nil {
 		t.Errorf("Failed to backup regular file: %v", err)
 	}
@@ -157,9 +157,9 @@ func TestMakeDirsWritable(t *testing.T) {
 		t.Fatalf("Failed to create subdirectory: %v", err)
 	}
 
-	err = makeDirsWritable(tempDir)
+	err = MakeDirsWritable(tempDir)
 	if err != nil {
-		t.Errorf("makeDirsWritable failed: %v", err)
+		t.Errorf("MakeDirsWritable failed: %v", err)
 	}
 
 	info, err := os.Stat(subDir)
@@ -244,16 +244,16 @@ func TestIsSymlink(t *testing.T) {
 		t.Fatalf("Failed to create symlink: %v", err)
 	}
 
-	if !isSymlink(linkPath) {
-		t.Errorf("isSymlink should return true for symlink: %s", linkPath)
+	if !IsSymlink(linkPath) {
+		t.Errorf("IsSymlink should return true for symlink: %s", linkPath)
 	}
 
-	if isSymlink(filePath) {
-		t.Errorf("isSymlink should return false for regular file: %s", filePath)
+	if IsSymlink(filePath) {
+		t.Errorf("IsSymlink should return false for regular file: %s", filePath)
 	}
 
-	if isSymlink(filepath.Join(tempDir, "nonexistent")) {
-		t.Errorf("isSymlink should return false for non-existent path")
+	if IsSymlink(filepath.Join(tempDir, "nonexistent")) {
+		t.Errorf("IsSymlink should return false for non-existent path")
 	}
 }
 
@@ -412,8 +412,8 @@ func TestVerifyLink(t *testing.T) {
 }
 
 func TestUser(t *testing.T) {
-	originalUserCurrent := userCurrent
-	defer func() { userCurrent = originalUserCurrent }()
+	originalUserCurrent := UserCurrent
+	defer func() { UserCurrent = originalUserCurrent }()
 
 	currentUser, _ := user.Current()
 	u := User()
@@ -421,7 +421,7 @@ func TestUser(t *testing.T) {
 		t.Errorf("User() should return current user info")
 	}
 
-	userCurrent = func() (*user.User, error) {
+	UserCurrent = func() (*user.User, error) {
 		return nil, errors.New("user.Current error")
 	}
 	u = User()

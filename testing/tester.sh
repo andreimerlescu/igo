@@ -404,6 +404,14 @@ TESTS=$((TESTS+1))
 test_took
 echo
 
+echo "=== INSTALL BAD VERSION ==="
+SECONDS=0
+{ igo -cmd install -gover 1.24.3.4 "${DEBUG}" "${VERBOSE}" && echo "FAIL: igo should not install bad version" && exit 1; }
+{ igo -cmd install -gover 99.99.99 "${DEBUG}" "${VERBOSE}" && echo "FAIL: igo should not install bad version" && exit 1; }
+TESTS=$((TESTS+1))
+test_took
+echo
+
 END_TIME=$(date +%s.%N)
 DURATION=$(echo "$END_TIME - $START_TIME" | bc)
 echo "Completed $TESTS tests in $DURATION seconds!"
