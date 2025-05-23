@@ -4,6 +4,7 @@ import (
 	"context"
 	"embed"
 	"fmt"
+	"github.com/andreimerlescu/igo/internal"
 	"io/fs"
 	"net/http"
 	"os"
@@ -34,7 +35,7 @@ var UserHomeDir = os.UserHomeDir
 
 func NewApp() *Application {
 	userHomeDir, err := UserHomeDir()
-	capture(err)
+	internal.Capture(err)
 	app := &Application{
 		ctx:         context.Background(),
 		userHomeDir: userHomeDir,
@@ -70,9 +71,9 @@ func NewApp() *Application {
 	app.figs.NewMap(kExtraPackages, packages, "Extra packages to install")
 	_, err = os.Lstat(figtree.ConfigFilePath)
 	if os.IsNotExist(err) || os.IsPermission(err) {
-		capture(app.figs.Parse())
+		internal.Capture(app.figs.Parse())
 	} else {
-		capture(app.figs.Load())
+		internal.Capture(app.figs.Load())
 	}
 	return app
 }
@@ -135,8 +136,8 @@ func (app *Application) CreateShims() error {
 	if err != nil {
 		return fmt.Errorf("failed to write shim.gofmt.sh: %v", err)
 	}
-	capture(os.Chmod(goShim, 0755))
-	capture(os.Chmod(gofmtShim, 0755))
+	internal.Capture(os.Chmod(goShim, 0755))
+	internal.Capture(os.Chmod(gofmtShim, 0755))
 	return nil
 }
 
@@ -146,7 +147,7 @@ func (app *Application) runVersionCheck(envs map[string]string, version string) 
 	goBinPath := filepath.Join(app.Workspace(), "versions", version, "go", "bin", fmt.Sprintf("go.%s", version))
 
 	if _, err := os.Stat(goBinPath); os.IsNotExist(err) {
-		capture(fmt.Errorf("go binary does not exist at %s: %v", goBinPath, err))
+		internal.Capture(fmt.Errorf("go binary does not exist at %s: %v", goBinPath, err))
 	}
 
 	cmdEnv := []string{
@@ -162,7 +163,7 @@ func (app *Application) runVersionCheck(envs map[string]string, version string) 
 
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		capture(fmt.Errorf("failed to execute 'go version' with %s: %v\nOutput: %s", goBinPath, err, string(output)))
+		internal.Capture(fmt.Errorf("failed to execute 'go version' with %s: %v\nOutput: %s", goBinPath, err, string(output)))
 	}
 	gover := strings.TrimSpace(string(output))
 	if *app.figs.Bool(kVerbose) {
@@ -230,7 +231,7 @@ func (app *Application) patchShellConfigPath(envs map[string]string) error {
 	if targetFile == "" {
 		contents := fmt.Sprintf("export PATH=%s:%s:%s:%s\n",
 			envs["GOSHIMS"], envs["GOSCRIPTS"], envs["GOBIN"], os.Getenv("PATH"))
-		capture(os.WriteFile(zshrc, []byte(contents), 0644))
+		internal.Capture(os.WriteFile(zshrc, []byte(contents), 0644))
 		return os.WriteFile(bashrc, []byte(contents), 0644)
 	}
 
@@ -317,7 +318,7 @@ func (app *Application) findGoVersions() ([]string, error) {
 	var versions []string
 	d := app.Workspace()
 	dvs := filepath.Join(d, "versions")
-	capture(filepath.WalkDir(d, func(path string, d fs.DirEntry, err error) error {
+	internal.Capture(filepath.WalkDir(d, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}

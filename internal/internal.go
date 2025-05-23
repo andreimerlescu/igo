@@ -1,4 +1,4 @@
-package main
+package internal
 
 import (
 	"fmt"
@@ -11,34 +11,45 @@ import (
 	"time"
 )
 
-var userCurrent = user.Current
+const (
+	// PRODUCT is called igo for Install Go
+	PRODUCT string = "igo"
 
-// about prints the product information
-func about() string {
+	// AUTHOR is Andrei
+	AUTHOR string = "github.com/andreimerlescu/igo"
+
+	// XRP is how you can tip the AUTHOR
+	XRP string = "rAparioji3FxAtD7UufS8Hh9XmFn7h6AX"
+)
+
+var UserCurrent = user.Current
+
+// About prints the product information
+func About() string {
 	sb := strings.Builder{}
 	sb.WriteString(PRODUCT + " ")
 	sb.WriteString("[open source at " + AUTHOR + "]")
 	return sb.String()
 }
 
-// captureInt will discard the integer and process the error using capture()
-func captureInt(_ int, err error) {
+// CaptureInt will Discard the integer and process the error using Capture()
+var CaptureInt = func(_ int, err error) {
 	if err != nil {
 		panic(err)
 	}
 	return
 }
 
-// capture accepts nil or an error or multiple errors
+// Capture accepts nil or an error or multiple errors
 //
 // Example:
 //
-//			capture(errors.New("this is an error to run os.Exit(1) after printing this =D"))
+//			Capture(errors.New("this is an error to run os.Exit(1) after printing this =D"))
 //			// OR
 //	     var E1 error
 //	     var E2 error
-//			capture(E1, E2)
-var capture = func(err ...error) {
+//			Capture(E1, E2)
+var Capture = func(err ...error) {
 	if err == nil || len(err) == 0 || err[0] == nil {
 		return
 	}
@@ -46,32 +57,32 @@ var capture = func(err ...error) {
 	os.Exit(1)
 }
 
-// discard err will print the error only if it occurred
-func discard(err ...error) {
+// Discard err will print the error only if it occurred
+var Discard = func(err ...error) {
 	if err == nil || len(err) == 0 || err[0] == nil {
 		return
 	}
 	fmt.Println(err)
 }
 
-// captureOpenFile is a helper func that accepts a path, opens it or capture() the error
+// CaptureOpenFile is a helper func that accepts a path, opens it or Capture() the error
 //
 // Example:
 //
-//	handler := captureOpenFile("/opt/app/config.yaml", os.O_RDONLY, 0600)
-func captureOpenFile(path string, flag int, perm os.FileMode) *os.File {
+//	handler := CaptureOpenFile("/opt/app/config.yaml", os.O_RDONLY, 0600)
+var CaptureOpenFile = func(path string, flag int, perm os.FileMode) *os.File {
 	f, e := os.OpenFile(path, flag, perm)
-	capture(e)
+	Capture(e)
 	return f
 }
 
-// removeSymlinkOrBackupPath checks if the given path is a symlink and deletes it if it is not.
+// RemoveSymlinkOrBackupPath checks if the given path is a symlink and deletes it if it is not.
 // Returns an error if the check or deletion fails.
-func removeSymlinkOrBackupPath(path string) error {
+var RemoveSymlinkOrBackupPath = func(path string) error {
 	if !PathExists(path) {
 		return nil
 	}
-	if isSymlink(path) {
+	if IsSymlink(path) {
 		err := os.Remove(path)
 		if err != nil {
 			return fmt.Errorf("failed to remove symlink %s: %w", path, err)
@@ -87,7 +98,7 @@ func removeSymlinkOrBackupPath(path string) error {
 	return nil
 }
 
-func makeDirsWritable(path string) error {
+var MakeDirsWritable = func(path string) error {
 	return filepath.WalkDir(path, func(p string, d os.DirEntry, err error) error {
 		if err != nil {
 			return err
@@ -112,7 +123,7 @@ func makeDirsWritable(path string) error {
 	})
 }
 
-func setStickyBit(path string) error {
+var SetStickyBit = func(path string) error {
 	if !IsDirectory(path) {
 		return fmt.Errorf("setting sticky bits from files do nothing: %s", path)
 	}
@@ -131,7 +142,7 @@ func setStickyBit(path string) error {
 	return nil
 }
 
-func setSetuidSetgidBits(path string) error {
+var SetSetuidSetgidBits = func(path string) error {
 	var cmd *exec.Cmd
 	switch runtime.GOOS {
 	case "linux", "darwin":
@@ -147,7 +158,7 @@ func setSetuidSetgidBits(path string) error {
 	return nil
 }
 
-func removeStickyBit(path string) error {
+var RemoveStickyBit = func(path string) error {
 	if !IsDirectory(path) {
 		return fmt.Errorf("remove sticky bits from files do nothing: %s", path)
 	}
@@ -167,7 +178,7 @@ func removeStickyBit(path string) error {
 	return nil
 }
 
-func removeSetuidSetgidBits(path string) error {
+var RemoveSetuidSetgidBits = func(path string) error {
 	var cmd *exec.Cmd
 	switch runtime.GOOS {
 	case "linux", "darwin":
@@ -186,7 +197,7 @@ func removeSetuidSetgidBits(path string) error {
 // FindSymlinks scans the provided directory path and returns a slice
 // of full paths to any symlinks found in the root directory only.
 // It does not recurse into subdirectories.
-func FindSymlinks(dirPath string) ([]string, error) {
+var FindSymlinks = func(dirPath string) ([]string, error) {
 	dir, err := os.Open(dirPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open directory: %w", err)
@@ -207,7 +218,7 @@ func FindSymlinks(dirPath string) ([]string, error) {
 }
 
 // ReadSymlink reads the target of a symlink
-func ReadSymlink(path string) (string, error) {
+var ReadSymlink = func(path string) (string, error) {
 	target, err := os.Readlink(path)
 	if err != nil {
 		return "", fmt.Errorf("failed to read symlink %s: %w", path, err)
@@ -224,7 +235,7 @@ func ReadSymlink(path string) (string, error) {
 
 // VerifyLink checks if a symlink correctly resolves to its expected target
 // and returns the appropriate status emoji (✅ for success, ❌ for failure)
-func VerifyLink(link, expectedTarget string) string {
+var VerifyLink = func(link, expectedTarget string) string {
 	actualTarget, err := ReadSymlink(link)
 	if err != nil {
 		return "❌" // Error reading the symlink
@@ -243,7 +254,7 @@ func VerifyLink(link, expectedTarget string) string {
 	return "❌" // Link points to a different target
 }
 
-func IsDirectory(path string) bool {
+var IsDirectory = func(path string) bool {
 	fileInfo, err := os.Lstat(path)
 	if err != nil {
 		return false
@@ -251,12 +262,12 @@ func IsDirectory(path string) bool {
 	return fileInfo.IsDir()
 }
 
-func PathExists(path string) bool {
+var PathExists = func(path string) bool {
 	_, err := os.Lstat(path)
 	return !os.IsNotExist(err) && !os.IsPermission(err)
 }
 
-func isSymlink(path string) bool {
+var IsSymlink = func(path string) bool {
 	fileInfo, err := os.Lstat(path) // Lstat to not follow symlinks
 	if err != nil {
 		return false
@@ -264,9 +275,9 @@ func isSymlink(path string) bool {
 	return fileInfo.Mode()&os.ModeSymlink != 0
 }
 
-// touch creates a new empty file or updates the modification time of an existing file at the given path.
+// Touch creates a new empty file or updates the modification time of an existing file at the given path.
 // Returns an error if the operation fails.
-func touch(path string) error {
+var Touch = func(path string) error {
 	_, err := os.Stat(path)
 	if os.IsNotExist(err) {
 		pathFile, err := os.Create(path)
@@ -289,7 +300,7 @@ func touch(path string) error {
 	return nil
 }
 
-func checkRootPrivileges() bool {
+var CheckRootPrivileges = func() bool {
 	if runtime.GOOS == "windows" {
 		return false // use msi installer for windows
 	} else {
@@ -304,8 +315,8 @@ func checkRootPrivileges() bool {
 	}
 }
 
-func User() *user.User {
-	currentUser, err := userCurrent()
+var User = func() *user.User {
+	currentUser, err := UserCurrent()
 	if err != nil {
 		return &user.User{
 			Uid:      "-1",

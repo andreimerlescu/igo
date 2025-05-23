@@ -5,6 +5,7 @@ import (
 	"compress/gzip"
 	"errors"
 	"fmt"
+	"github.com/andreimerlescu/igo/internal"
 	"io"
 	"net/http"
 	"os"
@@ -116,7 +117,7 @@ func (v *Version) extractTarGz(app *Application) error {
 	if err != nil {
 		return fmt.Errorf("error creating gzip reader: %v", err)
 	}
-	defer capture(gzReader.Close())
+	defer internal.Capture(gzReader.Close())
 
 	// Create tar reader
 	tarReader := tar.NewReader(gzReader)
@@ -172,7 +173,7 @@ func (v *Version) extractTarGz(app *Application) error {
 			}
 
 			// Create and write to the tarFile
-			outFile := captureOpenFile(target, os.O_CREATE|os.O_RDWR|os.O_TRUNC, os.FileMode(header.Mode))
+			outFile := internal.CaptureOpenFile(target, os.O_CREATE|os.O_RDWR|os.O_TRUNC, os.FileMode(header.Mode))
 
 			// Copy the tarFile contents
 			if verbose {
@@ -185,7 +186,7 @@ func (v *Version) extractTarGz(app *Application) error {
 				_ = outFile.Close()
 				return fmt.Errorf("error writing to tarFile %s: %v", target, err)
 			}
-			capture(outFile.Close())
+			internal.Capture(outFile.Close())
 
 		default:
 			fmt.Printf("Skipping unsupported type %c in %s\n", header.Typeflag, header.Name)

@@ -61,11 +61,13 @@ if [[ -z "${GOBINARY}" ]]; then
 fi
 
 GOBIN="${GODIR}/versions/${GOVERSION}/go/bin"
+GOMODCACHE="${GODIR}/versions/${GOVERSION}/go/pkg/mod"
 GOROOT="${GODIR}/versions/${GOVERSION}/go"
 GOPATH="${GODIR}/versions/${GOVERSION}"
 
 export GOBIN
 export GOROOT
 export GOPATH
+export GOMODCACHE
 
 exec "${GOBINARY}" "$@"
