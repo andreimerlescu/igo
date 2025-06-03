@@ -4,7 +4,6 @@ import (
 	"context"
 	"embed"
 	"fmt"
-	"github.com/andreimerlescu/igo/internal"
 	"io/fs"
 	"net/http"
 	"os"
@@ -15,6 +14,7 @@ import (
 	"strings"
 
 	"github.com/andreimerlescu/figtree/v2"
+	"github.com/andreimerlescu/igo/internal"
 	"github.com/fatih/color"
 )
 
@@ -26,8 +26,8 @@ var bundledShimsGofmtBytes embed.FS
 
 type Application struct {
 	ctx         context.Context
-	figs        figtree.Plant
-	userHomeDir string
+	Figs        figtree.Plant
+	UserHomeDir string
 	Workspace   func() string
 }
 
@@ -38,42 +38,42 @@ func NewApp() *Application {
 	internal.Capture(err)
 	app := &Application{
 		ctx:         context.Background(),
-		userHomeDir: userHomeDir,
+		UserHomeDir: userHomeDir,
 	}
 	app.Workspace = func() string {
-		if *app.figs.Bool(kSystem) {
+		if *app.Figs.Bool(kSystem) {
 			return filepath.Join("/", "usr", "go")
 		}
-		return filepath.Join(app.userHomeDir, "go")
+		return filepath.Join(app.UserHomeDir, "go")
 	}
-	app.figs = figtree.With(figtree.Options{
-		ConfigFile: filepath.Join(app.userHomeDir, ".igo.config.yml"),
+	app.Figs = figtree.With(figtree.Options{
+		ConfigFile: filepath.Join(app.UserHomeDir, ".igo.config.yml"),
 		Germinate:  true,
 		Harvest:    0,
 	})
-	app.figs.NewBool(kVersion, false, "Display current version")
-	app.figs.NewBool(kSystem, false, "Install for system-wide usage (ignore USER HOME directory)")
-	app.figs.NewBool(kDebug, false, "Enable debug mode")
-	app.figs.NewBool(kVerbose, false, "Enable verbose mode")
-	app.figs.NewString(kGoDir, filepath.Join(app.userHomeDir, "go"), "Path where you want multiple go versions installed")
-	app.figs.NewString(kCommand, "", "Command to run: install uninstall use list")
-	app.figs.NewString(kGoVersion, "1.24.3", "Go Version")
-	app.figs.WithValidator(kGoVersion, func(value interface{}) error {
-		v := figtree.NewFlesh(value).ToString()
-		if err := app.validateVersion(v); err != nil {
-			return err
-		}
-		return nil
-	})
-	app.figs.NewString(kGoos, runtime.GOOS, "Go OS")
-	app.figs.NewString(kGoArch, runtime.GOARCH, "Go Architecture")
-	app.figs.NewBool(kExtras, true, "Install extra packages")
-	app.figs.NewMap(kExtraPackages, packages, "Extra packages to install")
+	// 5 string 3 bool
+	app.Figs.NewBool(cmdHelp, false, "Display help")
+	app.Figs.NewBool(cmdVersion, false, "Display version")
+	app.Figs.NewBool(cmdList, false, "Display installed versions")
+	app.Figs.NewBool(cmdEnv, false, "Display env")
+	app.Figs.NewString(cmdInstall, "", "Install a specific version of Go")
+	app.Figs.NewString(cmdUninstall, "", "Uninstall a specific version of Go")
+	app.Figs.NewString(cmdActivate, "", "Activate a specific version of Go")
+	app.Figs.NewString(cmdFix, "", "Fix a specific version of Go")
+	app.Figs.NewString(cmdSwitch, "", "Switch to a specific version of Go")
+	app.Figs.NewBool(kSystem, false, "Install in system mode /usr/bin/go")
+	app.Figs.NewBool(kDebug, false, "Enable debug mode")
+	app.Figs.NewBool(kVerbose, false, "Enable verbose mode")
+	app.Figs.NewString(kGoDir, filepath.Join(app.UserHomeDir, "go"), "Path where you want multiple go versions installed")
+	app.Figs.NewString(kGoos, runtime.GOOS, "Go OS")
+	app.Figs.NewString(kGoArch, runtime.GOARCH, "Go Architecture")
+	app.Figs.NewBool(kExtras, true, "Install extra packages")
+	app.Figs.NewMap(kExtraPackages, packages, "Extra packages to install")
 	_, err = os.Lstat(figtree.ConfigFilePath)
 	if os.IsNotExist(err) || os.IsPermission(err) {
-		internal.Capture(app.figs.Parse())
+		internal.Capture(app.Figs.Parse())
 	} else {
-		internal.Capture(app.figs.Load())
+		internal.Capture(app.Figs.Load())
 	}
 	return app
 }
@@ -87,7 +87,7 @@ func (app *Application) validateVersion(version string) error {
 
 	// Parse version parts to check they're valid numbers
 	var major, minor, patch int
-	_, err := fmt.Sscanf(version, "%d.%d.%d", &major, &minor, &patch)
+	_, err := fmt.Sscanf(version, VersionFmt, &major, &minor, &patch)
 	if err != nil {
 		return fmt.Errorf("error parsing version components: %w", err)
 	}
@@ -100,7 +100,7 @@ func (app *Application) validateVersion(version string) error {
 	// Verify the version exists on Go's download server before proceeding
 	// Using a HEAD request to check if the URL exists
 	resp, err := httpHead(fmt.Sprintf("https://go.dev/dl/go%s.%s-%s.tar.gz",
-		version, *app.figs.String(kGoos), *app.figs.String(kGoArch)))
+		version, *app.Figs.String(kGoos), *app.Figs.String(kGoArch)))
 	if err != nil {
 		return fmt.Errorf("error checking if version exists: %w", err)
 	}
@@ -151,11 +151,12 @@ func (app *Application) runVersionCheck(envs map[string]string, version string) 
 	}
 
 	cmdEnv := []string{
-		fmt.Sprintf("GOROOT=%s", envs["GODIR"]),
-		fmt.Sprintf("GOPATH=%s", envs["GODIR"]),
-		fmt.Sprintf("GOBIN=%s", envs["GODIR"]),
-		fmt.Sprintf("GOOS=%s", envs["GOOS"]),
-		fmt.Sprintf("GOARCH=%s", envs["GOARCH"]),
+		fmt.Sprintf("GOROOT=%s", envs[GOROOT]),
+		fmt.Sprintf("GOPATH=%s", envs[GOPATH]),
+		fmt.Sprintf("GOBIN=%s", envs[GOBIN]),
+		fmt.Sprintf("GOOS=%s", envs[GOOS]),
+		fmt.Sprintf("GOARCH=%s", envs[GOARCH]),
+		fmt.Sprintf("GOMODCACHE=%s", envs[GOMODCACHE]),
 	}
 
 	cmd := exec.Command(goBinPath, "version")
@@ -166,7 +167,7 @@ func (app *Application) runVersionCheck(envs map[string]string, version string) 
 		internal.Capture(fmt.Errorf("failed to execute 'go version' with %s: %v\nOutput: %s", goBinPath, err, string(output)))
 	}
 	gover := strings.TrimSpace(string(output))
-	if *app.figs.Bool(kVerbose) {
+	if *app.Figs.Bool(kVerbose) {
 		color.Green("Received terminal output: %s", gover)
 	}
 
@@ -184,10 +185,10 @@ func (app *Application) installExtraPackages(envs map[string]string, version str
 		fmt.Sprintf("GOROOT=%s", filepath.Join(workspace, "versions", version, "go")),
 		fmt.Sprintf("GOPATH=%s", filepath.Join(workspace, "versions", version)),
 		fmt.Sprintf("GOBIN=%s", filepath.Join(workspace, "versions", version, "go", "bin")),
-		fmt.Sprintf("GOOS=%s", envs["GOOS"]),
-		fmt.Sprintf("GOARCH=%s", envs["GOARCH"]),
+		fmt.Sprintf("GOOS=%s", envs[GOOS]),
+		fmt.Sprintf("GOARCH=%s", envs[GOARCH]),
 	}
-	p := app.figs.Fig(kExtraPackages).ToString()
+	p := app.Figs.Fig(kExtraPackages).ToString()
 	color.Green("Installing extra packages: %s", p)
 
 	for pkg, modulePath := range packages {
@@ -197,7 +198,7 @@ func (app *Application) installExtraPackages(envs map[string]string, version str
 		if err != nil {
 			return fmt.Errorf("failed to install %s (%s): %w\nOutput: %s", pkg, modulePath, err, string(output))
 		}
-		binPath := filepath.Join(envs["GOBIN"], pkg)
+		binPath := filepath.Join(envs[GOBIN], pkg)
 		if _, err := os.Stat(binPath); os.IsNotExist(err) {
 			return fmt.Errorf("installation of %s succeeded but binary not found at %s", pkg, binPath)
 		}
@@ -211,13 +212,13 @@ func (app *Application) installExtraPackages(envs map[string]string, version str
 // Returns an error if the operation fails.
 func (app *Application) patchShellConfigPath(envs map[string]string) error {
 	requiredPaths := []string{
-		envs["GOSHIMS"],
-		envs["GOBIN"],
-		envs["GOSCRIPTS"],
+		envs[GOSHIMS],
+		envs[GOBIN],
+		envs[GOSCRIPTS],
 	}
 
-	bashrc := filepath.Join(app.userHomeDir, ".profile")
-	zshrc := filepath.Join(app.userHomeDir, ".zshrc.local")
+	bashrc := filepath.Join(app.UserHomeDir, ".profile")
+	zshrc := filepath.Join(app.UserHomeDir, ".zshrc.local")
 	shellFiles := []string{bashrc, zshrc}
 
 	var targetFile string
@@ -230,7 +231,7 @@ func (app *Application) patchShellConfigPath(envs map[string]string) error {
 	}
 	if targetFile == "" {
 		contents := fmt.Sprintf("export PATH=%s:%s:%s:%s\n",
-			envs["GOSHIMS"], envs["GOSCRIPTS"], envs["GOBIN"], os.Getenv("PATH"))
+			envs[GOSHIMS], envs[GOSCRIPTS], envs[GOBIN], os.Getenv("PATH"))
 		internal.Capture(os.WriteFile(zshrc, []byte(contents), 0644))
 		return os.WriteFile(bashrc, []byte(contents), 0644)
 	}
@@ -239,7 +240,7 @@ func (app *Application) patchShellConfigPath(envs map[string]string) error {
 	if err != nil {
 		return fmt.Errorf("168 failed to read file %s: %w", targetFile, err)
 	}
-	if *app.figs.Bool(kVerbose) {
+	if *app.Figs.Bool(kVerbose) {
 		color.Green("Contents of %s is: \n%s\n", targetFile, content)
 	}
 	lines := strings.Split(string(content), "\n")
@@ -292,7 +293,7 @@ func (app *Application) patchShellConfigPath(envs map[string]string) error {
 		return nil
 	}
 
-	newPathLine := fmt.Sprintf("export PATH=%s:%s:%s:%s", envs["GOSHIMS"], envs["GOBIN"], envs["GOSCRIPTS"], os.Getenv("PATH"))
+	newPathLine := fmt.Sprintf("export PATH=%s:%s:%s:%s", envs[GOSHIMS], envs[GOBIN], envs[GOSCRIPTS], os.Getenv("PATH"))
 	targetHandler, err := os.OpenFile(targetFile, os.O_APPEND|os.O_WRONLY, 0644)
 	if err != nil {
 		return fmt.Errorf("226 could not open target file: %w", err)
@@ -330,12 +331,12 @@ func (app *Application) findGoVersions() ([]string, error) {
 					return nil // skip over file in this version directory
 				}
 			}
-			var _maj, _min, _pat int
-			_, _ = fmt.Sscanf(p, "%d.%d.%d", &_maj, &_min, &_pat)
-			if _maj == 0 && _min == 0 && _pat == 0 {
+			var vMaj, vMin, vPat int
+			_, _ = fmt.Sscanf(p, VersionFmt, &vMaj, &vMin, &vPat)
+			if vMaj == 0 && vMin == 0 && vPat == 0 {
 				return nil // silent skip over non-version directory
 			}
-			versions = append(versions, fmt.Sprintf("%d.%d.%d", _maj, _min, _pat))
+			versions = append(versions, fmt.Sprintf(VersionFmt, vMaj, vMin, vPat))
 		}
 		return nil
 	}))
@@ -358,8 +359,9 @@ func (app *Application) activatedVersion() (string, error) {
 func (app *Application) injectEnvVarsToShellConfig(envs map[string]string) error {
 	// Possible shell config files to check
 	shellFiles := []string{
-		filepath.Join(app.userHomeDir, ".profile"),
-		filepath.Join(app.userHomeDir, ".zshrc.local"),
+		filepath.Join(app.UserHomeDir, ".profile"),
+		filepath.Join(app.UserHomeDir, ".bash_profile"),
+		filepath.Join(app.UserHomeDir, ".zshrc.local"),
 	}
 
 	// Find the first existing shell config file
@@ -371,7 +373,7 @@ func (app *Application) injectEnvVarsToShellConfig(envs map[string]string) error
 		}
 	}
 	if targetFile == "" {
-		targetFile = filepath.Join(app.userHomeDir, ".profile")
+		targetFile = filepath.Join(app.UserHomeDir, ".profile")
 		err := os.WriteFile(targetFile, []byte(""), 0644)
 		if err != nil {
 			return fmt.Errorf("305 failed to write %s: %w", targetFile, err)

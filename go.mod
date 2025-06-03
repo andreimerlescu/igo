@@ -11,6 +11,7 @@ require (
 
 require (
 	github.com/andreimerlescu/checkfs v1.0.4 // indirect
+	github.com/andreimerlescu/go-common v0.0.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/go-ini/ini v1.67.0 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect

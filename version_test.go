@@ -4,14 +4,15 @@ import (
 	"archive/tar"
 	"bytes"
 	"compress/gzip"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 	"io"
 	"net/http"
 	"os"
 	"path/filepath"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
 type MockHTTPClient struct {
@@ -47,8 +48,8 @@ func TestVersion_downloadURL(t *testing.T) {
 	}
 	os.Args = []string{os.Args[0], "-" + kVerbose, "-" + kDebug}
 	app := NewApp()
-	app.figs.StoreBool(kVerbose, true)
-	app.figs.StoreBool(kDebug, true)
+	app.Figs.StoreBool(kVerbose, true)
+	app.Figs.StoreBool(kDebug, true)
 	originalHTTPGet := httpGet
 	defer func() { httpGet = originalHTTPGet }()
 	httpGet = func(url string) (*http.Response, error) {

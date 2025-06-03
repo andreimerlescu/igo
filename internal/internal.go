@@ -16,7 +16,7 @@ const (
 	PRODUCT string = "igo"
 
 	// AUTHOR is Andrei
-	AUTHOR string = "github.com/andreimerlescu/igo"
+	AUTHOR string = "github.com/ProjectApario/igo"
 
 	// XRP is how you can tip the AUTHOR
 	XRP string = "rAparioji3FxAtD7UufS8Hh9XmFn7h6AX"
@@ -28,7 +28,7 @@ var UserCurrent = user.Current
 func About() string {
 	sb := strings.Builder{}
 	sb.WriteString(PRODUCT + " ")
-	sb.WriteString("[open source at " + AUTHOR + "]")
+	sb.WriteString("open source at " + AUTHOR)
 	return sb.String()
 }
 
@@ -85,14 +85,14 @@ var RemoveSymlinkOrBackupPath = func(path string) error {
 	if IsSymlink(path) {
 		err := os.Remove(path)
 		if err != nil {
-			return fmt.Errorf("failed to remove symlink %s: %w", path, err)
+			return ErrPathFailed{path, err, ""}
 		}
 		return nil
 	}
 
 	err := os.Rename(path, path+".bak") // path isn't symlink, so move it to .bak
 	if err != nil {
-		return fmt.Errorf("failed to delete non-symlink path %s: %w", path, err)
+		return ErrPathFailed{path, err, "non-"}
 	}
 
 	return nil
@@ -116,7 +116,7 @@ var MakeDirsWritable = func(path string) error {
 		if mode&0200 == 0 { // Owner write permission is not set
 			newMode := mode | 0200
 			if err := os.Chmod(p, newMode); err != nil {
-				return fmt.Errorf("failed to chmod u+w on %s: %w", p, err)
+				return ErrChmodFailed{p, err}
 			}
 		}
 		return nil
@@ -125,19 +125,19 @@ var MakeDirsWritable = func(path string) error {
 
 var SetStickyBit = func(path string) error {
 	if !IsDirectory(path) {
-		return fmt.Errorf("setting sticky bits from files do nothing: %s", path)
+		return ErrStickyBitsOnFile{path}
 	}
 	var cmd *exec.Cmd
 	switch runtime.GOOS {
 	case "linux", "darwin":
 		cmd = exec.Command("sh", "-c", fmt.Sprintf("chmod +t %s", path))
 	default:
-		return fmt.Errorf("unsupported OS: %s", runtime.GOOS)
+		return ErrOSNotSupported{runtime.GOOS}
 	}
 	cmd.Stderr = os.Stderr
 	cmd.Stdout = os.Stdout
 	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("failed to set sticky bit: %w", err)
+		return ErrStickyBitFailed{path, err, "set"}
 	}
 	return nil
 }
@@ -148,32 +148,32 @@ var SetSetuidSetgidBits = func(path string) error {
 	case "linux", "darwin":
 		cmd = exec.Command("sh", "-c", fmt.Sprintf("chmod -R a+s %s", path))
 	default:
-		return fmt.Errorf("unsupported OS: %s", runtime.GOOS)
+		return ErrOSNotSupported{runtime.GOOS}
 	}
 	cmd.Stderr = os.Stderr
 	cmd.Stdout = os.Stdout
 	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("failed to set setuid/setgid bits: %w", err)
+		return ErrBitNotSet{err}
 	}
 	return nil
 }
 
 var RemoveStickyBit = func(path string) error {
 	if !IsDirectory(path) {
-		return fmt.Errorf("remove sticky bits from files do nothing: %s", path)
+		return ErrStickyBitsOnFile{path}
 	}
 	var cmd *exec.Cmd
 	switch runtime.GOOS {
 	case "linux", "darwin":
 		cmd = exec.Command("sh", "-c", fmt.Sprintf("chmod -t %s", path))
 	default:
-		return fmt.Errorf("unsupported OS: %s", runtime.GOOS)
+		return ErrOSNotSupported{runtime.GOOS}
 	}
 
 	cmd.Stderr = os.Stderr
 	cmd.Stdout = os.Stdout
 	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("failed to remove sticky bit: %w", err)
+		return ErrStickyBitFailed{path, err, "remove"}
 	}
 	return nil
 }
@@ -184,12 +184,12 @@ var RemoveSetuidSetgidBits = func(path string) error {
 	case "linux", "darwin":
 		cmd = exec.Command("sh", "-c", fmt.Sprintf("chmod -R a-s %s", path))
 	default:
-		return fmt.Errorf("unsupported OS: %s", runtime.GOOS)
+		return ErrOSNotSupported{runtime.GOOS}
 	}
 	cmd.Stderr = os.Stderr
 	cmd.Stdout = os.Stdout
 	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("failed to remove setuid/setgid bits: %w", err)
+		return ErrSetUIDGIDBit{path, err, "remove"}
 	}
 	return nil
 }
@@ -200,12 +200,12 @@ var RemoveSetuidSetgidBits = func(path string) error {
 var FindSymlinks = func(dirPath string) ([]string, error) {
 	dir, err := os.Open(dirPath)
 	if err != nil {
-		return nil, fmt.Errorf("failed to open directory: %w", err)
+		return nil, ErrFile{dirPath, err, "os.Open"}
 	}
 	defer dir.Close()
 	entries, err := dir.ReadDir(-1) // -1 to read all entries
 	if err != nil {
-		return nil, fmt.Errorf("failed to read directory entries: %w", err)
+		return nil, ErrDirEntries{dirPath, err}
 	}
 	var symlinks []string
 	for _, entry := range entries {
@@ -221,7 +221,7 @@ var FindSymlinks = func(dirPath string) ([]string, error) {
 var ReadSymlink = func(path string) (string, error) {
 	target, err := os.Readlink(path)
 	if err != nil {
-		return "", fmt.Errorf("failed to read symlink %s: %w", path, err)
+		return "", ErrPathFailed{path, err, "remove"}
 	}
 
 	// If the symlink target is relative, make it absolute
@@ -282,19 +282,19 @@ var Touch = func(path string) error {
 	if os.IsNotExist(err) {
 		pathFile, err := os.Create(path)
 		if err != nil {
-			return fmt.Errorf("failed to create file %s: %w", path, err)
+			return ErrFile{path, err, "os.Create"}
 		}
 		if err := pathFile.Close(); err != nil {
-			return fmt.Errorf("failed to close file %s: %w", path, err)
+			return ErrFile{path, err, "path.Close"}
 		}
 		return nil
 	} else if err != nil {
-		return fmt.Errorf("failed to stat file %s: %w", path, err)
+		return ErrFile{path, err, "os.Stat"}
 	}
 
 	currentTime := time.Now()
 	if err := os.Chtimes(path, currentTime, currentTime); err != nil {
-		return fmt.Errorf("failed to update modification time of %s: %w", path, err)
+		return ErrFile{path, err, "os.Chtimes"}
 	}
 
 	return nil

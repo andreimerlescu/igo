@@ -14,49 +14,77 @@ If you have go already installed, and you attempt to use igo to manage
 your installation of Go, you can break your system configurations. 
 
 Download the binaries and use them to install go!
+    
+    # MacOS Apple Silicon
+    curl -L https://github.com/andreimerlescu/igo/releases/download/v1.1.0/igo-darwin-arm64 ~/bin/igo
+    # MacOS Apple Intel
+    curl -L https://github.com/andreimerlescu/igo/releases/download/v1.1.0/igo-darwin-amd64 ~/bin/igo
+    # Linux arm64
+    curl -L https://github.com/andreimerlescu/igo/releases/download/v1.1.0/igo-linux-arm64 ~/bin/igo
+    # Linux amd64
+    curl -L https://github.com/andreimerlescu/igo/releases/download/v1.1.0/igo-linux-amd64 ~/bin/igo
+
+    # Remove Apple Quarantine Blocker
+    command -v xattr 2> /dev/null && xattr -d com.apple.quarantine ~/bin/igo
+
+    # Set Permissions
+    chmod +x ~/bin/igo && export PATH=~/bin:$PATH
+
+    # Use IGO!
+    igo -l
+
+        igo [open source at github.com/ProjectApario/igo]
+        ┌──────────┬──────────────────┬─────────────┐                                                                                     
+        │ VERSION  │     CREATION     │   STATUS    │
+        ├──────────┼──────────────────┼─────────────┤
+        │ 1.24.3   │ 2025-05-22 11:15 │             │
+        │ 1.24.0   │ 2025-05-23 09:37 │             │
+        │ 1.23.4   │ 2025-05-22 11:30 │             │
+        │ 1.23.2   │ 2025-05-22 11:24 │             │
+        │ 1.23.0   │ 2025-05-22 11:23 │             │
+        │ 1.22.7   │ 2025-06-02 22:49 │             │
+        │ 1.22.6   │ 2025-06-02 22:47 │  * ACTIVE   │
+        │ 1.22.5   │ 2025-05-24 09:59 │             │
+        ├──────────┼──────────────────┼─────────────┤
+        │ I ❤ YOU! │ Made In America  │ Be Inspired │
+        └──────────┴──────────────────┴─────────────┘
+
 
 ## Usage
 
-| Argument   | Kind   | Usage                | Notes                         | 
-|------------|--------|----------------------|-------------------------------|
-| `-cmd`     | String | `igo -cmd <command>` | Run an `igo` command.         | 
-| `-version` | Bool   | `igo -version`       | Display `igo` binary version. |
-| `-gover`   | String | `igo -gover 1.23.4`  | Installs go `1.23.4`.         |
-| `-godir`   | String | `igo -godir /opt/go` | Installs `igo` in `/opt/go`.  |
-| `-goos`    | String | `igo -goos linux`    | Sets the GOOS environment.    |
-| `-goarch`  | String | `igo -goarch amd64`  | Sets the GOARCH environment.  |
-| `-help`    | Bool   | `igo -help`          | Displays help.                |
-| `-debug`   | Bool   | `igo -debug`         | Debug output enabled.         |
-| `-verbose` | Bool   | `igo -verbose`       | Shows Verbose Output.         |
+    igo -v
+    v1.1.0 - igo open source at github.com/ProjectApario/igo
 
-### Commands
+    igo -l # list (lowercase "L")
+    igo -e # show environment
+    igo -a <version> # activate <version> if its installed
+    igo -s <version> # switch to <version> if its installed (alias to activate)
+    igo -f <version> # fix <version> installation
+    igo -u <version> # uninstall <version> from -godir <path>
+    igo -i <version> # install <version> from -godir <path>
 
-| Command              | Usage                                        |
-|----------------------|----------------------------------------------|
-| `install` or `ins`   | Install's the `-gover` to the `-godir`.      |
-| `uninstall` or `uni` | Removes the `-gover` from the `-godir`.      |
-| `list` or `l`        | Lists the installed go versions in `-godir`. |
-| `use` or `u`         | Activate a go version in `-godir`.           |
-| `fix` or `f`         | Fixes a go version in `-godir`.              |
+    # custom godir with debug
+    igo -i 1.23.4 -godir /Shared/go -debug
 
-## Real World Example
+Additional arguments include: 
 
-```bash
-igo -cmd list # long form
-igo -cmd l # short form
-
-igo -cmd install -gover 1.24.2 # long form
-igo -cmd ins -gover 1.24.2 # short form
-
-igo -cmd uninstall -gover 1.24.2 # long form
-igo -cmd uni -gover 1.24.2 # short form
-
-igo -cmd use -gover 1.24.2 # long form
-igo -cmd u -gover 1.24.2 # short form
-
-igo -cmd fix -gover 1.24.2 # long form
-igo -cmd f -gover 1.24.2 # short form
-```
+| Argument       | Kind   | Usage                | Notes                                         | 
+|----------------|--------|----------------------|-----------------------------------------------|
+| `-i <version>` | String | `igo -i 1.23.4`      | Installs `go` version **1.23.4**.             |
+| `-u <version>` | String | `igo -u 1.23.4`      | Uninstall `go` version **1.23.4**.            |
+| `-s <version>` | String | `igo -s 1.24.2`      | Switch to version **1.24.2**                  |
+| `-f <version>` | String | `igo -f 1.24.2`      | Fixes installation of **1.24.2**              |
+| `-a <version>` | String | `igo -a 1.24.2`      | Activates go version **1.24.2**               |
+| `-e`           | Bool   | `igo -e`             | Display's environment of active installations |
+| `-l`           | Bool   | `igo -l`             | List all installed Go versions                | 
+| `-v`           | Bool   | `igo -v`             | Display version                               | 
+| `-version`     | Bool   | `igo -version`       | Display `igo` binary version.                 |
+| `-godir`       | String | `igo -godir /opt/go` | Installs `igo` in `/opt/go`.                  |
+| `-goos`        | String | `igo -goos linux`    | Sets the GOOS environment.                    |
+| `-goarch`      | String | `igo -goarch amd64`  | Sets the GOARCH environment.                  |
+| `-help`        | Bool   | `igo -help`          | Displays help.                                |
+| `-debug`       | Bool   | `igo -debug`         | Debug output enabled.                         |
+| `-verbose`     | Bool   | `igo -verbose`       | Shows Verbose Output.                         |
 
 ## Project Notes
 
@@ -72,13 +100,14 @@ into the `uninstall()` func. Currently, I've migrated over `install` and `list`.
 
 ## TODO
 
-- [X] Implement `-cmd uninstall`
-- [X] Implement `-cmd use`
-- [X] Implement `-cmd env` to debug environment
-- [X] Implement `-cmd fix`
+- [X] Implement `-u` **Uninstall** command.
+- [X] Implement `-s` **Switch** command.
+- [X] Implement `-e` **Environment** Display command.
+- [X] Implement `-f` **Fix Version** command.
+- [X] Implement `-a` **Activate Version** command.
 - [X] Add GitHub Actions Workflow
 - [X] Upload compiled binaries to release
-- [ ] Update README with new installation instructions
+- [X] Update README with new installation instructions
 - [ ] Add `igo` to `yum install igo` to `epel-release` yum repository.
 - [ ] Add `igo` to `apt-get install igo` to Ubuntu repository.
 - [ ] Add `igo` to `brew install igo` for macOS.
@@ -131,6 +160,10 @@ You can browse the [test_results](test_results) to see the comprehensive log out
 functionalities of the `igo` package that is tested via the `test.sh` script. The output of these 
 tests are included automatically in the GitHub Actions and can be viewed there, but for archival 
 purposes, the snapshot of the logs as captured with the `feature/install` branch from May 2025. 
+
+### Running on Local
+
+     ./run-me-local.sh --build true --rm true --clear false --debug true --verbose true
 
 ## Versioning
 

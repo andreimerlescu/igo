@@ -55,7 +55,7 @@ GOVERSION="$(find_version)"
 GOBINARY="$(get_go_binary_path_for_version "${GOVERSION}")"
 if [[ -z "${GOBINARY}" ]]; then
   echo "Missing Go version ${GOVERSION}! installing now..."
-  igo -cmd install -gover "${GOVERSION}" || safe_exit "Failed to install Go version ${GOVERSION}"
+  igo -i "${GOVERSION}" || safe_exit "Failed to install Go version ${GOVERSION}"
   GOBINARY="$(get_go_binary_path_for_version "${GOVERSION}")"
   [[ -z "${GOBINARY}" ]] && safe_exit "Failed to install Go version ${GOVERSION}"
 fi

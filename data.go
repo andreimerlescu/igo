@@ -2,8 +2,9 @@ package main
 
 import (
 	"embed"
-	"github.com/andreimerlescu/igo/internal"
 	"strings"
+
+	"github.com/andreimerlescu/igo/internal"
 )
 
 // binaryVersionBytes contains the embedded VERSION file's contents
@@ -40,19 +41,30 @@ const (
 	GOTELEMETRYDIR string = "GOTELEMETRYDIR"
 	GOCACHE        string = "GOCACHE"
 
-	// kVersion defines -version in the CLI to print the BinaryVersion()
-	kVersion string = "version"
+	VerboseEnabled    string = "VERBOSE MODE ENABLED"
+	DebugEnabled      string = "DEBUG MODE ENABLED"
+	CreatedSymlinkFmt string = "Created symlink %s -> %s"
+	LinkingFmt        string = "Linking %v to %v"
+	NoGoMessage       string = "No installed version of Go found"
+	IndentList        string = "│   ├── %v=%s"
+	IndentItem        string = "│   ├── %v"
+	IndentValue       string = "    ├── %v -> %v %s  "
+	VersionFmt        string = "%d.%d.%d"
+
+	cmdInstall   string = "i" // mutagenesis = string (version)
+	cmdUninstall string = "u" // mutagenesis = string (version)
+	cmdActivate  string = "a" // mutagenesis = string (version)
+	cmdFix       string = "f" // mutagenesis = string (version) ; empty = current version activated
+	cmdList      string = "l" // mutagenesis = bool (true = display list)
+	cmdHelp      string = "h" // mutagenesis = bool (true = display help)
+	cmdVersion   string = "v" // mutagenesis = bool (true = display version)
+	cmdSwitch    string = "s" // mutagenesis = string (version)
+	cmdEnv       string = "e" // mutagenesis = bool (true = display env)
 
 	// kGoDir defines -godir in the CLI to assign igoWorkspace()
 	kGoDir string = "godir"
 
-	// kCommand defines -cmd in the CLI to run commands by names and aliases
-	kCommand string = "cmd"
-
-	// kGoVersion defines the -gover in the CLI that targets a Version
-	kGoVersion string = "gover"
-
-	// kSystem defines -system in the CLI that ignores userHomeDir in igoWorkspace()
+	// kSystem defines -system in the CLI that ignores UserHomeDir in igoWorkspace()
 	kSystem string = "system"
 
 	// kGoos defines -goos in the CLI that allows you to define these values without

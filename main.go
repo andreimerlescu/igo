@@ -1,12 +1,12 @@
 package main
 
 import (
-	"context"
-	"fmt"
+	"github.com/andreimerlescu/go-common/version"
 	"github.com/andreimerlescu/igo/internal"
+	"github.com/fatih/color"
+	"log"
 	"os"
 	"runtime"
-	"sync"
 )
 
 func main() {
@@ -15,47 +15,57 @@ func main() {
 	}
 	app := NewApp()
 
-	if *app.figs.Bool(kVersion) {
-		fmt.Println(BinaryVersion())
+	if *app.Figs.Bool(cmdVersion) {
+		color.Magenta(BinaryVersion() + " - " + internal.About())
 		os.Exit(0)
 	}
-
-	ctx, cancel := context.WithCancel(context.Background())
-	app.ctx = ctx
-	defer cancel()
-	wg := &sync.WaitGroup{}
-	errCh := make(chan error)
-	wg.Add(1)
-	go func() {
-		for err := range errCh {
-			internal.Capture(err)
-		}
-	}()
-	switch *app.figs.String(kCommand) {
-	case "env":
-		go env(app, ctx, wg, errCh)
-	case "ins":
-		go install(app, wg, errCh, *app.figs.String(kGoVersion))
-	case "install":
-		go install(app, wg, errCh, *app.figs.String(kGoVersion))
-	case "uni":
-		go uninstall(app, ctx, wg, errCh, *app.figs.String(kGoVersion))
-	case "uninstall":
-		go uninstall(app, ctx, wg, errCh, *app.figs.String(kGoVersion))
-	case "l":
-		go list(app, ctx, wg, errCh)
-	case "list":
-		go list(app, ctx, wg, errCh)
-	case "u":
-		go use(app, ctx, wg, errCh, *app.figs.String(kGoVersion))
-	case "use":
-		go use(app, ctx, wg, errCh, *app.figs.String(kGoVersion))
-	case "f":
-		go fix(app, ctx, wg, errCh, *app.figs.String(kGoVersion))
-	case "fix":
-		go fix(app, ctx, wg, errCh, *app.figs.String(kGoVersion))
+	if *app.Figs.Bool(cmdList) {
+		list(app)
+		return
 	}
-	wg.Wait()
-	close(errCh)
+	if *app.Figs.Bool(cmdEnv) {
+		env(app)
+		return
+	}
+	maybeVersions := map[string]string{
+		"install":   *app.Figs.String(cmdInstall),
+		"uninstall": *app.Figs.String(cmdUninstall),
+		"fix":       *app.Figs.String(cmdFix),
+		"activate":  *app.Figs.String(cmdActivate),
+		"switch":    *app.Figs.String(cmdSwitch),
+	}
+	for command, maybeVersion := range maybeVersions {
+		if len(maybeVersion) == 0 {
+			continue
+		}
+		if err := app.validateVersion(maybeVersion); err != nil {
+			if *app.Figs.Bool(kVerbose) || *app.Figs.Bool(kDebug) {
+				color.Red("ErrBadVersion(%T %s): %w", maybeVersion, maybeVersion, err)
+			}
+			log.Fatalf("ErrBadVersion(%T %s): %s", maybeVersion, maybeVersion, err.Error())
+		}
+		version := version.FromString(maybeVersion)
+		if version.String() == "v0.0.1" {
+			log.Fatalf("failed to parse the version: %s", version.String())
+		}
+		switch command {
+		case "install":
+			if len(maybeVersion) > 0 {
+				install(app, maybeVersion)
+			}
+		case "uninstall":
+			if len(maybeVersion) > 0 {
+				uninstall(app, maybeVersion)
+			}
+		case "fix":
+			if len(maybeVersion) > 0 {
+				fix(app, maybeVersion)
+			}
+		default:
+			if len(maybeVersion) > 0 {
+				use(app, maybeVersion)
+			}
+		}
+	}
 
 }
