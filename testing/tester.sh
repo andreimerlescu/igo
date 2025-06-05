@@ -347,7 +347,7 @@ echo
 
 echo "=== FIXED GO 1.24.3 ==="
 SECONDS=0
-igo -f "${DEBUG}" "${VERBOSE}" || exit 1
+igo -f 1.24.3 "${DEBUG}" "${VERBOSE}" || exit 1
 TESTS=$((TESTS + 1))
 test_took
 echo

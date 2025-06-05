@@ -44,9 +44,9 @@ func main() {
 			}
 			log.Fatalf("ErrBadVersion(%T %s): %s", maybeVersion, maybeVersion, err.Error())
 		}
-		version := version.FromString(maybeVersion)
-		if version.String() == "v0.0.1" {
-			log.Fatalf("failed to parse the version: %s", version.String())
+		ver := version.FromString(maybeVersion)
+		if ver.String() == "v0.0.1" {
+			log.Fatalf("failed to parse the version: %s", ver.String())
 		}
 		switch command {
 		case "install":
