@@ -5,7 +5,6 @@ import (
 	"compress/gzip"
 	"errors"
 	"fmt"
-	"github.com/andreimerlescu/igo/internal"
 	"io"
 	"net/http"
 	"os"
@@ -13,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/andreimerlescu/igo/internal"
 	"github.com/fatih/color"
 )
 
@@ -44,7 +44,7 @@ func (v *Version) String() string {
 // downloadURL will take the DownloadName and acquire the tar.gz file
 func (v *Version) downloadURL(app *Application) (err error) {
 	color.Blue("Starting download of %s", v.DownloadName)
-	verbose, debug := *app.figs.Bool(kVerbose), *app.figs.Bool(kDebug)
+	verbose, debug := *app.Figs.Bool(kVerbose), *app.Figs.Bool(kDebug)
 	startTime := time.Now()
 	defer func() {
 		duration := time.Since(startTime)
@@ -101,7 +101,7 @@ func (v *Version) downloadURL(app *Application) (err error) {
 
 // extractTarGz will take the ExtractPath and expand the DownloadName there
 func (v *Version) extractTarGz(app *Application) error {
-	verbose, debug := *app.figs.Bool(kVerbose), *app.figs.Bool(kDebug)
+	verbose, debug := *app.Figs.Bool(kVerbose), *app.Figs.Bool(kDebug)
 	if verbose {
 		fmt.Println(v)
 	}

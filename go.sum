@@ -2,6 +2,8 @@ github.com/andreimerlescu/checkfs v1.0.4 h1:pRXZGW1sfe+yXyWNUxmPC2IiX5yT3vF1V5O8
 github.com/andreimerlescu/checkfs v1.0.4/go.mod h1:ADaqjiRJf3gmyENLS3v9bJIaEH00IOeM48cXxVwy1JY=
 github.com/andreimerlescu/figtree/v2 v2.0.8 h1:zJw0dxix3qI32YhbWK9w6nXxZ24sXXo3bOac6LACNlc=
 github.com/andreimerlescu/figtree/v2 v2.0.8/go.mod h1:yoLfhFq/X+z3IyWaOGyyowprMcConjESMv0vuuXZ72Y=
+github.com/andreimerlescu/go-common v0.0.2 h1:d0usSdamcutXHSIlCt6479R1jIEVQcspt0PHgQihamg=
+github.com/andreimerlescu/go-common v0.0.2/go.mod h1:u4oOm2xBt1jW+PoQbS8ykIpJcvziWJ2j+nvSw2LFuTc=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/fatih/color v1.18.0 h1:S8gINlzdQ840/4pfAwic/ZE0djQEH3wM94VfqLTZcOM=

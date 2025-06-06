@@ -54,7 +54,7 @@ find_version() {
 GOVERSION="$(find_version)"
 GOBINARY="$(get_go_binary_path_for_version "${GOVERSION}")"
 if [[ -z "${GOBINARY}" ]]; then
-  igo -cmd install -gover "${GOVERSION}" || safe_exit "Failed to install Go version ${GOVERSION}"
+  igo -i "${GOVERSION}" || safe_exit "Failed to install Go version ${GOVERSION}"
 fi
 
 GOBIN="${GODIR}/versions/${GOVERSION}/go/bin"

@@ -40,12 +40,12 @@ export PATH=/bin:$PATH
 # Display igo version
 echo "=== IGO VERSION ==="
 SECONDS=0
-igo -version || exit 1
+igo -v || exit 1
 TESTS=$(( TESTS + 1 ))
 test_took
 
 echo "=== IGO ENVIRONMENT ==="
-igo -cmd env "${DEBUG}" "${VERBOSE}" || exit 1
+igo -e "${DEBUG}" "${VERBOSE}" || exit 1
 TESTS=$((TESTS + 1))
 test_took
 echo
@@ -53,20 +53,20 @@ echo
 # List installed versions (should be empty)
 echo "=== INITIAL LIST (Should be empty) ==="
 SECONDS=0
-igo -cmd list || exit 1
+igo -l || exit 1
 TESTS=$((TESTS + 1))
 test_took
 
 # Install Go 1.24.2
 echo "=== INSTALLING GO 1.24.2 ==="
 SECONDS=0
-igo -cmd install -gover 1.24.2 "${DEBUG}" "${VERBOSE}" || exit 1
+igo -i 1.24.2 "${DEBUG}" "${VERBOSE}" || exit 1
 TESTS=$((TESTS + 1))
 test_took
 
 echo "=== IGO ENVIRONMENT ==="
 SECONDS=0
-igo -cmd env "${DEBUG}" "${VERBOSE}" || exit 1
+igo -e "${DEBUG}" "${VERBOSE}" || exit 1
 TESTS=$((TESTS + 1))
 test_took
 echo
@@ -126,7 +126,7 @@ echo
 # List installed versions (should see both with 1.24.2 activated)
 echo "=== LISTING GO VERSIONS ==="
 SECONDS=0
-igo -cmd list "${DEBUG}" "${VERBOSE}" || exit 1
+igo -l "${DEBUG}" "${VERBOSE}" || exit 1
 TESTS=$(test_completed)
 test_took
 echo
@@ -134,14 +134,14 @@ echo
 # Install Go 1.24.3
 echo "=== INSTALLING GO 1.24.3 ==="
 SECONDS=0
-igo -cmd install -gover 1.24.3 "$DEBUG" "$VERBOSE" || exit 1
+igo -i 1.24.3 "$DEBUG" "$VERBOSE" || exit 1
 TESTS=$(test_completed)
 test_took
 echo
 
 echo "=== IGO ENVIRONMENT ==="
 SECONDS=0
-igo -cmd env "${DEBUG}" "${VERBOSE}" || exit 1
+igo -e "${DEBUG}" "${VERBOSE}" || exit 1
 TESTS=$(test_completed)
 test_took
 echo
@@ -194,28 +194,28 @@ echo
 # List installed versions
 echo "=== LISTING GO VERSIONS ==="
 SECONDS=0
-igo -cmd list "$DEBUG" "$VERBOSE" || exit 1
+igo -l "$DEBUG" "$VERBOSE" || exit 1
 TESTS=$(test_completed)
 test_took
 echo
 
 echo "=== IGO ENVIRONMENT ==="
 SECONDS=0
-igo -cmd env "${DEBUG}" "${VERBOSE}" || exit 1
+igo -e "${DEBUG}" "${VERBOSE}" || exit 1
 TESTS=$(test_completed)
 test_took
 echo
 
 echo "=== SWITCHING TO GO 1.24.2 ==="
 SECONDS=0
-igo -cmd use -gover 1.24.2 "$DEBUG" "$VERBOSE" || exit 1
+igo -s 1.24.2 "$DEBUG" "$VERBOSE" || exit 1
 TESTS=$(test_completed)
 test_took
 echo
 
 echo "=== IGO ENVIRONMENT ==="
 SECONDS=0
-igo -cmd env "${DEBUG}" "${VERBOSE}" || exit 1
+igo -e "${DEBUG}" "${VERBOSE}" || exit 1
 TESTS=$(test_completed)
 test_took
 echo
@@ -223,7 +223,7 @@ echo
 # List installed versions
 echo "=== LISTING GO VERSIONS ==="
 SECONDS=0
-igo -cmd list "$DEBUG" "$VERBOSE" || exit 1
+igo -l "$DEBUG" "$VERBOSE" || exit 1
 TESTS=$(test_completed)
 test_took
 echo
@@ -239,14 +239,14 @@ echo
 
 echo "=== SWITCHING TO GO 1.24.3 ==="
 SECONDS=0
-igo -cmd use -gover 1.24.3 "$DEBUG" "$VERBOSE" || exit 1
+igo -s 1.24.3 "$DEBUG" "$VERBOSE" || exit 1
 TESTS=$(test_completed)
 test_took
 echo
 
 echo "=== IGO ENVIRONMENT ==="
 SECONDS=0
-igo -cmd env "${DEBUG}" "${VERBOSE}" || exit 1
+igo -e "${DEBUG}" "${VERBOSE}" || exit 1
 TESTS=$(test_completed)
 test_took
 echo
@@ -254,7 +254,7 @@ echo
 # List installed versions
 echo "=== LISTING GO VERSIONS ==="
 SECONDS=0
-igo -cmd list "$DEBUG" "$VERBOSE" || exit 1
+igo -l "$DEBUG" "$VERBOSE" || exit 1
 TESTS=$(test_completed)
 test_took
 echo
@@ -287,14 +287,14 @@ echo
 
 echo "=== REMOVING GO 1.24.2 ==="
 SECONDS=0
-igo -cmd uninstall -gover 1.24.2 "${DEBUG}" "${VERBOSE}" || exit 1
+igo -u 1.24.2 "${DEBUG}" "${VERBOSE}" || exit 1
 TESTS=$(test_completed)
 test_took
 echo
 
 echo "=== IGO ENVIRONMENT ==="
 SECONDS=0
-igo -cmd env "${DEBUG}" "${VERBOSE}" || exit 1
+igo -e "${DEBUG}" "${VERBOSE}" || exit 1
 TESTS=$(test_completed)
 test_took
 echo
@@ -302,7 +302,7 @@ echo
 # List installed versions
 echo "=== LISTING GO VERSIONS (After removing 1.24.2) ==="
 SECONDS=0
-igo -cmd list "${DEBUG}" "${VERBOSE}" || exit 1
+igo -l "${DEBUG}" "${VERBOSE}" || exit 1
 TESTS=$(test_completed)
 test_took
 echo
@@ -310,7 +310,7 @@ echo
 # Remove Go 1.24.3
 echo "=== REMOVING GO 1.24.3 ==="
 SECONDS=0
-igo -cmd uninstall -gover 1.24.3 "${DEBUG}" "${VERBOSE}" || exit 1
+igo -u 1.24.3 "${DEBUG}" "${VERBOSE}" || exit 1
 TESTS=$((TESTS + 1))
 test_took
 echo
@@ -318,21 +318,21 @@ echo
 # List installed versions (should be empty)
 echo "=== LISTING GO VERSIONS (Should be empty) ==="
 SECONDS=0
-igo -cmd list "${DEBUG}" "${VERBOSE}" || exit 1
+igo -l "${DEBUG}" "${VERBOSE}" || exit 1
 TESTS=$((TESTS + 1))
 test_took
 echo
 
 echo "=== IGO ENVIRONMENT ==="
 SECONDS=0
-igo -cmd env "${DEBUG}" "${VERBOSE}" || exit 1
+igo -e "${DEBUG}" "${VERBOSE}" || exit 1
 TESTS=$((TESTS + 1))
 test_took
 echo
 
 echo "=== INSTALLING GO 1.24.3 ==="
 SECONDS=0
-igo -cmd install -gover 1.24.3 "${DEBUG}" "${VERBOSE}" || exit 1
+igo -i 1.24.3 "${DEBUG}" "${VERBOSE}" || exit 1
 TESTS=$((TESTS + 1))
 test_took
 echo
@@ -340,14 +340,14 @@ echo
 echo "=== BREAK GO 1.24.3 ==="
 SECONDS=0
 rm -rf "${HOME}/go/root"
-igo -cmd fix "${DEBUG}" "${VERBOSE}" || exit 1
+igo -f 1.24.3 "${DEBUG}" "${VERBOSE}" || exit 1
 TESTS=$((TESTS + 1))
 test_took
 echo
 
 echo "=== FIXED GO 1.24.3 ==="
 SECONDS=0
-igo -cmd fix "${DEBUG}" "${VERBOSE}" || exit 1
+igo -f 1.24.3 "${DEBUG}" "${VERBOSE}" || exit 1
 TESTS=$((TESTS + 1))
 test_took
 echo
@@ -399,15 +399,15 @@ echo
 
 echo "=== LIST GO VERSIONS ==="
 SECONDS=0
-igo -cmd list "${DEBUG}" "${VERBOSE}" || exit 1
+igo -l "${DEBUG}" "${VERBOSE}" || exit 1
 TESTS=$((TESTS+1))
 test_took
 echo
 
 echo "=== INSTALL BAD VERSION ==="
 SECONDS=0
-{ igo -cmd install -gover 1.24.3.4 "${DEBUG}" "${VERBOSE}" && echo "FAIL: igo should not install bad version" && exit 1; }
-{ igo -cmd install -gover 99.99.99 "${DEBUG}" "${VERBOSE}" && echo "FAIL: igo should not install bad version" && exit 1; }
+{ igo -i 1.24.3.4 "${DEBUG}" "${VERBOSE}" && echo "FAIL: igo should not install bad version" && exit 1; }
+{ igo -i 99.99.99 "${DEBUG}" "${VERBOSE}" && echo "FAIL: igo should not install bad version" && exit 1; }
 TESTS=$((TESTS+1))
 test_took
 echo

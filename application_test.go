@@ -15,6 +15,7 @@ import (
 )
 
 func TestNewApp(t *testing.T) {
+	os.Args = []string{os.Args[0], "-i", "1.23.4"}
 	tempDir, err := os.MkdirTemp("", "igo-test")
 	require.NoError(t, err)
 	defer os.RemoveAll(tempDir)
@@ -29,21 +30,20 @@ func TestNewApp(t *testing.T) {
 
 	app := NewApp()
 	assert.NotNil(t, app.ctx)
-	assert.NotNil(t, app.figs)
-	assert.Equal(t, tempDir, app.userHomeDir)
+	assert.NotNil(t, app.Figs)
+	assert.Equal(t, tempDir, app.UserHomeDir)
 
-	assert.Equal(t, "1.24.3", *app.figs.String(kGoVersion))
-	assert.Equal(t, filepath.Join(tempDir, "go"), *app.figs.String(kGoDir))
+	assert.Equal(t, filepath.Join(tempDir, "go"), *app.Figs.String(kGoDir))
 }
 
 func TestApplication_validateVersion(t *testing.T) {
 	app := &Application{
 		ctx:         context.Background(),
-		userHomeDir: "/tmp",
-		figs:        figtree.With(figtree.Options{}),
+		UserHomeDir: "/tmp",
+		Figs:        figtree.With(figtree.Options{}),
 	}
-	app.figs.NewString(kGoos, "linux", "")
-	app.figs.NewString(kGoArch, "amd64", "")
+	app.Figs.NewString(kGoos, "linux", "")
+	app.Figs.NewString(kGoArch, "amd64", "")
 
 	t.Run("valid version", func(t *testing.T) {
 		originalHttpHead := http.Head
@@ -110,10 +110,10 @@ func TestApplication_CreateShims(t *testing.T) {
 
 	app := &Application{
 		ctx:         context.Background(),
-		userHomeDir: tempDir,
-		figs:        figtree.With(figtree.Options{}),
+		UserHomeDir: tempDir,
+		Figs:        figtree.With(figtree.Options{}),
 	}
-	app.figs.NewBool(kSystem, false, "")
+	app.Figs.NewBool(kSystem, false, "")
 
 	origWorkspaceFn := app.Workspace
 
@@ -155,8 +155,8 @@ func TestApplication_findGoVersions(t *testing.T) {
 
 	app := &Application{
 		ctx:         context.Background(),
-		userHomeDir: tempDir,
-		figs:        figtree.With(figtree.Options{}),
+		UserHomeDir: tempDir,
+		Figs:        figtree.With(figtree.Options{}),
 	}
 
 	origWorkspaceFn := app.Workspace
@@ -184,8 +184,8 @@ func TestApplication_activatedVersion(t *testing.T) {
 
 	app := &Application{
 		ctx:         context.Background(),
-		userHomeDir: tempDir,
-		figs:        figtree.With(figtree.Options{}),
+		UserHomeDir: tempDir,
+		Figs:        figtree.With(figtree.Options{}),
 	}
 
 	origWorkspaceFn := app.Workspace
