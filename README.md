@@ -16,13 +16,13 @@ your installation of Go, you can break your system configurations.
 Download the binaries and use them to install go!
     
     # MacOS Apple Silicon
-    curl -L https://github.com/andreimerlescu/igo/releases/download/v1.1.0/igo-darwin-arm64 ~/bin/igo
+    curl -L https://github.com/andreimerlescu/igo/releases/download/v1.1.0/igo-darwin-arm64 -o ~/bin/igo
     # MacOS Apple Intel
-    curl -L https://github.com/andreimerlescu/igo/releases/download/v1.1.0/igo-darwin-amd64 ~/bin/igo
+    curl -L https://github.com/andreimerlescu/igo/releases/download/v1.1.0/igo-darwin-amd64 -o ~/bin/igo
     # Linux arm64
-    curl -L https://github.com/andreimerlescu/igo/releases/download/v1.1.0/igo-linux-arm64 ~/bin/igo
+    curl -L https://github.com/andreimerlescu/igo/releases/download/v1.1.0/igo-linux-arm64 -o ~/bin/igo
     # Linux amd64
-    curl -L https://github.com/andreimerlescu/igo/releases/download/v1.1.0/igo-linux-amd64 ~/bin/igo
+    curl -L https://github.com/andreimerlescu/igo/releases/download/v1.1.0/igo-linux-amd64 -o ~/bin/igo
 
     # Remove Apple Quarantine Blocker
     command -v xattr 2> /dev/null && xattr -d com.apple.quarantine ~/bin/igo
