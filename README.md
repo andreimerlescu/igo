@@ -1,4 +1,6 @@
 # IGO
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fandreimerlescu%2Figo.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fandreimerlescu%2Figo?ref=badge_shield)
+
 
 This package is called `IGO` which stands for **Install Go**!
 
@@ -189,3 +191,7 @@ automation and DevOps. Afterall, I am a DevOps architect =D.
 If you need to use Go on a system, installed as system service, don't use `igo`; its 
 made for your `$HOME` environment running as a non-privileged user. You don't require
 `sudo` permissions to use `igo` or install multiple versions of Go on your system. 
+
+
+## License
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fandreimerlescu%2Figo.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fandreimerlescu%2Figo?ref=badge_large)
