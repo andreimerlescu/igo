@@ -7,6 +7,9 @@ import (
 	"github.com/andreimerlescu/igo/internal"
 )
 
+//go:embed bundled/.igosh.tpl
+var activatorTemplate embed.FS
+
 // binaryVersionBytes contains the embedded VERSION file's contents
 //
 //go:embed VERSION
@@ -90,6 +93,9 @@ var packages = map[string]string{
 	"genwordpass":          "github.com/ProjectApario/genwordpass",
 	"summarize":            "github.com/andreimerlescu/summarize",
 	"counter":              "github.com/andreimerlescu/counter",
+	"bump":                 "github.com/andreimerlescu/bump",
+	"goini":                "github.com/andreimerlescu/goini",
+	"goenv":                "github.com/andreimerlescu/goenv",
 	"govulncheck":          "golang.org/x/vuln/cmd/govulncheck",
 	"go-generate-password": "github.com/m1/go-generate-password/cmd/go-generate-password",
 	"cli-gematria":         "github.com/andreimerlescu/cli-gematria",

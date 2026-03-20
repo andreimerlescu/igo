@@ -188,7 +188,7 @@ func (app *Application) installExtraPackages(envs map[string]string, version str
 		fmt.Sprintf("GOOS=%s", envs[GOOS]),
 		fmt.Sprintf("GOARCH=%s", envs[GOARCH]),
 	}
-	p := app.Figs.Fig(kExtraPackages).ToString()
+	p := app.Figs.FigFlesh(kExtraPackages).ToString()
 	color.Green("Installing extra packages: %s", p)
 
 	for pkg, modulePath := range packages {
@@ -210,108 +210,120 @@ func (app *Application) installExtraPackages(envs map[string]string, version str
 // patchShellConfigPath updates the shell config file to ensure PATH includes specific directories.
 // envs is a map containing GOSHIMS, GOBIN, and GOSCRIPTS.
 // Returns an error if the operation fails.
+// patchShellConfigPath is now mostly informational / first-time setup helper
 func (app *Application) patchShellConfigPath(envs map[string]string) error {
-	requiredPaths := []string{
-		envs[GOSHIMS],
-		envs[GOBIN],
-		envs[GOSCRIPTS],
-	}
+	verbose, _ := *app.Figs.Bool(kVerbose), *app.Figs.Bool(kDebug)
 
-	bashrc := filepath.Join(app.UserHomeDir, ".profile")
-	zshrc := filepath.Join(app.UserHomeDir, ".zshrc.local")
-	shellFiles := []string{bashrc, zshrc}
-
-	var targetFile string
-	for _, shellFile := range shellFiles {
-		if _, err := os.Stat(shellFile); !os.IsNotExist(err) && !os.IsPermission(err) {
-			color.Green("Found %s", shellFile)
-			targetFile = shellFile
-			break
-		}
-	}
-	if targetFile == "" {
-		contents := fmt.Sprintf("export PATH=%s:%s:%s:%s\n",
-			envs[GOSHIMS], envs[GOSCRIPTS], envs[GOBIN], os.Getenv("PATH"))
-		internal.Capture(os.WriteFile(zshrc, []byte(contents), 0644))
-		return os.WriteFile(bashrc, []byte(contents), 0644)
-	}
-
-	content, err := os.ReadFile(targetFile)
+	home, err := os.UserHomeDir()
 	if err != nil {
-		return fmt.Errorf("168 failed to read file %s: %w", targetFile, err)
-	}
-	if *app.Figs.Bool(kVerbose) {
-		color.Green("Contents of %s is: \n%s\n", targetFile, content)
-	}
-	lines := strings.Split(string(content), "\n")
-
-	// Look for the export PATH line
-	var pathLine string
-	pathLineIndex := -1
-	for i, line := range lines {
-		trimmedLine := strings.TrimSpace(line)
-		if strings.HasPrefix(trimmedLine, "export PATH=") {
-			pathLine = trimmedLine
-			pathLineIndex = i
-			break
-		}
+		return fmt.Errorf("cannot determine home directory: %w", err)
 	}
 
-	if pathLineIndex != -1 {
-		pathValue := strings.TrimPrefix(pathLine, "export PATH=")
-		pathParts := strings.Split(pathValue, ":")
+	activatorPath := filepath.Join(home, ".igo")
 
-		var missingPaths []string
-		for _, reqPath := range requiredPaths {
-			if reqPath == "" {
-				return fmt.Errorf("194 required PATH component is empty in envs")
-			}
-			found := false
-			for _, part := range pathParts {
-				if strings.TrimSpace(part) == reqPath {
-					found = true
-					break
-				}
-			}
-			if !found {
-				missingPaths = append(missingPaths, reqPath)
-			}
+	if _, err := os.Stat(activatorPath); os.IsNotExist(err) {
+		if err := app.installActivatorScript(activatorPath); err != nil {
+			return err
 		}
 
-		if len(missingPaths) > 0 {
-			newPathValue := strings.Join(append(missingPaths, pathValue), ":")
-			newPathLine := fmt.Sprintf("export PATH=%s", newPathValue)
-			lines[pathLineIndex] = newPathLine
-			err := os.WriteFile(targetFile, []byte(strings.Join(lines, "\n")), 0644)
-			if err != nil {
-				return fmt.Errorf("214 failed to write file %s: %w", targetFile, err)
-			}
-			fmt.Printf("Updated PATH in %s with missing paths: %v\n", targetFile, missingPaths)
-		} else {
-			fmt.Printf("PATH in %s already contains all required paths\n", targetFile)
-		}
+		app.printActivatorInstruction(activatorPath)
 		return nil
 	}
 
-	newPathLine := fmt.Sprintf("export PATH=%s:%s:%s:%s", envs[GOSHIMS], envs[GOBIN], envs[GOSCRIPTS], os.Getenv("PATH"))
-	targetHandler, err := os.OpenFile(targetFile, os.O_APPEND|os.O_WRONLY, 0644)
+	if verbose {
+		color.Green("Activator script already present at %s", activatorPath)
+	}
+	return nil
+}
+
+// installActivatorScript copies the embedded template to the target location
+func (app *Application) installActivatorScript(dst string) error {
+	content, err := activatorTemplate.ReadFile("bundled/.igosh.tpl")
 	if err != nil {
-		return fmt.Errorf("226 could not open target file: %w", err)
+		return fmt.Errorf("failed to read embedded .igosh.tpl: %w", err)
 	}
 
-	if len(content) > 0 && content[len(content)-1] != '\n' {
-		_, err = targetHandler.WriteString("\n")
-		if err != nil {
-			return fmt.Errorf("232 could not write to target file: %w", err)
-		}
+	finalContent := string(content)
+	finalContent = strings.ReplaceAll(finalContent, "{{ .Dir }}", app.Workspace())
+
+	if err := os.MkdirAll(filepath.Dir(dst), 0755); err != nil {
+		return err
 	}
 
-	_, err = targetHandler.WriteString(newPathLine + "\n")
-	if err != nil {
-		return fmt.Errorf("238 could not write to target file: %w", err)
+	if err := os.WriteFile(dst, []byte(finalContent), 0644); err != nil {
+		return fmt.Errorf("failed to write activator script: %w", err)
 	}
 
-	return targetHandler.Close()
+	color.Green("Created igo activator script → %s", dst)
+	return nil
+}
+
+// printActivatorInstruction shows clear, copy-paste friendly message
+func (app *Application) printActivatorInstruction(activatorPath string) {
+	shell := detectUserShell()
+
+	msg := fmt.Sprintf(`
+To finish setting up igo, add the following line to your shell configuration file:
+
+    source %q
+
+Depending on your shell, common locations are:
+
+    • zsh:   ~/.zshrc
+    • bash:  ~/.bashrc  or  ~/.bash_profile
+    • other: ~/.profile
+
+After adding the line, either restart your terminal or run:
+
+    source ~/.zshrc    # (or appropriate file)
+
+`, activatorPath)
+
+	color.Cyan(msg)
+
+	if shell != "" {
+		color.Yellow("Detected shell: %s\n", shell)
+	}
+}
+
+func detectUserShell() string {
+	if shell := os.Getenv("SHELL"); shell != "" {
+		return shellNameFromPath(shell)
+	}
+
+	u := internal.User()
+
+	if u.Shell != "" && u.Shell != "/bin/false" && !strings.HasSuffix(u.Shell, "nologin") {
+		return shellNameFromPath(u.Shell)
+	}
+
+	return fallbackByOS()
+}
+
+func fallbackByOS() string {
+	switch runtime.GOOS {
+	case "darwin":
+		// macOS default since ~2019
+		return "zsh"
+	default:
+		// linux, freebsd, openbsd, etc.
+		// no strong default — better not to guess
+		return ""
+	}
+}
+
+func shellNameFromPath(path string) string {
+	name := filepath.Base(path)
+	name = strings.ToLower(name)
+	name = strings.TrimSuffix(name, ".sh")
+	name = strings.TrimRight(name, "0123456789.-")
+
+	switch name {
+	case "bash", "zsh", "fish", "ksh", "csh", "tcsh", "sh":
+		return name
+	default:
+		return ""
+	}
 }
 
 // findGoVersions returns installed versions of Go in the igoWorkspace()

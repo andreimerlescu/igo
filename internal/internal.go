@@ -303,28 +303,49 @@ var Touch = func(path string) error {
 var CheckRootPrivileges = func() bool {
 	if runtime.GOOS == "windows" {
 		return false // use msi installer for windows
-	} else {
-		if os.Geteuid() == 0 {
-			return true
-		}
-		if User().Uid == "0" {
-			return true
-		}
+	}
+	if os.Geteuid() == 0 {
+		return true
+	}
+	if User().Uid == "0" {
+		return true
+	}
 
-		return false
+	return false
+}
+
+// Account is basically a clone of user.User but with the Shell string property
+type Account struct {
+	Uid      string
+	Gid      string
+	Username string
+	Shell    string
+	Name     string
+	HomeDir  string
+}
+
+func userToAccount(u *user.User) *Account {
+	return &Account{
+		Uid:      u.Uid,
+		Gid:      u.Gid,
+		Username: u.Username,
+		HomeDir:  u.HomeDir,
+		Name:     u.Name,
+		Shell:    "/bin/false",
 	}
 }
 
-var User = func() *user.User {
+var User = func() *Account {
 	currentUser, err := UserCurrent()
 	if err != nil {
-		return &user.User{
+		return &Account{
 			Uid:      "-1",
 			Gid:      "-1",
 			Username: "nobody",
 			Name:     "nobody",
 			HomeDir:  "/dev/null",
+			Shell:    "/bin/false",
 		}
 	}
-	return currentUser
+	return userToAccount(currentUser)
 }

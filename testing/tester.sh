@@ -1,6 +1,11 @@
 #!/bin/bash
 #shellcheck disable=SC2317
 
+if ! command -v bump >/dev/null; then
+  echo "bump is not installed"
+  exit 1
+fi
+
 function cleanup() {
   echo "Caught Ctrl-C, cleaning up..."
   pkill -P $$ || true
@@ -86,8 +91,7 @@ echo
 USERNAME=$(whoami | tr -d '\n')
 
 echo "=== RELOADING SHELL CONFIG ==="
-{ [ -f ~/.profile ] && source ~/.profile; echo "Loaded ~/.profile into shell..."; } || { echo "Failed to source $USERNAME shell config"; exit 1; }
-{ [ -f ~/.zshrc.local ] && source ~/.zshrc.local; echo "Loaded ~/.zshrc.local"; } || { echo "Failed to source $USERNAME shell config"; exit 1; }
+{ [ -f ~/.igo ] && source ~/.igo ; echo "Loaded ~/.igo into shell..."; } || { echo "Failed to source ~/.igo shell config"; exit 1; }
 TESTS=$((TESTS + 1))
 echo
 

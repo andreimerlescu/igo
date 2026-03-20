@@ -22,6 +22,20 @@ declare -i BUILD_TIME=0
     echo "govulncheck installed"
     echo "govulncheck version: $(govulncheck -v)"
   fi
+
+  if ! command -v bump >/dev/null; then
+    echo "bump is not installed"
+    go install github.com/andreimerlescu/bump@latest
+    echo "bump installed"
+    echo "bump version: $(bump -v)"
+  fi
+
+  if ! command -v summarize >/dev/null; then
+    echo "summarize is not installed"
+    go install github.com/andreimerlescu/summarize@latest
+    echo "summarize installed"
+    echo "summarize version: $(bump -v)"
+  fi
 }
 echo "=== START GO INSTALLER TEST ==="
 
@@ -29,7 +43,7 @@ echo "--- CLI ARGUMENTS ---"
 
 declare -A params=()
 params[build]="true"
-params[rm]=""
+params[rm]="false"
 params[debug]="false"
 params[verbose]="false"
 params[clear]="true"
@@ -131,7 +145,6 @@ if [[ "${params[rm]}" == "true" ]]; then
   else
     echo "No matching images found to remove"
   fi
-  docker rmi "igo:${VERSION}" || echo "can not remove non-existent igo:${VERSION}"
 fi
 
 # Build the Docker image
@@ -185,7 +198,6 @@ if [[ "${params[rm]}" == "true" ]]; then
   else
     echo "No matching images found to remove"
   fi
-  docker rmi "igo:${VERSION}" || echo "can not remove non-existent igo:${VERSION}"
 fi
 
 echo "=== END TEST.SH ==="

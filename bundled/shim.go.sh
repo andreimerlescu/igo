@@ -35,7 +35,16 @@ find_version() {
       gomod_version=$(grep -E "^go [0-9]+\.[0-9]+(\.[0-9]+|[a-zA-Z0-9]+)?" "$dir/go.mod" | awk '{print $2}')
       if [[ -n "$gomod_version" ]]; then
         if [[ "$gomod_version" =~ ^[0-9]+\.[0-9]+$ ]]; then
-          echo "${gomod_version}.0"
+          if command -v bump 2>&1 /dev/null; then
+            if bump -fix -gomod -in "${dir}/go.mod" && bump -write -fix -gomod -in "${dir}/go.mod"; then
+              bump -gomod -in "${dir}/go.mod"
+              return
+            else
+              echo "${gomod_version}.0"
+            fi
+          else
+            echo "${gomod_version}.0"
+          fi
         else
           echo "$gomod_version"
         fi

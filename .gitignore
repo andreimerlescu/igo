@@ -4,5 +4,5 @@ summaries
 !testing/results/*.log
 igo
 bin/*
-
+.DS_Store
 
