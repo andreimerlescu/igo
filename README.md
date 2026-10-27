@@ -1,5 +1,7 @@
 # IGO
 
+![Unique](https://counthis.app/github?repository=andreimerlescu/igo&label=Unique) ![Visitors](https://counthis.app/g/qyjy5vwjtjgbjfzy)
+
 This package is called `IGO` which stands for **Install Go**!
 
 This program is written in Go and designed to install Go runtime.
